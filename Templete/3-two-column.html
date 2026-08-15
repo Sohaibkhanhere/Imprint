@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resume — Two Column</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #23282d; margin: 0; }
+  .sheet { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; max-width: 850px; margin: 0 auto; }
+  aside { background: #2C3A4B; color: #eef1f4; padding: 40px 26px; }
+  aside h1 { font-size: 22px; font-weight: 700; margin: 0 0 2px; line-height: 1.2; }
+  aside .tagline { font-size: 12.5px; color: #9FB3C8; font-weight: 600; letter-spacing: .5px; margin-bottom: 24px; }
+  aside h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.8px; color: #9FB3C8; margin: 22px 0 8px; border-bottom: 1px solid #47576B; padding-bottom: 6px; }
+  aside .contact-item { font-size: 12px; margin-bottom: 6px; color: #d7dee5; word-break: break-word; }
+  aside .skill-item { font-size: 12px; margin-bottom: 5px; color: #d7dee5; }
+  aside .lang-item { font-size: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; color: #d7dee5; }
+  main { padding: 40px 34px; font-size: 13px; line-height: 1.55; }
+  main h2 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 1.8px; color: #2C3A4B; border-bottom: 2px solid #2C3A4B; padding-bottom: 5px; margin: 0 0 12px; }
+  main section + section { margin-top: 22px; }
+  .summary { color: #333; }
+  .entry { margin-bottom: 14px; }
+  .entry-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .entry-title { font-weight: 700; font-size: 13.5px; color: #1c2733; }
+  .entry-sub { font-size: 12px; color: #5b6773; }
+  .entry-date { font-size: 11.5px; color: #5b6773; white-space: nowrap; font-weight: 600; }
+  ul { margin: 6px 0 0; padding-left: 16px; }
+  li { margin-bottom: 3px; color: #333; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <aside>
+    <h1>Ayesha Khan</h1>
+    <div class="tagline">Marketing Manager</div>
+
+    <h3>Contact</h3>
+    <div class="contact-item">Karachi, Pakistan</div>
+    <div class="contact-item">+92 300 1234567</div>
+    <div class="contact-item">ayesha.khan@email.com</div>
+    <div class="contact-item">linkedin.com/in/ayeshakhan</div>
+
+    <h3>Skills</h3>
+    <div class="skill-item">Performance Marketing</div>
+    <div class="skill-item">SEO / SEM</div>
+    <div class="skill-item">Google Analytics 4</div>
+    <div class="skill-item">Meta Ads Manager</div>
+    <div class="skill-item">Content Strategy</div>
+    <div class="skill-item">Team Leadership</div>
+    <div class="skill-item">Budget Management</div>
+
+    <h3>Languages</h3>
+    <div class="lang-item"><span>English</span><span>Fluent</span></div>
+    <div class="lang-item"><span>Urdu</span><span>Native</span></div>
+
+    <h3>Certifications</h3>
+    <div class="skill-item">Google Analytics Certified</div>
+    <div class="skill-item">Meta Blueprint Certified</div>
+  </aside>
+
+  <main>
+    <section>
+      <h2>Summary</h2>
+      <p class="summary">Results-driven Marketing Manager with 6+ years leading digital campaigns, brand strategy, and cross-functional teams. Grew organic lead volume by 140% across two consumer brands.</p>
+    </section>
+
+    <section>
+      <h2>Experience</h2>
+      <div class="entry">
+        <div class="entry-head">
+          <span class="entry-title">Marketing Manager — Northline Retail Co.</span>
+          <span class="entry-date">Jan 2022 – Present</span>
+        </div>
+        <div class="entry-sub">Karachi, Pakistan</div>
+        <ul>
+          <li>Led a team of 5 to grow monthly qualified leads from 800 to 1,920 (+140%) within 18 months.</li>
+          <li>Managed a $45,000/month multi-channel ad budget, reducing cost-per-lead by 32%.</li>
+          <li>Launched a content strategy that grew organic search traffic by 210% YoY.</li>
+        </ul>
+      </div>
+      <div class="entry">
+        <div class="entry-head">
+          <span class="entry-title">Digital Marketing Specialist — Bright Path Media</span>
+          <span class="entry-date">Jun 2019 – Dec 2021</span>
+        </div>
+        <div class="entry-sub">Lahore, Pakistan</div>
+        <ul>
+          <li>Executed 40+ campaigns for e-commerce and SaaS clients, averaging a 3.8x return on ad spend.</li>
+          <li>Redesigned email nurture sequences, increasing open rates from 18% to 31%.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Education</h2>
+      <div class="entry">
+        <div class="entry-head">
+          <span class="entry-title">BBA, Marketing — IBA Karachi</span>
+          <span class="entry-date">2015 – 2019</span>
+        </div>
+        <div class="entry-sub">CGPA 3.7/4.0</div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

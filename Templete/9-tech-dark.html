@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resume — Tech Dark</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; background: #141416; color: #e8e8e8; margin: 0; padding: 30px 34px; font-size: 12.5px; }
+  .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2e; padding-bottom: 14px; margin-bottom: 18px; font-size: 11.5px; color: #a8a8ac; flex-wrap: wrap; gap: 10px; }
+  .top span { margin-right: 14px; }
+  .headline { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
+  .headline h1 { font-size: 26px; margin: 0; color: #E64B3D; font-weight: 800; letter-spacing: .5px; }
+  .headline p { font-size: 13px; color: #cfcfd2; margin: 8px 0 0; max-width: 520px; line-height: 1.5; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #E64B3D; font-weight: 800; margin: 22px 0 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card { background: #1e1e21; border-radius: 8px; padding: 14px 16px; }
+  .card h4 { margin: 0 0 8px; font-size: 12.5px; color: #fff; }
+  .card ul { margin: 0; padding-left: 16px; }
+  .card li { margin-bottom: 4px; color: #c6c6ca; }
+  .job { background: #1e1e21; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .job-title { font-weight: 700; color: #fff; font-size: 14px; }
+  .job-date { color: #E64B3D; font-size: 11.5px; font-weight: 700; }
+  .tags { display: flex; gap: 6px; margin: 4px 0 8px; }
+  .tag { background: #2a2a2e; color: #cfcfd2; font-size: 10.5px; padding: 2px 9px; border-radius: 10px; }
+  .job ul { margin: 0; padding-left: 16px; }
+  .job li { margin-bottom: 4px; color: #c6c6ca; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <span>Karachi, Pakistan</span>
+    <span>ayesha.khan@email.com</span>
+    <span>+92 300 1234567</span>
+    <span>linkedin.com/in/ayeshakhan</span>
+    <span>github.com/ayeshakhan</span>
+  </div>
+
+  <div class="headline">
+    <div>
+      <h1>AYESHA KHAN</h1>
+      <p>Innovative and proactive Product Manager with 5 years of experience building products from ideation to launch. Strong reputation for cross-functional leadership and driving measurable outcomes.</p>
+    </div>
+  </div>
+
+  <h2>Education &amp; Skills</h2>
+  <div class="grid2">
+    <div class="card">
+      <h4>Master of Science, Information Technology Management</h4>
+      <p style="color:#a8a8ac;margin:0;">University of Texas at Dallas · Dec 2019</p>
+    </div>
+    <div class="card">
+      <h4>Skills</h4>
+      <ul>
+        <li>Product Strategy, Agile/Scrum, JIRA, Confluence</li>
+        <li>SQL, Python, Data-driven Decision Making</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Work Experience</h2>
+  <div class="job">
+    <div class="job-head">
+      <span class="job-title">Tesla — Technical Project Management</span>
+      <span class="job-date">Aug 2019 – Apr 2020</span>
+    </div>
+    <div class="tags"><span class="tag">Fremont, CA</span></div>
+    <ul>
+      <li>Defined and delivered a product vision for digital transformation of customer service processes, reducing processing time by 70%.</li>
+      <li>Collaborated with the data team to build a dashboard tracking ROI, productivity, and customer satisfaction.</li>
+    </ul>
+  </div>
+  <div class="job">
+    <div class="job-head">
+      <span class="job-title">Capgemini — Product Manager</span>
+      <span class="job-date">Dec 2013 – Feb 2017</span>
+    </div>
+    <div class="tags"><span class="tag">Pune, India</span></div>
+    <ul>
+      <li>Led product ideation to launch for an online banking platform worth $30M, partnering with cross-functional teams.</li>
+      <li>Built client relationships that drove $1.5M (150%) growth above planned account targets.</li>
+    </ul>
+  </div>
+</body>
+</html>

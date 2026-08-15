@@ -1,0 +1,28 @@
+node_modules
+dist
+dist-ssr
+*.local
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+.opencode
+.cursor
+.agents
+agent-transcripts
+terminals
+
+# Personal training CVs (do not publish)
+Model Train/
+scripts/train-dump/
+Sohiab Resume.docx
+.tmp-gen.mjs

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resume — Classic</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: #1a1a1a;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header { text-align: center; margin-bottom: 22px; border-bottom: 2px solid #1a1a1a; padding-bottom: 16px; }
+  h1 { font-size: 28px; letter-spacing: 1px; margin: 0 0 4px; font-weight: 700; }
+  .tagline { font-size: 14px; color: #444; font-style: italic; margin-bottom: 10px; }
+  .contact { font-size: 12.5px; color: #333; letter-spacing: .3px; }
+  .contact span:not(:last-child)::after { content: " \00b7 "; color: #999; }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 2px;
+    border-bottom: 1px solid #1a1a1a; padding-bottom: 4px; margin: 22px 0 10px;
+    font-weight: 700;
+  }
+  .summary { font-size: 13.5px; color: #222; }
+  .entry { margin-bottom: 14px; }
+  .entry-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .entry-title { font-weight: 700; font-size: 14.5px; }
+  .entry-sub { font-style: italic; font-size: 13px; color: #333; }
+  .entry-date { font-size: 12.5px; color: #444; white-space: nowrap; }
+  ul { margin: 6px 0 0; padding-left: 18px; }
+  li { margin-bottom: 3px; font-size: 13px; }
+  .skills-grid { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; }
+  .skills-grid div { white-space: nowrap; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  @media print {
+    body { padding: 0; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>AYESHA KHAN</h1>
+    <div class="tagline">Marketing Manager</div>
+    <div class="contact">
+      <span>Karachi, Pakistan</span>
+      <span>+92 300 1234567</span>
+      <span>ayesha.khan@email.com</span>
+      <span>linkedin.com/in/ayeshakhan</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Professional Summary</h2>
+    <p class="summary">Results-driven Marketing Manager with 6+ years leading digital campaigns, brand strategy, and cross-functional teams. Grew organic lead volume by 140% across two consumer brands. Skilled in performance marketing, content strategy, and team leadership.</p>
+  </section>
+
+  <section>
+    <h2>Work Experience</h2>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">Marketing Manager — Northline Retail Co.</span>
+        <span class="entry-date">Jan 2022 – Present</span>
+      </div>
+      <div class="entry-sub">Karachi, Pakistan</div>
+      <ul>
+        <li>Led a team of 5 to grow monthly qualified leads from 800 to 1,920 (+140%) within 18 months through funnel redesign and paid-search optimization.</li>
+        <li>Managed a $45,000/month multi-channel ad budget across Meta, Google, and TikTok, reducing cost-per-lead by 32%.</li>
+        <li>Launched a content strategy that grew organic search traffic by 210% year-over-year.</li>
+        <li>Built and presented quarterly performance reports to executive leadership, directly informing budget allocation.</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">Digital Marketing Specialist — Bright Path Media</span>
+        <span class="entry-date">Jun 2019 – Dec 2021</span>
+      </div>
+      <div class="entry-sub">Lahore, Pakistan</div>
+      <ul>
+        <li>Executed 40+ campaigns for e-commerce and SaaS clients, averaging a 3.8x return on ad spend.</li>
+        <li>Redesigned email nurture sequences, increasing open rates from 18% to 31%.</li>
+        <li>Trained 3 junior marketers on analytics tools and campaign reporting standards.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Education</h2>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">BBA, Marketing — Institute of Business Administration (IBA)</span>
+        <span class="entry-date">2015 – 2019</span>
+      </div>
+      <div class="entry-sub">Karachi, Pakistan · CGPA 3.7/4.0</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Skills</h2>
+    <div class="skills-grid">
+      <div>Performance Marketing</div><div>SEO/SEM</div><div>Google Analytics 4</div>
+      <div>Meta Ads Manager</div><div>Content Strategy</div><div>Team Leadership</div>
+      <div>Budget Management</div><div>A/B Testing</div><div>CRM (HubSpot)</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Certifications</h2>
+    <div class="two-col">
+      <div>Google Analytics Certified — 2023</div>
+      <div>Meta Blueprint Certified — 2022</div>
+    </div>
+  </section>
+</body>
+</html>

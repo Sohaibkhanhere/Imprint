@@ -1,0 +1,300 @@
+@import "tailwindcss";
+@import "./templates/sheet.css";
+@import "./templates/graphical.css";
+@import "./templates/html-pack.css";
+
+/* ===== Editorial system tokens ===== */
+
+@theme {
+  /* Warm-paper + ink neutrals replace the default stone scale */
+  --color-stone-50: #faf9f6;
+  --color-stone-100: #f4f2ec;
+  --color-stone-200: #e7e4dc;
+  --color-stone-300: #d4d0c4;
+  --color-stone-400: #a29e91;
+  --color-stone-500: #6f6c61;
+  --color-stone-600: #4f4d45;
+  --color-stone-700: #3a3832;
+  --color-stone-800: #2a2924;
+  --color-stone-900: #1c1b17;
+  --color-stone-950: #121110;
+
+  /* Editor's vermilion replaces the amber scale (single signal accent) */
+  --color-amber-50: #fbf0ec;
+  --color-amber-100: #f6ddd6;
+  --color-amber-200: #eebcb1;
+  --color-amber-300: #e39385;
+  --color-amber-400: #d56a58;
+  --color-amber-500: #c44a3a;
+  --color-amber-600: #b0302a;
+  --color-amber-700: #942822;
+  --color-amber-800: #7a2420;
+  --color-amber-900: #5f211e;
+  --color-amber-950: #3a1210;
+
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-stone-100);
+  color: var(--color-stone-900);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Editorial chrome ===== */
+
+.masthead-rule {
+  height: 3px;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--color-amber-600) 0,
+      var(--color-amber-600) 1px,
+      var(--color-stone-900) 1px,
+      var(--color-stone-900) 3px
+    );
+}
+
+.folio {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.contents-number {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--color-stone-500);
+}
+
+.contents-entry {
+  position: relative;
+}
+
+.contents-entry::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: transparent;
+}
+
+.contents-entry:hover::before {
+  background: var(--color-stone-300);
+}
+
+.contents-entry.contents-active::before {
+  background: var(--color-amber-600);
+}
+
+.editor-mark {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.notes-overlay {
+  animation: notes-fade 160ms ease-out;
+}
+
+.notes-card {
+  animation: notes-rise 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes notes-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes notes-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notes-overlay,
+  .notes-card {
+    animation: none;
+  }
+}
+
+/* ===== Preview stage ===== */
+
+.preview-frame {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  padding: 72px 26px 56px;
+  background-color: var(--color-stone-200);
+  background-image:
+    linear-gradient(rgba(28, 27, 23, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 27, 23, 0.02) 1px, transparent 1px);
+  background-size: 26px 26px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.preview-canvas {
+  flex: none;
+  transform-origin: top left;
+}
+
+.preview-sheet {
+  margin: 0;
+  overflow-x: clip;
+  box-shadow:
+    0 1px 0 rgba(28, 27, 23, 0.08),
+    0 2px 6px rgba(28, 27, 23, 0.1),
+    0 26px 60px -18px rgba(28, 27, 23, 0.35);
+  outline: 1px solid rgba(28, 27, 23, 0.1);
+  outline-offset: -1px;
+}
+
+.preview-folio {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-stone-500);
+}
+
+.preview-folio::before,
+.preview-folio::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--color-stone-300);
+}
+
+.preview-folio .folio-tick {
+  color: var(--color-stone-500);
+}
+
+.preview-pagecount {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-stone-500);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--color-stone-300);
+  border-radius: 2px;
+  padding: 3px 8px;
+  position: absolute;
+  right: 12px;
+  top: 10px;
+}
+
+/* ===== Print ===== */
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    overflow: hidden !important;
+    background: #fff !important;
+  }
+
+  .no-print,
+  #app-chrome {
+    display: none !important;
+  }
+
+  .h-screen {
+    height: auto !important;
+    display: block !important;
+  }
+
+  main,
+  .flex-1,
+  .overflow-hidden,
+  .overflow-y-auto {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  main {
+    display: block !important;
+  }
+
+  .preview-frame {
+    position: relative !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    background: #fff !important;
+    display: block !important;
+  }
+
+  .preview-canvas {
+    transform: none !important;
+    width: auto !important;
+  }
+
+  .preview-sheet {
+    margin: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    width: var(--page-w, 210mm) !important;
+    height: var(--page-h, 297mm) !important;
+    overflow: hidden !important;
+  }
+
+  .preview-folio,
+  .preview-pagecount {
+    display: none !important;
+  }
+
+  .resume-sheet {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: var(--page-w, 210mm) !important;
+    max-width: var(--page-w, 210mm) !important;
+    height: var(--page-h, 297mm) !important;
+    min-height: var(--page-h, 297mm) !important;
+    max-height: var(--page-h, 297mm) !important;
+    overflow: hidden !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+}

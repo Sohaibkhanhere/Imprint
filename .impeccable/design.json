@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-14T00:00:00Z",
+  "title": "Design System: Resume Studio",
+  "extensions": {
+    "colorMeta": {
+      "paper-50": { "role": "neutral", "displayName": "Warm Paper Lightest", "canonical": "#faf9f6", "tonalRamp": ["#1c1b17", "#2a2924", "#3a3832", "#6f6c61", "#a29e91", "#d4d0c4", "#e7e4dc", "#f4f2ec"] },
+      "ink-900": { "role": "neutral", "displayName": "Ink", "canonical": "#1c1b17", "tonalRamp": ["#121110", "#1c1b17", "#2a2924", "#3a3832", "#4f4d45", "#6f6c61", "#a29e91", "#d4d0c4"] },
+      "ink-500": { "role": "neutral", "displayName": "Ink Muted", "canonical": "#6f6c61", "tonalRamp": ["#1c1b17", "#2a2924", "#3a3832", "#4f4d45", "#6f6c61", "#a29e91", "#d4d0c4", "#e7e4dc"] },
+      "vermilion-600": { "role": "primary", "displayName": "Editor's Vermilion", "canonical": "#b0302a", "tonalRamp": ["#3a1210", "#5f211e", "#7a2420", "#942822", "#b0302a", "#c44a3a", "#e39385", "#f6ddd6"] },
+      "emerald-600": { "role": "tertiary", "displayName": "Emerald (verified)", "canonical": "#059669", "tonalRamp": ["#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Issue-level headlines and the masthead logotype only." },
+      "headline": { "displayName": "Headline", "purpose": "Panel titles such as 'Editor's notes'." },
+      "body": { "displayName": "Body", "purpose": "Form fields, descriptions, notes detail." },
+      "label": { "displayName": "Folio / Label", "purpose": "Editorial furniture: folios, section numbers, score, ticks." }
+    },
+    "shadows": [
+      { "name": "sheet", "value": "0 1px 0 rgba(28,27,23,0.08), 0 2px 6px rgba(28,27,23,0.1), 0 26px 60px -18px rgba(28,27,23,0.35)", "purpose": "The proof sheet only — the single elevated object on the light table." }
+    ],
+    "motion": [
+      { "name": "ease-state", "value": "150ms ease-out", "purpose": "Hover/focus state transitions on controls." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px", "purpose": "Two-column editor layout starts; below this the app uses the mobile Copy desk / Proof sheet tabs." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The resting CTA — ink fill, not red. Used for Print issue, Build my resume, and Tailor apply.",
+      "html": "<button class=\"ds-btn-primary\">Print issue</button>",
+      "css": ".ds-btn-primary { background: #1c1b17; color: #faf9f6; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 600; padding: 8px 14px; border: none; border-radius: 2px; display: inline-flex; align-items: center; gap: 6px; transition: background 150ms ease-out; cursor: pointer; } .ds-btn-primary:hover { background: #2a2924; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(176, 48, 42, 0.6); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action — paper with a hairline border, darkens on hover.",
+      "html": "<button class=\"ds-btn-ghost\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><path d=\"M14 2v6h6\"/></svg>.docx</button>",
+      "css": ".ds-btn-ghost { background: #faf9f6; color: #3a3832; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; padding: 8px 12px; border: 1px solid #d4d0c4; border-radius: 2px; display: inline-flex; align-items: center; gap: 6px; transition: background 150ms ease-out, color 150ms ease-out; cursor: pointer; } .ds-btn-ghost:hover { background: #f4f2ec; color: #1c1b17; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(176, 48, 42, 0.6); }"
+    },
+    {
+      "name": "Contents Entry",
+      "kind": "nav",
+      "refersTo": "contents-active",
+      "description": "The numbered sidebar section entry; the scroll-spy lights the active entry's vermilion rule.",
+      "html": "<div class=\"ds-contents\"><span class=\"ds-contents-num\">01</span><span class=\"ds-contents-label\">Work Experience</span></div><div class=\"ds-contents ds-contents-active\"><span class=\"ds-contents-num\">02</span><span class=\"ds-contents-label\">Education</span></div>",
+      "css": ".ds-contents { position: relative; display: flex; align-items: center; gap: 8px; padding: 6px 0 7px 16px; border-bottom: 1px solid rgba(231, 228, 220, 0.8); font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-contents::before { content: \"\"; position: absolute; left: 0; top: 4px; bottom: 4px; width: 2px; background: transparent; } .ds-contents-active::before { background: #b0302a; } .ds-contents-num { font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10px; font-variant-numeric: tabular-nums; color: #a29e91; } .ds-contents-active .ds-contents-num { color: #6f6c61; } .ds-contents-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #4f4d45; }"
+    },
+    {
+      "name": "Folio Label",
+      "kind": "custom",
+      "refersTo": "folio-label",
+      "description": "Editorial furniture: 10px uppercase mono running heads used across masthead, sidebar, and preview.",
+      "html": "<div class=\"ds-folio\">The current issue <span>·</span> Untitled issue</div>",
+      "css": ".ds-folio { display: flex; align-items: center; gap: 12px; font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6f6c61; } .ds-folio span { color: #a29e91; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-base",
+      "description": "Form field — paper, hairline border, vermilion focus ring.",
+      "html": "<label class=\"ds-label\" for=\"f\">Full name</label><input class=\"ds-input\" id=\"f\" placeholder=\"Jane Q. Public\">",
+      "css": ".ds-label { display: block; margin-bottom: 6px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 500; color: #4f4d45; } .ds-input { width: 100%; box-sizing: border-box; background: #faf9f6; color: #1c1b17; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; padding: 8px 12px; border: 1px solid #d4d0c4; border-radius: 2px; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-input::placeholder { color: #6f6c61; } .ds-input:focus { outline: none; border-color: rgba(176, 48, 42, 0.6); box-shadow: 0 0 0 2px rgba(176, 48, 42, 0.4); }"
+    },
+    {
+      "name": "Keyword Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Square-cornered tag for skills and tailor-detected keywords.",
+      "html": "<span class=\"ds-chip\">React</span><span class=\"ds-chip ds-chip-match\">Stakeholders</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; padding: 4px 10px; background: #f4f2ec; color: #3a3832; font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10.5px; font-weight: 500; border-radius: 2px; border: 1px solid transparent; } .ds-chip-match { background: #fbf0ec; color: #942822; border-color: rgba(176, 48, 42, 0.25); }"
+    },
+    {
+      "name": "Editor's Note Row",
+      "kind": "custom",
+      "refersTo": "note-row",
+      "description": "A needs-fix annotation in the editor's notes strip, marked with a vermilion proofreading mark.",
+      "html": "<div class=\"ds-note\"><span class=\"ds-note-mark\">✎</span><div><p class=\"ds-note-text\">Add a quantified result to this bullet.</p><p class=\"ds-note-detail\">e.g. lifted 30-day retention by 22%</p></div></div>",
+      "css": ".ds-note { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; } .ds-note-mark { font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10px; font-weight: 600; color: #b0302a; } .ds-note-text { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 500; color: #1c1b17; } .ds-note-detail { margin: 2px 0 0; font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10.5px; line-height: 1.4; color: #6f6c61; }"
+    },
+    {
+      "name": "Proof Sheet",
+      "kind": "custom",
+      "refersTo": "proof-sheet",
+      "description": "The single elevated object: the resume at true page size on the light table, with a mono proof folio beneath.",
+      "html": "<div class=\"ds-proof\"><div class=\"ds-sheet\">SHEET</div><div class=\"ds-folio\">Proof · Sample · Classic · A4</div></div>",
+      "css": ".ds-proof { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 34px 26px 56px; background-color: #e7e4dc; background-image: linear-gradient(rgba(28,27,23,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(28,27,23,0.02) 1px, transparent 1px); background-size: 26px 26px; } .ds-sheet { width: 240px; height: 340px; background: #faf9f6; outline: 1px solid rgba(28, 27, 23, 0.1); outline-offset: -1px; display: flex; align-items: center; justify-content: center; font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #a29e91; box-shadow: 0 1px 0 rgba(28,27,23,0.08), 0 2px 6px rgba(28,27,23,0.1), 0 26px 60px -18px rgba(28,27,23,0.35); } .ds-folio { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 240px; font-family: \"IBM Plex Mono\", ui-monospace, Menlo, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #6f6c61; } .ds-folio::before, .ds-folio::after { content: \"\"; height: 1px; flex: 1; background: #d4d0c4; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Small Publishing House",
+    "overview": "Resume Studio behaves like a tiny editorial office, not a dashboard. Every resume in progress is \"the current issue\"; the form is the copy desk; the preview is a proof sheet laid out on a light table; the health check reads as an editor's notes strip beneath it. The whole surface speaks the vocabulary of print — masthead, contents, folio, proof, held copy — so that building a resume feels like assembling a clean issue of a magazine.\n\nThe material is warm paper and ink, not SaaS gray. Neutrals are remapped from cool stone to a warm paper range (#faf9f6 lightest through #1c1b17 ink), rules and text are deep ink, and surfaces stay flat so the single lifted object — the proof sheet — carries all the depth. Hairline borders (1px), near-square corners (2px), 10px tabular section numbers, and uppercase mono folios give it the mechanical precision of a printed page.\n\nOne signal color runs the whole system: editor's vermilion, reserved strictly for the active section and anything that needs fixing. Its rarity is the point — when a section rule lights up red or an error mark appears, it means something specific. Everything else stays ink on paper, with emerald reserved for the two positive/verified states (ATS-safe, a clean sheet).",
+    "keyCharacteristics": [
+      "Publishing vocabulary on every surface: masthead, contents, folio, proof, held copy, editor's notes.",
+      "Warm paper + deep ink; flat chrome; only the proof sheet is elevated.",
+      "One vermilion signal, spent only on active and needs-fix states.",
+      "Serif display voice (Source Serif 4) against a quiet sans body (Inter) and mono furniture (IBM Plex Mono).",
+      "Hairline rules, near-square corners, tabular numbers — print mechanics over app chrome."
+    ],
+    "rules": [
+      { "name": "The One Vermilion Rule", "body": "Vermilion exists for exactly two jobs: marking the active section and flagging something that needs a fix. It never decorates static labels, folios, or resting buttons. Primary CTAs are ink, not red.", "section": "colors" },
+      { "name": "The Paper-Not-Gray Rule", "body": "Neutrals are warm paper, never cool gray. If a new surface looks neutral-gray, it is off-system.", "section": "colors" },
+      { "name": "The Folio Rule", "body": "Editorial furniture is always mono, 10px, uppercase, 0.14em tracking — never sans, never bold serif, never sentence-case. When it is not furniture, it is not a folio.", "section": "typography" }
+    ],
+    "dos": [
+      "Do keep vermilion to the active section, needs-fix states, masthead mark, and focus/active highlights.",
+      "Do set resting primary CTAs to ink, not red.",
+      "Do use mono 10px uppercase folios for all editorial furniture.",
+      "Do let the proof sheet be the only elevated object; keep chrome flat on paper.",
+      "Do reach for warm paper neutrals and deep ink before any gray.",
+      "Do keep readable text at ink-muted (#6f6c61) or darker — placeholders, hints, and folios included."
+    ],
+    "donts": [
+      "Don't paint static captions, labels, or ticking folio marks vermilion.",
+      "Don't introduce a second red hue (Tailwind red-*) for destructive actions — route them through the vermilion ramp.",
+      "Don't round corners past 6px on app chrome; the sheet itself stays unrounded.",
+      "Don't put shadows under panels, cards, or the sidebar — depth belongs to the proof sheet.",
+      "Don't replace the folio vocabulary with generic dashboard labels ('status bar', 'toolbar', 'preview panel')."
+    ]
+  }
+}
