@@ -33,10 +33,6 @@ import {
   GoldCutTemplate,
 } from "./graphical-pack";
 import {
-  PlinthTemplate,
-  InkwellTemplate,
-} from "./studio-pack";
-import {
   GiltTemplate,
   BevelTemplate,
   MastTemplate,
@@ -195,26 +191,6 @@ export const TEMPLATES: TemplateDef[] = [
     photo: true,
     dark: true,
     component: BoardroomTemplate,
-  },
-  {
-    key: "plinth",
-    label: "Letterhead",
-    description: "Clean name and contact as a designed letterhead, then work plus a quiet sidebar.",
-    suitFor: ["Creative", "Combination", "Executive"],
-    atsSafeVariant: true,
-    photo: false,
-    dark: false,
-    component: PlinthTemplate,
-  },
-  {
-    key: "inkwell",
-    label: "Inkwell",
-    description: "Ink frame around a white panel. Portrait, work, and skills like a printed folio.",
-    suitFor: ["Creative", "Combination", "Executive"],
-    atsSafeVariant: false,
-    photo: true,
-    dark: false,
-    component: InkwellTemplate,
   },
   {
     key: "classic",
@@ -563,8 +539,6 @@ const DEFAULT_ACCENTS: Record<TemplateKey, string> = {
   "polaroid-burst": "#e85d04",
   "forest-geo": "#2d6a32",
   "gold-cut": "#c9a227",
-  plinth: "#0f766e",
-  inkwell: "#1e3a5f",
   gilt: "#c9a876",
   bevel: "#f2a0b5",
   mast: "#5c6650",

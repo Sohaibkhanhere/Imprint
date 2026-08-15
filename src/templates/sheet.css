@@ -56,6 +56,18 @@
   object-position: center 18%;
 }
 
+.resume-sheet .rs-portrait-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 18%, #edf0f2);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 1.35em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
 .resume-sheet .sheet-name {
   font-family: var(--font-display);
   color: var(--ink, #23211c);
@@ -259,13 +271,16 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px 12px;
+  flex-wrap: wrap;
 }
 
 .resume-sheet .t-role {
   font-size: var(--role-size, 12px);
   font-weight: 700;
   color: var(--ink, #23211c);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .resume-sheet .t-dates {
@@ -273,6 +288,7 @@
   font-size: var(--meta-size, 10.5px);
   color: #6b6559;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .resume-sheet .t-org {
@@ -332,13 +348,30 @@
   color: var(--ink, #23211c);
   background: color-mix(in srgb, var(--accent) 10%, #fff);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, #fff);
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .resume-sheet .t-cert,
 .resume-sheet .t-award,
 .resume-sheet .t-pres,
-.resume-sheet .t-ref {
+.resume-sheet .t-ref,
+.resume-sheet .t-entry:has(> .t-role):has(> .t-meta) {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 12px;
+  flex-wrap: wrap;
   margin-bottom: var(--s0, 4px);
+}
+
+.resume-sheet .t-cert .t-meta,
+.resume-sheet .t-award .t-meta,
+.resume-sheet .t-pres .t-meta,
+.resume-sheet .t-ref .t-meta,
+.resume-sheet .t-entry:has(> .t-role):has(> .t-meta) > .t-meta {
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .resume-sheet .t-langs {
@@ -844,7 +877,10 @@
 .tpl-photo-sidebar .ps-side .t-skills,
 .tpl-photo-sidebar .ps-side .t-langs .t-lang,
 .tpl-photo-sidebar .ps-side .t-cert,
-.tpl-photo-sidebar .ps-side .t-meta {
+.tpl-photo-sidebar .ps-side .t-meta,
+.tpl-photo-sidebar .ps-side .t-role,
+.tpl-photo-sidebar .ps-side .t-org,
+.tpl-photo-sidebar .ps-side .t-dates {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 4px;
@@ -944,7 +980,10 @@
 .tpl-photo-sidebar[data-ats="true"] .ps-side .t-skills,
 .tpl-photo-sidebar[data-ats="true"] .ps-side .t-langs .t-lang,
 .tpl-photo-sidebar[data-ats="true"] .ps-side .t-cert,
-.tpl-photo-sidebar[data-ats="true"] .ps-side .t-meta {
+.tpl-photo-sidebar[data-ats="true"] .ps-side .t-meta,
+.tpl-photo-sidebar[data-ats="true"] .ps-side .t-role,
+.tpl-photo-sidebar[data-ats="true"] .ps-side .t-org,
+.tpl-photo-sidebar[data-ats="true"] .ps-side .t-dates {
   color: var(--ink);
 }
 .tpl-photo-sidebar[data-ats="true"] .ps-side .t-head,
@@ -1811,7 +1850,9 @@
 .tpl-colored-sidebar .cl-item,
 .tpl-colored-sidebar .cl-side .t-skills,
 .tpl-colored-sidebar .cl-side .t-langs .t-lang,
-.tpl-colored-sidebar .cl-side .t-meta {
+.tpl-colored-sidebar .cl-side .t-meta,
+.tpl-colored-sidebar .cl-side .t-org,
+.tpl-colored-sidebar .cl-side .t-dates {
   font-size: 10.5px;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 4px;
@@ -1962,7 +2003,9 @@
 .tpl-colored-sidebar[data-ats="true"] .cl-item,
 .tpl-colored-sidebar[data-ats="true"] .cl-side .t-skills,
 .tpl-colored-sidebar[data-ats="true"] .cl-side .t-langs .t-lang,
-.tpl-colored-sidebar[data-ats="true"] .cl-side .t-meta {
+.tpl-colored-sidebar[data-ats="true"] .cl-side .t-meta,
+.tpl-colored-sidebar[data-ats="true"] .cl-side .t-org,
+.tpl-colored-sidebar[data-ats="true"] .cl-side .t-dates {
   color: var(--ink);
 }
 .tpl-colored-sidebar[data-ats="true"] .cl-side .t-chip {

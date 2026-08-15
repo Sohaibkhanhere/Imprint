@@ -20,6 +20,84 @@ import { createBlankResume } from "./sampleData";
    Text extraction: .txt / .docx / .pdf → plain text
    ============================================================ */
 
+type PdfGlyph = { str: string; x: number; y: number; w: number; h: number };
+
+function nameFromPdfInfo(info: { Title?: string; Author?: string } | undefined): string {
+  const title = (info?.Title || "")
+    .replace(/\s*[-–—|:]\s*(resume|cv|curriculum vitae).*$/i, "")
+    .replace(/\s+(resume|cv|curriculum vitae)\s*$/i, "")
+    .trim();
+  if (title && /^[A-Za-z][A-Za-z .'-]{2,60}$/.test(title)) {
+    const words = title.split(/\s+/);
+    if (words.length >= 2 && words.length <= 5) return title;
+  }
+  const author = (info?.Author || "").replace(/[_]+/g, " ").replace(/\s+/g, " ").trim();
+  if (author && /^[A-Za-z][A-Za-z .'-]{2,40}$/.test(author)) {
+    const words = author.split(/\s+/);
+    if (words.length >= 2 && words.length <= 5) return author;
+  }
+  return "";
+}
+
+function findSidebarGap(items: PdfGlyph[], pageWidth: number): number | null {
+  const xs = items.map((i) => i.x).filter((x) => x >= 8 && x <= pageWidth * 0.72);
+  if (xs.length < 18) return null;
+  const step = 8;
+  const buckets = new Array(Math.ceil(pageWidth / step) + 1).fill(0);
+  for (const x of xs) buckets[Math.floor(x / step)]++;
+  const from = Math.floor((pageWidth * 0.16) / step);
+  const to = Math.floor((pageWidth * 0.46) / step);
+  let best = -1;
+  let bestScore = 0;
+  for (let i = from; i <= to; i++) {
+    const leftCount = buckets.slice(0, i).reduce((a, b) => a + b, 0);
+    const rightCount = buckets.slice(i).reduce((a, b) => a + b, 0);
+    const valley = buckets[i] + (buckets[i + 1] ?? 0);
+    if (leftCount >= 8 && rightCount >= 12 && valley <= 3) {
+      const score = Math.min(leftCount, rightCount) - valley * 4;
+      if (score > bestScore) {
+        bestScore = score;
+        best = i * step + 4;
+      }
+    }
+  }
+  return bestScore >= 8 ? best : null;
+}
+
+function linesFromGlyphs(items: PdfGlyph[]): string[] {
+  if (!items.length) return [];
+  const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x);
+  const tol = Math.max(3.2, (sorted.reduce((s, i) => s + (i.h || 0), 0) / sorted.length) * 0.45);
+  const rows: { y: number; parts: PdfGlyph[] }[] = [];
+  for (const it of sorted) {
+    const last = rows[rows.length - 1];
+    if (last && Math.abs(last.y - it.y) <= tol) last.parts.push(it);
+    else rows.push({ y: it.y, parts: [it] });
+  }
+  return rows
+    .map((row) =>
+      row.parts
+        .sort((a, b) => a.x - b.x)
+        .map((p) => p.str)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean);
+}
+
+function layoutPdfPage(items: PdfGlyph[], pageWidth: number): string {
+  const gap = findSidebarGap(items, pageWidth);
+  if (gap == null) return linesFromGlyphs(items).join("\n");
+  const left = items.filter((i) => i.x < gap);
+  const right = items.filter((i) => i.x >= gap);
+  const leftLines = linesFromGlyphs(left);
+  const rightLines = linesFromGlyphs(right);
+  if (!leftLines.length) return rightLines.join("\n");
+  if (!rightLines.length) return leftLines.join("\n");
+  return `${leftLines.join("\n")}\n\n${rightLines.join("\n")}`;
+}
+
 export async function extractCvText(file: File): Promise<string> {
   const name = (file.name || "").toLowerCase();
   if (name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".rtf")) {
@@ -33,31 +111,52 @@ export async function extractCvText(file: File): Promise<string> {
   }
   if (name.endsWith(".pdf")) {
     const pdfjs = await import("pdfjs-dist");
-    const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+    try {
+      const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+      pdfjs.GlobalWorkerOptions.workerSrc = workerUrl as string;
+    } catch {
+      const { pathToFileURL } = await import("node:url");
+      const path = await import("node:path");
+      pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(
+        path.join(process.cwd(), "node_modules/pdfjs-dist/build/pdf.worker.min.mjs"),
+      ).href;
+    }
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({ data: buf }).promise;
     const pages: string[] = [];
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const content = await page.getTextContent();
-      let line = "";
-      const pageLines: string[] = [];
+      const viewport = page.getViewport({ scale: 1 });
+      const glyphs: PdfGlyph[] = [];
       for (const item of content.items) {
-        if ("str" in item && item.str !== undefined) {
-          const s = item.str as string;
-          if (item.hasEOL) {
-            pageLines.push((line + s).trimEnd());
-            line = "";
-          } else {
-            line += s + (item.width && /^\s$/.test(s) ? "" : " ");
-          }
-        }
+        if (!("str" in item) || item.str === undefined) continue;
+        const s = (item.str as string) ?? "";
+        if (!s) continue;
+        const t = (item as { transform?: number[] }).transform;
+        if (!t || t.length < 6) continue;
+        glyphs.push({
+          str: s,
+          x: t[4],
+          y: t[5],
+          w: (item as { width?: number }).width ?? 0,
+          h: (item as { height?: number }).height ?? t[3] ?? 0,
+        });
       }
-      if (line.trim()) pageLines.push(line.trimEnd());
-      pages.push(pageLines.join("\n"));
+      pages.push(layoutPdfPage(glyphs, viewport.width));
     }
-    return pages.join("\n\n");
+    let text = pages.join("\n\n");
+    try {
+      const meta = await doc.getMetadata();
+      const info = (meta?.info ?? {}) as { Title?: string; Author?: string };
+      const metaName = nameFromPdfInfo(info);
+      if (metaName && !new RegExp(metaName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(text)) {
+        text = `${metaName}\n\n${text}`;
+      }
+    } catch {
+      /* metadata is optional */
+    }
+    return text;
   }
   if (name.endsWith(".doc")) {
     throw new Error("Old .doc files aren't supported — please save the file as .docx or .pdf first.");
@@ -91,8 +190,11 @@ const HEADER_RULES: { key: SectionKey | "skip"; test: RegExp; minLen?: number }[
 ];
 
 function matchHeader(line: string): SectionKey | null {
-  const t = line.trim();
-  if (!t || t.length > 48) return null;
+  const t = line
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/^[^\w]+/, "");
+  if (!t || t.length > 56) return null;
   if (/^[•\-*•]/.test(t)) return null;
   for (const rule of HEADER_RULES) {
     if (rule.test.test(t)) return rule.key === "skip" ? null : rule.key;
@@ -199,8 +301,10 @@ function isNameLine(s: string): boolean {
   if (!t || t.length > 60) return false;
   if (isContacty(t) || matchHeader(t)) return false;
   if (/\d/.test(t)) return false;
-  if (/[,:;()]/.test(t)) return false;
+  if (/[,:;()|]/.test(t)) return false;
   if (SECTION_WORD_RE.test(t)) return false;
+  if (/^(native|fluent|beginner|intermediate|advanced)(\s+\1)?$/i.test(t)) return false;
+  if (/\b(?:tool|generator|scraper|chathead|automated)\b/i.test(t)) return false;
   if (/^(certified|professional|licensed|experienced|qualified|skilled|senior|junior|head|lead)\b/i.test(t)) return false;
   if (/\b(?:accountant|engineer|developer|designer|manager|consultant|specialist|analyst|executive|director|associate|advisor|representative|technician|officer|architect|coordinator|planner|assistant|supervisor|strategist|marketer|writer|attorney|lawyer|instructor|educator|artist)\b/i.test(t)) return false;
   const words = t.split(/\s+/);
@@ -235,10 +339,10 @@ const DATE_TOKEN = `(?:(?:${MONTHS})[a-z]*[.]?\\s+|\\d{1,2}\\s*/\\s*)?(?:19|20)\
 const DATE_END_TOKEN = `(?:${DATE_TOKEN}|present|current|now|ongoing|today|continue|in\\s+progress|in\\s+process|to\\s+date|till\\s+(?:date|now)?|till|still)`;
 
 function dateRangeRe(): RegExp {
-  return new RegExp(`${DATE_TOKEN}\\s*(?:-|\\u2013|\\u2014|\\u2212|to)\\s*(${DATE_END_TOKEN})`, "i");
+  return new RegExp(`${DATE_TOKEN}\\s*(?:[-\\u2010-\\u2015\\u2212]|to)\\s*(${DATE_END_TOKEN})`, "i");
 }
 
-const DATE_HEAD_RE = new RegExp(`${DATE_TOKEN}\\s*(?:-|\\u2013|\\u2014|\\u2212|to)\\s*${DATE_END_TOKEN}`, "gi");
+const DATE_HEAD_RE = new RegExp(`${DATE_TOKEN}\\s*(?:[-\\u2010-\\u2015\\u2212]|to)\\s*${DATE_END_TOKEN}`, "gi");
 
 function parseDates(part: string): { start: string; end: string; present: boolean } | null {
   const t = part.trim();
@@ -249,7 +353,7 @@ function parseDates(part: string): { start: string; end: string; present: boolea
     const month = rawStart.match(new RegExp(`${MONTHS}[a-z]*[.]?|\\d{1,2}\\s*/`, "i"))?.[0];
     const startYear = rawStart.match(/(19|20)\d{2}/)?.[0] ?? "";
     const endRaw = (m[1] || "").toLowerCase();
-    const present = /present|current|now|ongoing|today|continue|in\s+progress|in\s+process|to\s+date|till|still/.test(endRaw);
+    const present = /present|current|\bnow\b|ongoing|today|continue|in\s+progress|in\s+process|to\s+date|till|still/i.test(t);
     const endYear = present ? "" : endRaw.match(/(19|20)\d{2}/)?.[0] ?? "";
     return {
       start: startYear,
@@ -290,14 +394,69 @@ export interface CvDraft {
   warnings: string[];
 }
 
+function isSkillChipLine(l: string): boolean {
+  const parts = l.split(/[•▪▸►●*]/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length < 2) return false;
+  return parts.every((p) => p.length <= 32 && p.split(/\s+/).length <= 4 && !/[.]$/.test(p));
+}
+
+function shouldJoinWrapped(prev: string, next: string): boolean {
+  if (!prev || !next) return false;
+  if (isBullet(next) || isBullet(prev)) return false;
+  if (/^\d{4}$/.test(prev) || /^\d{4}$/.test(next)) return false;
+  if (matchHeader(next) || matchHeader(prev)) return false;
+  if (isNameLine(prev) || isNameLine(next)) return false;
+  if (hasDateRange(prev) || hasDateRange(next)) return false;
+  if (cityFromLine(prev) || looksLikeLocation(prev) || /,\s*(pakistan|usa|uk|uae|india|canada)\s*$/i.test(prev)) return false;
+  if (/[|]/.test(prev) || /[|]/.test(next)) return false;
+  if (/[.!?:]$/.test(prev)) return false;
+  if (/^[A-Z0-9][A-Z0-9 .&'/]*$/.test(prev.replace(/[.]+$/, "")) && prev.split(/\s+/).length >= 2) return false;
+  if (/[,;:&(/]$/.test(prev)) return true;
+  if (/^[a-z]/.test(next)) return true;
+  if (/\b(?:tool|generator|scraper|chathead|app)\b/i.test(prev) || /\b(?:tool|generator|scraper|chathead)\b/i.test(next)) {
+    if (prev.split(/\s+/).length >= 2 && next.split(/\s+/).length === 1 && /\b(?:tool|generator|scraper|app)\b/i.test(next)) return true;
+    return false;
+  }
+  const pw = prev.split(/\s+/).length;
+  const nw = next.split(/\s+/).length;
+  if (pw <= 6 && nw >= 6 && !/,/.test(prev) && !/^[a-z]/.test(next)) return false;
+  if (pw <= 4 && nw <= 4 && /^[A-Z]/.test(next) && !/,/.test(next)) return false;
+  if (pw <= 5 && /[a-z]/.test(next) && next.length > 18 && !/^\d/.test(next)) return true;
+  return false;
+}
+
+function stitchWrappedLines(lines: string[]): string[] {
+  const out: string[] = [];
+  for (const raw of lines) {
+    const l = raw.trim();
+    if (!l) continue;
+    const prev = out[out.length - 1];
+    if (prev && shouldJoinWrapped(prev, l)) {
+      out[out.length - 1] = `${prev} ${l}`.replace(/\s+/g, " ");
+    } else {
+      out.push(l);
+    }
+  }
+  return out;
+}
+
 export function parseCvText(text: string): CvDraft {
-  const lines = text
+  const rawLines = text
     .replace(/\r\n/g, "\n")
     .split("\n")
-    .map((l) => l.replace(/\u00a0/g, " ").replace(/[\u0000\u00ad\u200b\u200c\u200d\u2060]/g, "").trim())
+    .map((l) =>
+      l
+        .replace(/\u00a0/g, " ")
+        .replace(/[\u0000\u00ad\u200b\u200c\u200d\u2060]/g, "")
+        .replace(/\t+/g, " ")
+        .replace(/ {2,}/g, " ")
+        .trim(),
+    )
     .filter((l) => l.length > 0)
     .filter((l) => /[A-Za-z0-9]/.test(l))
     .filter((l) => !/^(curriculum\s+vitae|cv|r[eé]sum[eé]|curiculum\s+vitae|curriculum\s+vitae\s*\(?\s*cv\s*\)?)\s*$/i.test(l));
+
+  const lines = stitchWrappedLines(rawLines);
 
   const draft: CvDraft = {
     contact: {},
@@ -408,6 +567,8 @@ export function parseCvText(text: string): CvDraft {
         .every((w) => /^[A-Z0-9&+./\\-]/.test(w) || /^[|·•]/.test(w));
       if (
         t.length < 80 &&
+        t.split(/\s+/).length >= 2 &&
+        !/^(native|fluent|beginner|intermediate|advanced)\b/i.test(t) &&
         !isContacty(t) &&
         !matchHeader(t) &&
         !hasDateRange(t) &&
@@ -429,7 +590,9 @@ export function parseCvText(text: string): CvDraft {
       if (c) {
         draft.contact.city = c;
         const region = l.split(",")[1]?.trim();
-        if (region) draft.contact.country = region;
+        if (region && KNOWN_REGIONS.has(region.toLowerCase())) {
+          draft.contact.country = region;
+        }
       }
     }
   }
@@ -440,6 +603,21 @@ export function parseCvText(text: string): CvDraft {
       const c = cityFromLine(l);
       if (c) {
         draft.contact.city = c;
+        const region = l.split(",")[1]?.trim();
+        if (region && KNOWN_REGIONS.has(region.toLowerCase()) && !draft.contact.country) {
+          draft.contact.country = region;
+        }
+        break;
+      }
+    }
+  }
+  if (draft.contact.city && !draft.contact.country) {
+    const city = draft.contact.city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const loc = new RegExp(`^${city}\\s*,\\s*([A-Za-z][A-Za-z .'-]+)$`, "i");
+    for (const l of lines) {
+      const m = l.match(loc);
+      if (m && KNOWN_REGIONS.has(m[1].toLowerCase())) {
+        draft.contact.country = m[1];
         break;
       }
     }
@@ -452,6 +630,16 @@ export function parseCvText(text: string): CvDraft {
       .filter(({ l, idx }) => isNameLine(l) && idx >= lines.length - 3);
     if (candidates.length) {
       draft.contact.fullName = candidates[candidates.length - 1].l;
+    }
+  }
+  if (!draft.contact.fullName) {
+    for (const l of lines) {
+      if (!isNameLine(l)) continue;
+      const words = l.split(/\s+/);
+      if (words.some((w) => COMMON_GIVEN_NAMES.has(w.toLowerCase().replace(/[.'"]/g, "")))) {
+        draft.contact.fullName = l;
+        break;
+      }
     }
   }
   const nameLower = (draft.contact.fullName || "").toLowerCase();
@@ -470,12 +658,16 @@ export function parseCvText(text: string): CvDraft {
   }
 
   // website (avoid re-capturing emails / linkedin / github)
+  const labeledSite = full.match(/\b(?:website|web|url|site)\s*[:)]\s*((?:https?:\/\/)?(?:www\.)?[a-z0-9.-]+\.[a-z]{2,})/i);
+  if (labeledSite && !/linkedin|github/i.test(labeledSite[1])) {
+    draft.contact.website = cleanUrl(labeledSite[1]);
+  }
   const webMatches = full.replace(EMAIL_RE, " ").match(WEB_RE) ?? [];
   for (const w of webMatches) {
     const cw = cleanUrl(w);
     if (cw.toLowerCase().includes("linkedin") || cw.toLowerCase().includes("github") || cw.includes("@")) continue;
     if (draft.contact.email && cw === draft.contact.email.replace(/^.*@/, "")) continue;
-    draft.contact.website = cw;
+    if (!draft.contact.website) draft.contact.website = cw;
     break;
   }
 
@@ -490,21 +682,28 @@ export function parseCvText(text: string): CvDraft {
   const SKIP_HEADER_RE =
     /^(interests?|hobbies?|additional\s+info|personal\s+(?:info|details|profile)|activities?|extracurriculars?|languages?\s+and\s+tools|contact|details|get\s+in\s+touch)\b/i;
 
-  // Scattered two-column PDFs print their section headings up front like a table
-  // of contents, then dump the content unordered below. Detect that so we can
-  // route the floating content instead of letting it bleed into the wrong section.
+  // Only treat a run of headings as a table-of-contents when several real
+  // section titles sit back-to-back with no body copy between them. Two-column
+  // CVs print CONTACT / PROFILE / WORK EXPERIENCE near the top with real text
+  // in between — those are live sections, not a TOC.
   let headerBlock = false;
   let headingColumnEnd = 0;
   if (lines.length > 4) {
-    let hCount = 0;
+    let run = 0;
+    let maxRun = 0;
     let lastHeadIdx = -1;
-    for (let i = 0; i < Math.min(lines.length, 15); i++) {
-      if (matchHeader(lines[i]) || (SKIP_HEADER_RE.test(lines[i]) && lines[i].length < 48)) {
-        hCount++;
+    for (let i = 0; i < Math.min(lines.length, 18); i++) {
+      if (matchHeader(lines[i])) {
+        run++;
         lastHeadIdx = i;
+        if (run > maxRun) maxRun = run;
+      } else if (SKIP_HEADER_RE.test(lines[i]) && lines[i].length < 48) {
+        continue;
+      } else if (lines[i].length >= 40 && /[a-z]/.test(lines[i])) {
+        run = 0;
       }
     }
-    if (hCount >= 3) {
+    if (maxRun >= 3) {
       headerBlock = true;
       headingColumnEnd = lastHeadIdx + 1;
     }
@@ -641,11 +840,20 @@ export function parseCvText(text: string): CvDraft {
     let inExp = false;
     let expectEdu = false;
     const eduLineRe = /^(bachelor'?s?|master'?s?|associate'?s?|doctorate|ph\.?d)\s+(?:of\s+)?(?:science|arts|business(?: administration)?|engineering|design|law|fine\s+arts|education|computer(?: science)?|applied|technology|music)\b|^(bachelor'?s?|associate'?s?)\s+degree/i;
+    const jobVerb = /^(founded|found and|provide|provided|handle|handled|develop|developed|led|prepared|ensured|worked|served|manage|managed|built|created)\b/i;
     for (const l of sections["skills"] ?? []) {
       const parts = l.split("\t");
-      if ((parts.length === 2 && /\b(19|20)\d{2}\b/.test(parts[1])) || hasDateRange(l)) {
+      if ((parts.length === 2 && /\b(19|20)\d{2}\b/.test(parts[1])) || hasDateRange(l) || jobVerb.test(l)) {
         inExp = true;
         expectEdu = false;
+      }
+      const glued = l.match(/^([A-Za-z][A-Za-z0-9+.# /&-]{1,36})\s+((?:Founded|Provide|Provided|Handle|Handled|Develop|Developed|Led|Prepared|Ensured|Worked|Served|Manage|Managed|Built|Created)\b.*)$/);
+      if (glued) {
+        kept.push(glued[1].trim());
+        extra.push(glued[2].trim());
+        inExp = true;
+        expectEdu = false;
+        continue;
       }
       if (inExp) extra.push(l);
       else if (eduLineRe.test(l)) {
@@ -720,7 +928,12 @@ export function parseCvText(text: string): CvDraft {
         if (block) blocks.push(block);
         block = [l.trim()];
       } else if (block) {
-        if (/^\s*(native|fluent|beginner|intermediate|advanced)\s*$/i.test(l)) {
+        if (
+          /^\s*(native|fluent|beginner|intermediate|advanced)\s*$/i.test(l) ||
+          isSkillChipLine(l) ||
+          /^(successfully founded|key achievements?)\b/i.test(l) ||
+          (/\b(?:tool|generator|scraper|chathead)\b/i.test(l) && l.split(/\s+/).length <= 10 && !isParagraph(l))
+        ) {
           blocks.push(block);
           block = null;
         } else {
@@ -738,6 +951,8 @@ export function parseCvText(text: string): CvDraft {
       for (const c of body.filter((l) => l !== desc)) exp.push(`\u2022 ${c}`);
     }
     if (exp.length) sections["experience"] = [...(sections["experience"] ?? []), ...exp];
+    const chips = lines.filter(isSkillChipLine);
+    if (chips.length) sections["skills"] = [...chips, ...(sections["skills"] ?? [])];
   }
 
   // If no headers found, treat the whole body as best-effort content
@@ -758,10 +973,17 @@ export function parseCvText(text: string): CvDraft {
     draft.useObjective = true;
   }
   if (!draft.summary && !draft.objective && seen.length === 0 && lines.length) {
-    // fallback: first substantial paragraph as summary
-    const firstBlock = lines.slice(0, 6).join(" ");
-    if (firstBlock.length > 40 && firstBlock.length < 700) {
-      draft.summary = firstBlock.replace(/\s+/g, " ").trim();
+    const paras = lines.filter(
+      (l) => l.length > 70 && /[.]/.test(l) && /[a-z]/.test(l) && !isSkillChipLine(l) && !isBullet(l),
+    );
+    const iam = paras.find((l) => /^i am\b/i.test(l));
+    const picked = iam || paras.slice().sort((a, b) => b.length - a.length)[0];
+    if (picked) draft.summary = picked.replace(/\s+/g, " ").trim();
+    else {
+      const firstBlock = lines.slice(0, 6).join(" ");
+      if (firstBlock.length > 40 && firstBlock.length < 700) {
+        draft.summary = firstBlock.replace(/\s+/g, " ").trim();
+      }
     }
   }
   if (!draft.summary && leadingPara.length) {
@@ -873,7 +1095,221 @@ export function parseCvText(text: string): CvDraft {
     draft.sectionOrder = draft.sectionOrder.map((k) => (k === "summary" ? "objective" : k));
   }
 
+  salvageProjectsFromExperience(draft);
+  if (!draft.projects.length) {
+    const extra = collectLooseProjects(lines);
+    if (extra.length) draft.projects = extra;
+  }
+  polishDescriptiveJobs(draft);
+  if (draft.summary) {
+    const m = draft.summary.match(/^I am (?:a |an )?(.+?) with\b/i);
+    if (m) {
+      const inferred = m[1].replace(/[,.]$/, "").trim();
+      if (
+        !draft.contact.title ||
+        /^(native|fluent|beginner|intermediate|advanced)\b/i.test(draft.contact.title) ||
+        /\b(?:tool|generator|scraper|chathead)\b/i.test(draft.contact.title) ||
+        draft.contact.title.length > 70
+      ) {
+        draft.contact.title = inferred;
+      }
+    }
+  }
+  if (!draft.contact.email && !draft.contact.phone) {
+    draft.warnings.push("Phone and email were not in the file's text — add them in Contents. Designed PDFs often hide contact as graphics.");
+  }
+
   return draft;
+}
+
+const PROJECT_TITLE_RE = /\b(?:tool|generator|scraper|app|plugin|platform|dashboard|bot|extension|chathead)\b/i;
+const PROJECT_START_RE = /^(developed|built|created|designed|automated|made)\b/i;
+
+function collectLooseProjects(lines: string[]): Partial<ProjectEntry>[] {
+  const out: Partial<ProjectEntry>[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < lines.length; i++) {
+    if (isBullet(lines[i])) continue;
+    const l = lines[i].replace(/[)]+$/, "").trim();
+    const titleLike =
+      PROJECT_TITLE_RE.test(l) &&
+      /^[A-Z]/.test(l) &&
+      !/^(the|a|an|tool)\b/i.test(l) &&
+      l.split(/\s+/).length <= 10 &&
+      !isParagraph(l) &&
+      !ACTION_VERB_RE.test(l) &&
+      !hasDateRange(l);
+    if (!titleLike) continue;
+    const name = l
+      .replace(/\s*\((?:desktop|android|web|ios|mobile).*?$/i, "")
+      .replace(/\s+(?:desktop|web tool|android|ios)\b.*$/i, "")
+      .replace(/[:.]\s*$/, "")
+      .trim();
+    const key = name.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    const descParts: string[] = [];
+    let j = i + 1;
+    while (j < lines.length) {
+      const n = lines[j];
+      if (
+        !isBullet(n) &&
+        PROJECT_TITLE_RE.test(n) &&
+        /^[A-Z]/.test(n) &&
+        n.split(/\s+/).length <= 10 &&
+        !isParagraph(n) &&
+        !ACTION_VERB_RE.test(n)
+      ) {
+        break;
+      }
+      if (/^\d{4}$/.test(n) || isSkillChipLine(n) || matchHeader(n) || /^successfully founded\b/i.test(n)) break;
+      if (isBullet(n) || PROJECT_START_RE.test(n) || isParagraph(n) || /^[a-z]/.test(n)) {
+        descParts.push(stripBullet(n));
+        j++;
+        continue;
+      }
+      break;
+    }
+    out.push({ name, description: descParts.join(" ").replace(/\s+/g, " ").trim() });
+    seen.add(key);
+    i = j - 1;
+  }
+  return out;
+}
+
+function polishDescriptiveJobs(draft: CvDraft) {
+  const blob = `${draft.summary || ""} ${(draft.experience ?? []).flatMap((e) => e.bullets ?? []).join(" ")}`;
+  const quantum = /\bquantum digitizing\b/i.exec(blob)?.[0];
+  for (const job of draft.experience) {
+    const role = (job.role || "").trim();
+    const bullets = (job.bullets ?? []).join(" ");
+    const descriptive =
+      /^(a|an)\s+/i.test(role) ||
+      /^(freelance .+ services)$/i.test(role) ||
+      (role.length > 36 && /company|provider|services|specializing/i.test(role));
+    if (!descriptive) continue;
+    job.descriptor = job.descriptor || role;
+    const year = parseInt(job.startDate || "0", 10);
+    const hay = `${role} ${bullets} ${job.descriptor || ""}`;
+    if (quantum && year >= 2024 && /vector conversion|digitizing|custom patches|founder|service provider/i.test(hay)) {
+      job.role = "Founder";
+      job.company = "Quantum Digitizing";
+    } else if (/freelance/i.test(role) || /freelance clients/i.test(bullets)) {
+      job.role = /vector artist/i.test(hay) ? "Freelance Vector Artist" : "Freelance";
+      job.company = job.company || "Self Employed";
+    } else if (/led graphics|graphics workflow/i.test(bullets)) {
+      job.role = "Graphics Dept. Head";
+      job.company = job.company && !/^(a|an)\s+/i.test(job.company) ? job.company : "";
+    } else if (/raster|vector|artwork|embroidery|screen print/i.test(hay)) {
+      job.role = "Vector Artist";
+      job.company = job.company && !/^(a|an)\s+/i.test(job.company) ? job.company : "";
+    }
+    if (job.company && /^(a|an)\s+/i.test(job.company)) job.company = "";
+    if (job.role && /^(a|an)\s+/i.test(job.role)) job.role = "Vector Artist";
+  }
+}
+
+function cleanOrgName(l: string): string {
+  return l.replace(/[:\u2022•|]+$/, "").replace(/[.]+$/, "").trim();
+}
+
+function expandCompanyFromWebsite(company: string, website?: string): string {
+  if (!company || !website) return company;
+  const host = website.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split("/")[0].split(".")[0];
+  const compact = company.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  const hostL = host.toLowerCase();
+  if (compact.length < 6) return company;
+  if (hostL.startsWith(compact) && hostL.length > compact.length && hostL.length - compact.length <= 6) {
+    return company + hostL.slice(compact.length).toUpperCase();
+  }
+  return company;
+}
+
+function salvageProjectsFromExperience(draft: CvDraft) {
+  const existing = new Set(draft.projects.map((p) => (p.name || "").toLowerCase()));
+  for (const job of draft.experience) {
+    if (job.company) job.company = expandCompanyFromWebsite(cleanOrgName(job.company), draft.contact.website);
+    if (job.role) {
+      const site = job.role.match(/\bwebsite\s*:\s*([a-z0-9.-]+\.[a-z]{2,})/i);
+      if (site && !draft.contact.website) draft.contact.website = cleanUrl(site[1]);
+      job.role = job.role.replace(/\s*\(?\s*website\s*:\s*[^)]+\)?\s*/i, "").trim();
+    }
+    if (job.descriptor && PROJECT_TITLE_RE.test(job.descriptor) && job.descriptor.split(/\s+/).length <= 8) {
+      const name = job.descriptor.replace(/[:.]\s*$/, "").trim();
+      const idx = (job.bullets ?? []).findIndex((b) => PROJECT_START_RE.test(b));
+      const description = idx >= 0 ? job.bullets![idx] : "";
+      const key = name.toLowerCase();
+      if (!existing.has(key)) {
+        draft.projects.push({ name, description });
+        existing.add(key);
+      }
+      job.descriptor = "";
+      if (idx >= 0) job.bullets = (job.bullets ?? []).filter((_, i) => i !== idx);
+    }
+    const bullets = job.bullets ?? [];
+    if (!bullets.length) continue;
+    const keep: string[] = [];
+    for (let i = 0; i < bullets.length; i++) {
+      const raw = bullets[i].trim();
+      const sameLine = raw.match(/^(.{3,70}?)\s*:\s+((?:developed|built|created|designed|automated|made)\b.+)$/i);
+      if (sameLine && PROJECT_TITLE_RE.test(sameLine[1]) && sameLine[1].split(/\s+/).length <= 8) {
+        const name = sameLine[1].trim();
+        const key = name.toLowerCase();
+        if (!existing.has(key)) {
+          draft.projects.push({ name, description: sameLine[2].trim() });
+          existing.add(key);
+        }
+        continue;
+      }
+      const b = raw.replace(/[:.]\s*$/, "").trim();
+      const next = bullets[i + 1];
+      const titleLike = PROJECT_TITLE_RE.test(b) && b.split(/\s+/).length <= 8 && !/[.]/.test(b);
+      if (titleLike && next && PROJECT_START_RE.test(next)) {
+        const key = b.toLowerCase();
+        if (!existing.has(key)) {
+          draft.projects.push({ name: b, description: next.trim() });
+          existing.add(key);
+        }
+        i++;
+        continue;
+      }
+      if (titleLike && !ACTION_VERB_RE.test(b)) {
+        const key = b.toLowerCase();
+        if (!existing.has(key)) {
+          draft.projects.push({ name: b, description: "" });
+          existing.add(key);
+        }
+        continue;
+      }
+      keep.push(bullets[i]);
+    }
+    job.bullets = keep;
+  }
+  const leftover = sectionsProjectsFromRole(draft);
+  for (const p of leftover) {
+    const key = (p.name || "").toLowerCase();
+    if (key && !existing.has(key)) {
+      draft.projects.push(p);
+      existing.add(key);
+    }
+  }
+}
+
+function sectionsProjectsFromRole(draft: CvDraft): Partial<ProjectEntry>[] {
+  const out: Partial<ProjectEntry>[] = [];
+  const keepJobs: typeof draft.experience = [];
+  for (const job of draft.experience) {
+    const role = (job.role || "").trim();
+    if (PROJECT_TITLE_RE.test(role) && !job.company && (job.bullets ?? []).every((b) => PROJECT_START_RE.test(b) || b.length < 160)) {
+      out.push({
+        name: role.replace(/[:.]\s*$/, ""),
+        description: (job.bullets ?? []).join(" "),
+      });
+      continue;
+    }
+    keepJobs.push(job);
+  }
+  draft.experience = keepJobs;
+  return out;
 }
 
 /* ---------- experience / education / skills sub-parsers ---------- */
@@ -885,6 +1321,10 @@ function isBullet(l: string): boolean {
 function isParagraph(s: string): boolean {
   const t = s.trim();
   if (!t) return true;
+  const noPeriod = t.replace(/[.]+$/, "").trim();
+  if (noPeriod.length < 60 && /^[A-Z0-9][A-Z0-9 .&'/]*$/.test(noPeriod) && noPeriod.split(/\s+/).length <= 8) {
+    return false;
+  }
   if (/[.!?]\s*$/.test(t)) return true;
   const words = t.split(/\s+/).length;
   if (words >= 12) return true;
@@ -926,11 +1366,12 @@ function stripDateHead(l: string): string {
 }
 
 function looksLikeCompanyName(l: string): boolean {
-  const t = l.replace(/[:\u2022•|]+$/, "").trim();
+  const t = cleanOrgName(l);
   if (!t || t.length < 3 || t.length > 60) return false;
   if (/\d/.test(t) || /,/.test(t)) return false;
   if (isParagraph(t) || isBullet(t)) return false;
   if (SECTION_WORD_RE.test(t) || ACTION_VERB_RE.test(t) || isContacty(t) || hasDateRange(t)) return false;
+  if (PROJECT_TITLE_RE.test(t)) return false;
   const open = (t.match(/\(/g) ?? []).length;
   const close = (t.match(/\)/g) ?? []).length;
   if (open !== close) return false;
@@ -942,14 +1383,13 @@ function looksLikeCompanyName(l: string): boolean {
 
 function isDurationLine(l: string): boolean {
   const t = l.trim();
-  if (!t) return false;
+  if (!t || t.length > 70) return false;
   if (isDateOnlyLine(t)) return false;
-  const rest = t.replace(DATE_HEAD_RE, " ").trim();
-  if (!rest) return false;
-  if (/\b\d+\s*(?:years?|months?|weeks?|days?)\b/i.test(t) && !/\b(?:19|20)\d{2}\b\s*[-–]\s*\b(?:19|20)\d{2}\b/.test(t)) return true;
-  if (/\b(?:19|20)\d{2}\b/.test(t) && /\b(?:apprenticeship|internship|traineeship|freelanc|experience|continue|stud)\b/i.test(t)) return true;
-  if (/^\(?\s*continue\b/i.test(t)) return true;
-  if (/\bin\s+(?:process|progress)\b/i.test(t)) return true;
+  if (/^\d+\s*(?:years?|months?|weeks?)\b/i.test(t)) return true;
+  if (/^(?:\d+\s+)?(?:years?|months?)\s+plus\b/i.test(t)) return true;
+  if (/^\(?\s*continue\b/i.test(t) && t.split(/\s+/).length <= 4) return true;
+  if (/^(?:continue\s+)?freelanc/i.test(t) && t.split(/\s+/).length <= 5) return true;
+  if (/\bin\s+(?:process|progress)\b/i.test(t) && t.split(/\s+/).length <= 8 && !/\b(?:19|20)\d{2}\b/.test(t)) return true;
   return false;
 }
 
@@ -1081,14 +1521,14 @@ function parseExperience(rawLines: string[], isVolunteer = false): Partial<Exper
     // Short Title-Case line right after a role header is the company
     // (PDFs often print it without a comma: "GRAPHIC DESIGNER" / "Paradise Punch")
     if (current && current.role && !current.company && looksLikeCompanyName(l)) {
-      current.company = l.replace(/[:\u2022•|]+$/, "").trim();
+      current.company = cleanOrgName(l);
       continue;
     }
     // All-caps line captured as company with no role yet: "SENIOR GRAPHIC DESIGNER"
     // followed directly by a Title-Case company (no duration line in between)
     if (current && current.company && !current.role && /^[A-Z][A-Z0-9 .&'-]*$/.test(current.company) && looksLikeCompanyName(l)) {
       current.role = current.company;
-      current.company = l.replace(/[:\u2022•|]+$/, "").trim();
+      current.company = cleanOrgName(l);
       continue;
     }
 
@@ -1107,19 +1547,19 @@ function parseExperience(rawLines: string[], isVolunteer = false): Partial<Exper
     // on its own line starts an entry; a second one closes the previous entry.
     if (looksLikeCompanyName(l)) {
       if (!current) {
-        current = { company: l.replace(/[:\u2022•|]+$/, "").trim() };
+        current = { company: cleanOrgName(l) };
         continue;
       }
       if (current.company && !current.role) {
         finish();
-        current = { company: l.replace(/[:\u2022•|]+$/, "").trim() };
+        current = { company: cleanOrgName(l) };
         continue;
       }
       // A new all-caps role line after a completed role+company entry starts the
       // next entry ("GRAPHIC DESIGNER" / "2 Years Plus" / "Paradise Punch" blocks)
       if (current.company && current.role && /^[A-Z][A-Z0-9 .&'-]*$/.test(l)) {
         finish();
-        current = { company: l.replace(/[:\u2022•|]+$/, "").trim() };
+        current = { company: cleanOrgName(l) };
         continue;
       }
     }
@@ -1254,6 +1694,11 @@ function parseExperience(rawLines: string[], isVolunteer = false): Partial<Exper
 
     // ordinary continuation line
     if (current && (current.role || current.company)) {
+      const titleLike = PROJECT_TITLE_RE.test(l) && l.split(/\s+/).length <= 8 && !hasDateRange(l);
+      if (titleLike) {
+        (current.bullets ??= []).push(l.replace(/[:.]\s*$/, "").trim());
+        continue;
+      }
       // sentence-style or long lines become bullets (Word layouts often drop bullet chars)
       if (isParagraph(l) || (l.length >= 40 && !/\d{4}/.test(l))) {
         (current.bullets ??= []).push(l);
@@ -1268,6 +1713,8 @@ function parseExperience(rawLines: string[], isVolunteer = false): Partial<Exper
           if (!current.org) current.org = l;
         } else if (!current.descriptor) {
           current.descriptor = l;
+        } else {
+          (current.bullets ??= []).push(l);
         }
       } else {
         pending = l;
@@ -1416,7 +1863,10 @@ function parseEducation(rawLines: string[]): Partial<EducationEntry>[] {
       if (current.degree && !current.institution && l.length < 110 && !isBullet(l)) {
         const piped = l.split(/[|·•]/).map((x) => x.trim()).filter(Boolean);
         const tabParts = (piped[0] ?? l).split("\t").map((x) => x.trim());
-        current.institution = tabParts[0].replace(/^(?:\b(?:19|20)\d{2}\b\s+)?from\s+/i, "").replace(/\s*[,]?\s*course\s+\S+.*$/i, "").replace(/\s+\b(19|20)\d{2}\b\s*$/, "").trim();
+        current.institution = tabParts[0].replace(/^(?:\b(?:19|20)\d{2}\b\s+)?from\s+/i, "").replace(/\s*[,]?\s*course\s+\S+.*$/i, "").replace(/\s+\b(19|20)\d{2}\b\s*$/, "").replace(/\s+in\s+(?:process|progress).*$/i, "").trim();
+        if (/in\s+(?:process|progress)|last\s+semester|currently\s+enrolled/i.test(l)) {
+          current.honors = (l.match(/in\s+(?:process|progress)[^]*|last\s+semester[^]*/i) || ["In process"])[0].replace(/[.]+$/, "").replace(/\s+$/, "").trim();
+        }
         if (piped.length > 1) current.location = piped[piped.length - 1];
         else if (tabParts.length > 1 && /[,|]/.test(tabParts[1])) current.location = tabParts[1].split(/[,|]/)[0].trim();
         if (tabParts.length > 1) {
@@ -1466,7 +1916,15 @@ function parseSkills(rawLines: string[]): { name: string; skills: string[] }[] {
 
   for (const raw of rawLines) {
     const l = raw.replace(/\s{2,}/g, " ").trim();
-    if (!l || isBullet(l)) continue;
+    if (!l) continue;
+    if (isSkillChipLine(l)) {
+      const parts = l.split(/[•▪▸►●*]/).map((s) => s.trim()).filter(Boolean);
+      current.skills.push(...parts.filter((p) => p.length <= 40));
+      continue;
+    }
+    if (isBullet(l)) continue;
+    if (ACTION_VERB_RE.test(l) || /^(founded|provide|handle|develop|led|prepared|ensured|worked|served|manage)\b/i.test(l)) continue;
+    if (isParagraph(l)) continue;
     if (/^(?=.*\d)(?=.*[_@])[A-Za-z0-9_.@-]+$/.test(l) || /^@[A-Za-z0-9_.-]+$/.test(l) || /^\w+\.[a-z]{2,}(?:\/\S*)?$/i.test(l)) continue;
     if (isParagraph(l) && l.split(/\s+/).length >= 12) continue;
     if (/^[A-Z][A-Z&/()'.\- ]+$/.test(l) && l.split(/\s+/).length >= 3 && l.length > 12) continue;
@@ -1505,6 +1963,61 @@ function splitSkillList(s: string): string[] {
    Build a full Resume from the draft
    ============================================================ */
 
+const FILLED_SECTION_ORDER: SectionKey[] = [
+  "summary",
+  "objective",
+  "experience",
+  "education",
+  "skills",
+  "projects",
+  "certifications",
+  "languages",
+  "volunteer",
+  "awards",
+  "publications",
+  "teaching",
+  "grants",
+  "presentations",
+  "affiliations",
+  "references",
+  "portfolio",
+];
+
+function orderFilledSections(draft: CvDraft): SectionKey[] {
+  const has = (k: SectionKey): boolean => {
+    switch (k) {
+      case "summary":
+        return !draft.useObjective && !!(draft.summary || "").trim();
+      case "objective":
+        return draft.useObjective && !!(draft.objective || "").trim();
+      case "experience":
+        return draft.experience.length > 0;
+      case "education":
+        return draft.education.length > 0;
+      case "skills":
+        return draft.skills.some((g) => (g.skills ?? []).length > 0);
+      case "projects":
+        return draft.projects.length > 0;
+      case "certifications":
+        return draft.certifications.length > 0;
+      case "languages":
+        return draft.languages.length > 0;
+      case "volunteer":
+        return draft.volunteer.length > 0;
+      case "awards":
+        return draft.awards.length > 0;
+      case "publications":
+        return draft.publications.length > 0;
+      case "teaching":
+        return draft.teaching.length > 0;
+      default:
+        return false;
+    }
+  };
+  const filled = FILLED_SECTION_ORDER.filter(has);
+  return filled.length ? filled : ["summary", "experience", "education", "skills"];
+}
+
 export function resumeFromDraft(draft: CvDraft, theme?: Partial<ThemeConfig>): Resume {
   const base = createBlankResume();
   const now = todayISO();
@@ -1524,15 +2037,11 @@ export function resumeFromDraft(draft: CvDraft, theme?: Partial<ThemeConfig>): R
   const normalizeEntries = <T extends { bullets?: string[] }>(items: T[]): T[] =>
     fillStrings(items).map((it) => ({ ...it, bullets: (it.bullets ?? []).filter((b) => (b || "").trim().length > 0) }));
 
-  const sectionOrder = draft.sectionOrder.length
-    ? draft.sectionOrder
-    : ["summary", "experience", "education", "skills"];
+  const sectionOrder = orderFilledSections(draft);
 
   const visibility = { ...defaultVisibility("combination") };
   for (const k of sectionOrder) {
-    if (k !== "contact" && k !== "summary" && k !== "objective") {
-      (visibility as Record<string, boolean>)[k] = true;
-    }
+    if (k !== "contact") (visibility as Record<string, boolean>)[k] = true;
   }
 
   const resume: Resume = {

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
 import { useResume } from "../../store/resumeStore";
 import { Collapse } from "../ui";
 import type { SectionKey, VisibilityKey } from "../../lib/types";
@@ -31,6 +31,73 @@ const SECTION_META: Record<SectionKey, { label: string; hint: string }> = {
 
 function isOptional(s: SectionKey): s is VisibilityKey {
   return s !== "contact";
+}
+
+function ContentsSection({
+  sectionKey,
+  num,
+  label,
+  hint,
+  active,
+  canUp,
+  canDown,
+  onUp,
+  onDown,
+  onHide,
+  children,
+}: {
+  sectionKey: SectionKey;
+  num: string;
+  label: string;
+  hint: string;
+  active: boolean;
+  canUp: boolean;
+  canDown: boolean;
+  onUp: () => void;
+  onDown: () => void;
+  onHide?: () => void;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <section data-key={sectionKey} className={`contents-entry${active ? " contents-active" : ""}`}>
+      <div className="contents-head">
+        <button type="button" className="contents-head-main" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+          <span className="contents-number">{num}</span>
+          <span className="contents-label truncate">{label}</span>
+          <ChevronDown size={15} className={`desk-chevron${open ? " is-open" : ""}`} />
+        </button>
+        <span className="ml-auto flex shrink-0 items-center">
+          {canUp ? (
+            <button type="button" onClick={onUp} className="rounded-md px-1.5 py-1 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95" title="Move earlier in the issue">
+              <ChevronUp size={14} />
+            </button>
+          ) : null}
+          {canDown ? (
+            <button type="button" onClick={onDown} className="rounded-md px-1.5 py-1 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95" title="Move later in the issue">
+              <ChevronDown size={14} />
+            </button>
+          ) : null}
+          {onHide ? (
+            <button
+              type="button"
+              onClick={onHide}
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-stone-400 transition-[color,background-color] duration-150 hover:bg-stone-100 hover:text-stone-800"
+              title="Hide section"
+            >
+              <EyeOff size={12} /> Hide
+            </button>
+          ) : null}
+        </span>
+      </div>
+      <div className={`desk-fold${open ? " is-open" : ""}`}>
+        <div className="desk-fold-inner">
+          <p className="contents-hint">{hint}</p>
+          {children}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export function FormPanel() {
@@ -127,69 +194,50 @@ export function FormPanel() {
     }
   };
 
-  return (
-    <div ref={rootRef} className="space-y-5">
-      <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-        <div>
-          <p className="folio text-stone-500">Your copy</p>
-          <p className="mt-0.5 text-xs text-stone-500">Every field updates the proof live.</p>
-        </div>
-      </div>
+  const hidden = order.filter((k) => isOptional(k) && resume.visibility?.[k] === false && SECTION_META[k]);
 
+  return (
+    <div ref={rootRef} className="space-y-1">
       {visibleOrder.map((key) => {
         const meta = SECTION_META[key];
         const num = String(visibleOrder.indexOf(key) + 1).padStart(2, "0");
+        const idx = order.indexOf(key);
         return (
-          <div key={key} data-key={key} className={`contents-entry${active === key ? " contents-active" : ""}`}>
-            <div className="flex items-center gap-2 border-b border-stone-200/80 pb-1.5">
-              <span className="contents-number">{num}</span>
-              <GripVertical size={13} className="text-stone-300" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-600">{meta.label}</span>
-              <span className="ml-auto flex items-center gap-0.5">
-                {order.indexOf(key) > 0 ? (
-                  <button type="button" onClick={() => move(key, -1)} className="rounded-sm px-1.5 py-0.5 text-stone-500 hover:bg-stone-100 hover:text-stone-900" title="Move earlier in the issue"><ChevronUp size={14} /></button>
-                ) : null}
-                {order.indexOf(key) < order.length - 1 ? (
-                  <button type="button" onClick={() => move(key, 1)} className="rounded-sm px-1.5 py-0.5 text-stone-500 hover:bg-stone-100 hover:text-stone-900" title="Move later in the issue"><ChevronDown size={14} /></button>
-                ) : null}
-                {isOptional(key) ? (
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ type: "SET_VISIBILITY", key, visible: false })}
-                    className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] text-stone-500 hover:bg-stone-100 hover:text-stone-900"
-                    title="Hide section"
-                  >
-                    <EyeOff size={12} /> Hide
-                  </button>
-                ) : null}
-              </span>
-            </div>
-            <Collapse title="" defaultOpen>
-              <div className="p-0 pt-2">{renderSection(key)}</div>
-            </Collapse>
-          </div>
+          <ContentsSection
+            key={key}
+            sectionKey={key}
+            num={num}
+            label={meta.label}
+            hint={meta.hint}
+            active={active === key}
+            canUp={idx > 0}
+            canDown={idx >= 0 && idx < order.length - 1}
+            onUp={() => move(key, -1)}
+            onDown={() => move(key, 1)}
+            onHide={isOptional(key) ? () => dispatch({ type: "SET_VISIBILITY", key, visible: false }) : undefined}
+          >
+            {renderSection(key)}
+          </ContentsSection>
         );
       })}
 
-      <Collapse title="Held copy" subtitle="tap to show" defaultOpen={false}>
-        <div className="flex flex-wrap gap-2">
-          {order
-            .filter((k) => isOptional(k) && resume.visibility?.[k] === false && SECTION_META[k])
-            .map((k) => (
+      <div className="pt-3">
+        <Collapse title="Held copy" subtitle="tap to show" defaultOpen={false}>
+          <div className="flex flex-wrap gap-2">
+            {hidden.map((k) => (
               <button
                 key={k}
                 type="button"
                 onClick={() => dispatch({ type: "SET_VISIBILITY", key: k as VisibilityKey, visible: true })}
-                className="inline-flex items-center gap-1.5 rounded-sm border border-dashed border-stone-300 px-2.5 py-1.5 text-xs font-medium text-stone-600 transition hover:border-stone-900 hover:text-stone-900"
+                className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.98]"
               >
                 <Eye size={13} /> {SECTION_META[k].label}
               </button>
             ))}
-          {order.filter((k) => isOptional(k) && resume.visibility?.[k] === false).length === 0 ? (
-            <p className="text-xs text-stone-500">No sections hidden.</p>
-          ) : null}
-        </div>
-      </Collapse>
+            {hidden.length === 0 ? <p className="text-xs text-stone-500">No sections hidden.</p> : null}
+          </div>
+        </Collapse>
+      </div>
     </div>
   );
 }

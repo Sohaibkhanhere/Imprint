@@ -45,6 +45,8 @@
 
 .g-sheet .t-role {
   font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .g-sheet .sheet-bullets li {
@@ -91,7 +93,10 @@
 .tpl-ribbon-navy .rn-side .t-skills,
 .tpl-ribbon-navy .rn-side .t-meta,
 .tpl-ribbon-navy .rn-side .t-org,
-.tpl-ribbon-navy .rn-side .t-lang {
+.tpl-ribbon-navy .rn-side .t-lang,
+.tpl-ribbon-navy .rn-side .t-role,
+.tpl-ribbon-navy .rn-side .t-dates,
+.tpl-ribbon-navy .rn-side .sheet-bullets li {
   color: #efe8d8;
 }
 
@@ -246,6 +251,10 @@
 
 .tpl-sage-overlap .so-right .t-role,
 .tpl-sage-overlap .so-right .t-org,
+.tpl-sage-overlap .so-right .t-meta,
+.tpl-sage-overlap .so-right .t-dates,
+.tpl-sage-overlap .so-right .t-skills,
+.tpl-sage-overlap .so-right .t-lang,
 .tpl-sage-overlap .so-right .sheet-bullets li {
   color: #f6f3ea;
 }
@@ -348,6 +357,16 @@
   color: var(--glow);
 }
 
+.tpl-circuit-dark .cd-card .t-org,
+.tpl-circuit-dark .cd-card .t-meta,
+.tpl-circuit-dark .cd-card .t-dates,
+.tpl-circuit-dark .cd-card .t-summary,
+.tpl-circuit-dark .cd-card .t-skills,
+.tpl-circuit-dark .cd-card .t-lang,
+.tpl-circuit-dark .cd-card .sheet-bullets li {
+  color: #d5dde8;
+}
+
 .tpl-circuit-dark .cd-skills {
   grid-column: 2;
 }
@@ -448,6 +467,16 @@
   letter-spacing: 0.14em;
 }
 
+.tpl-terra-wave .tw-side .t-role,
+.tpl-terra-wave .tw-side .t-org,
+.tpl-terra-wave .tw-side .t-meta,
+.tpl-terra-wave .tw-side .t-dates,
+.tpl-terra-wave .tw-side .t-skills,
+.tpl-terra-wave .tw-side .t-lang,
+.tpl-terra-wave .tw-side .sheet-bullets li {
+  color: #f6efe4;
+}
+
 .tpl-terra-wave .tw-contact {
   margin-top: 16px;
 }
@@ -546,6 +575,11 @@
 }
 
 .tpl-stadium-banner .sb-right .t-role,
+.tpl-stadium-banner .sb-right .t-org,
+.tpl-stadium-banner .sb-right .t-meta,
+.tpl-stadium-banner .sb-right .t-dates,
+.tpl-stadium-banner .sb-right .t-skills,
+.tpl-stadium-banner .sb-right .t-lang,
 .tpl-stadium-banner .sb-right .sheet-bullets li {
   color: #f4f1ea;
 }
@@ -715,8 +749,17 @@
   padding: 8px 28px 28px 12px;
 }
 
-.tpl-forest-geo .fg-main .t-role {
+.tpl-forest-geo .fg-main .t-role,
+.tpl-forest-geo .fg-side .t-role {
   color: var(--deep);
+}
+
+.tpl-forest-geo .fg-side .t-org,
+.tpl-forest-geo .fg-side .t-meta,
+.tpl-forest-geo .fg-side .t-dates,
+.tpl-forest-geo .fg-side .t-skills,
+.tpl-forest-geo .fg-side .t-lang {
+  color: #161616;
 }
 
 .tpl-forest-geo .fg-foot {
@@ -775,6 +818,16 @@
   border-bottom: 2px solid var(--accent);
   padding-bottom: 4px;
   margin: 14px 0 8px;
+}
+
+.tpl-gold-cut .gc-side .t-role,
+.tpl-gold-cut .gc-side .t-org,
+.tpl-gold-cut .gc-side .t-meta,
+.tpl-gold-cut .gc-side .t-dates,
+.tpl-gold-cut .gc-side .t-skills,
+.tpl-gold-cut .gc-side .t-lang,
+.tpl-gold-cut .gc-side .sheet-bullets li {
+  color: #f4f1ea;
 }
 
 .tpl-gold-cut .gc-main {

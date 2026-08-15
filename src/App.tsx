@@ -5,9 +5,7 @@ import { FormPanel } from "./components/form/FormPanel";
 import { PreviewPane } from "./components/PreviewPane";
 import { HealthPanel } from "./components/HealthPanel";
 import { TailorPanel } from "./components/TailorPanel";
-import { TypeWizard } from "./components/Wizard";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { LayoutGrid } from "lucide-react";
 import type { TemplateKey } from "./lib/types";
 import { STORAGE_KEY } from "./lib/storage";
 
@@ -21,10 +19,10 @@ export function App() {
 
 function ShellInner() {
   const { resume, dispatch } = useResume();
-  const [showWizard, setShowWizard] = useState(() => !window.localStorage.getItem(STORAGE_KEY));
   const [showTailor, setShowTailor] = useState(false);
   const [pages, setPages] = useState(1);
   const [mobileTab, setMobileTab] = useState<"copy" | "proof">("copy");
+  const [firstIssue] = useState(() => !window.localStorage.getItem(STORAGE_KEY));
 
   const sections = useMemo(
     () => resume.sectionOrder.filter((k) => k === "contact" || resume.visibility?.[k as keyof typeof resume.visibility]),
@@ -44,7 +42,7 @@ function ShellInner() {
 
   return (
     <div className="flex h-screen flex-col bg-stone-100">
-      <HeaderBar onReset={reset} onOpenTailor={() => setShowTailor((s) => !s)} />
+      <HeaderBar onReset={reset} onOpenTailor={() => setShowTailor((s) => !s)} startInGallery={firstIssue} />
       <div className="no-print flex border-b border-stone-200 bg-white md:hidden">
         <button
           type="button"
@@ -67,22 +65,17 @@ function ShellInner() {
       </div>
       <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
         <aside
-          className={`no-print flex-col overflow-y-auto border-b border-stone-300 bg-white md:flex md:w-[400px] md:flex-col md:border-b-0 md:border-r ${
+          className={`no-print flex-col overflow-y-auto border-b border-stone-300 bg-white md:flex md:w-[28rem] md:flex-col md:border-b-0 md:border-r ${
             mobileTab === "copy" ? "flex" : "hidden"
           }`}
         >
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-stone-200 bg-white px-4 py-3">
-            <div>
-              <p className="folio text-stone-500">Contents</p>
-              <p className="mt-0.5 text-[11px] text-stone-500">{sections.length} section{sections.length === 1 ? "" : "s"} in this issue</p>
+          <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-4 py-3.5 backdrop-blur-[6px]">
+            <div className="masthead-rule mb-2.5 w-10" />
+            <div className="flex items-end justify-between gap-3">
+              <h2 className="font-serif text-[22px] font-semibold leading-none tracking-tight text-stone-900">Contents</h2>
+              <p className="folio text-stone-500">{String(sections.length).padStart(2, "0")} · this issue</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowWizard(true)}
-              className="inline-flex items-center gap-1.5 rounded-sm border border-stone-300 px-2.5 py-1.5 text-xs font-semibold text-stone-800 transition hover:border-stone-900 hover:text-stone-900"
-            >
-              <LayoutGrid size={13} /> Format
-            </button>
+            <p className="mt-1.5 text-[12px] leading-snug text-stone-500">Every field updates the proof live.</p>
           </div>
           {showTailor ? <div className="border-b border-stone-200 px-4 py-3"><TailorPanel onClose={() => setShowTailor(false)} /></div> : null}
           <div className="px-4 pb-10 pt-3">
@@ -97,7 +90,6 @@ function ShellInner() {
         </main>
       </div>
       <HealthPanel pages={pages} />
-      {showWizard ? <TypeWizard onDone={() => setShowWizard(false)} onSkip={() => setShowWizard(false)} /> : null}
     </div>
   );
 }

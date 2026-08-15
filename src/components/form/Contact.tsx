@@ -25,36 +25,39 @@ export function ContactForm() {
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <Field label="Photo" hint="Shows on photo layouts. Upload yours, or the sample portrait stays until you do.">
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 overflow-hidden rounded-full border border-stone-300 bg-stone-100">
-            <img src={c.photoUrl || DEFAULT_PORTRAIT} alt="" className="h-full w-full object-cover" />
-          </span>
-          <label className="cursor-pointer text-xs font-medium text-amber-700 hover:text-amber-800">
-            Upload
-            <input
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) readPhoto(file, (photoUrl) => set({ photoUrl }));
-                e.target.value = "";
-              }}
-            />
-          </label>
-          {c.photoUrl ? (
-            <button type="button" className="text-xs text-stone-500 hover:text-stone-800" onClick={() => set({ photoUrl: "" })}>
-              Remove
-            </button>
-          ) : null}
+      <div className="sm:col-span-2 flex items-center gap-3 rounded-md border border-stone-200 bg-stone-50/80 p-2.5">
+        <span className="flex h-14 w-14 shrink-0 overflow-hidden rounded-full border border-stone-300 bg-stone-100">
+          <img src={c.photoUrl || DEFAULT_PORTRAIT} alt="" className="h-full w-full object-cover" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-stone-800">Portrait</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-stone-500">Shows on photo layouts. Sample stays until you upload yours.</p>
+          <div className="mt-1.5 flex items-center gap-3">
+            <label className="cursor-pointer text-xs font-semibold text-amber-700 transition-colors duration-150 hover:text-amber-800">
+              Upload
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) readPhoto(file, (photoUrl) => set({ photoUrl }));
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {c.photoUrl ? (
+              <button type="button" className="text-xs text-stone-500 transition-colors duration-150 hover:text-stone-800" onClick={() => set({ photoUrl: "" })}>
+                Remove
+              </button>
+            ) : null}
+          </div>
         </div>
-      </Field>
-      <div />
-      <Field label="Full name">
+      </div>
+      <Field wide label="Full name">
         <Input value={c.fullName ?? ""} onChange={(e) => set({ fullName: e.target.value })} placeholder="Full name" />
       </Field>
-      <Field label="Target job title / tagline">
+      <Field wide label="Target job title / tagline">
         <Input value={c.title ?? ""} onChange={(e) => set({ title: e.target.value })} placeholder="Senior Marketing Manager" />
       </Field>
       <Field label="Phone">
@@ -69,7 +72,7 @@ export function ContactForm() {
       <Field label="Country">
         <Input value={c.country} onChange={(e) => set({ country: e.target.value })} placeholder="USA" />
       </Field>
-      <Field label="LinkedIn" hint="Clean URL — no tracking parameters">
+      <Field wide label="LinkedIn" hint="Clean URL — no tracking parameters">
         <Input value={c.linkedin} onChange={(e) => set({ linkedin: e.target.value })} placeholder="linkedin.com/in/name" />
       </Field>
       <Field label="Website / Portfolio">

@@ -14,7 +14,7 @@ function SkillGroups({ resume, chips }: { resume: Resume; chips?: boolean }) {
     <>
       {groups.map((g) => (
         <div key={g.id} className="t-skillgroup">
-          {g.name ? <span className="t-role t-skillgroup-name">{g.name}</span> : null}
+          {g.name && !/^skills?$/i.test(g.name) ? <span className="t-role t-skillgroup-name">{g.name}</span> : null}
           {chips ? (
             <span className="t-chips">
               {g.skills.filter((s) => (s || "").trim()).map((s, i) => (

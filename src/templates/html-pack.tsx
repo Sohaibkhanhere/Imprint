@@ -49,14 +49,14 @@ export function GiltTemplate({ resume }: { resume: Resume }) {
   const { first, last } = splitName(c.fullName);
   const jobs = jobsOf(resume);
   const langs = resume.languages ?? [];
-  const skills = skillFlat(resume).slice(0, 4);
+  const skills = skillFlat(resume);
   const edu = resume.education ?? [];
   const rest = restOf(resume, ["summary", "objective", "experience", "education", "skills", "languages"]);
   return (
     <Sheet resume={resume} className="tpl-gilt hp-sheet" style={{ padding: 0 }}>
       <svg className="hp-gilt-deco" viewBox="0 0 220 220" aria-hidden>
         <circle cx="150" cy="60" r="70" fill="none" stroke="#EDE3D3" strokeWidth="26" />
-        <circle cx="150" cy="60" r="70" fill="none" stroke="#C9A876" strokeWidth="10" strokeDasharray="60 400" />
+        <circle cx="150" cy="60" r="70" fill="none" stroke="currentColor" strokeWidth="10" strokeDasharray="60 400" />
       </svg>
       <aside className="hp-gilt-side">
         <div className="hp-gilt-ring">
@@ -139,7 +139,7 @@ export function GiltTemplate({ resume }: { resume: Resume }) {
             <div className="hp-rings">
               {skills.map((s) => (
                 <div key={s} className="hp-ring">
-                  <div>{s.slice(0, 12)}</div>
+                  <div>{s}</div>
                 </div>
               ))}
             </div>
@@ -188,7 +188,7 @@ export function BevelTemplate({ resume }: { resume: Resume }) {
             <div className="hp-bevel-block">
               <p className="hp-bevel-sh">Skills</p>
               <ul>
-                {skills.slice(0, 8).map((s) => (
+                {skills.map((s) => (
                   <li key={s}>{s}</li>
                 ))}
               </ul>
@@ -493,11 +493,11 @@ export function BlushTemplate({ resume }: { resume: Resume }) {
                 <span />
                 <h2>Skills</h2>
               </div>
-              {skills.slice(0, 6).map((s, i) => (
+              {skills.map((s, i) => (
                 <div key={s} className="hp-blush-sk">
                   <p>{s}</p>
                   <div>
-                    <i style={{ left: `${88 - i * 8}%` }} />
+                    <i style={{ left: `${Math.max(22, 88 - i * 8)}%` }} />
                   </div>
                 </div>
               ))}
@@ -589,7 +589,7 @@ export function ReelTemplate({ resume }: { resume: Resume }) {
         {jobs.map((j, i) => (
           <div key={j.id} className="hp-reel-job">
             <span>{i + 1}</span>
-            <div className="hp-reel-logo">{(j.company || j.role || "JOB").slice(0, 12).toUpperCase()}</div>
+            <div className="hp-reel-logo">{(j.company || j.role || "JOB").toUpperCase()}</div>
             <div>
               <p>
                 <b>{j.company}</b>
@@ -606,7 +606,7 @@ export function ReelTemplate({ resume }: { resume: Resume }) {
           <>
             <h2>Other Activities</h2>
             <div className="hp-reel-acts">
-              {vol.slice(0, 3).map((v) => (
+              {vol.map((v) => (
                 <div key={v.id} className="hp-reel-act">
                   <div>{(v.org || v.title || "ORG").toUpperCase()}</div>
                   <p>{v.title}</p>
@@ -905,7 +905,7 @@ export function GroveTemplate({ resume }: { resume: Resume }) {
           {skills.length ? (
             <section>
               <h3>Skills</h3>
-              {skills.slice(0, 8).map((s) => (
+              {skills.map((s) => (
                 <p key={s}>{s}</p>
               ))}
             </section>
@@ -958,11 +958,11 @@ export function BoardroomTemplate({ resume }: { resume: Resume }) {
         {skills.length ? (
           <div>
             <p className="hp-br-sh">Core Skills</p>
-            {skills.slice(0, 6).map((s, i) => (
+            {skills.map((s, i) => (
               <div key={s} className="hp-br-sk">
                 <span>{s}</span>
                 <div>
-                  <i style={{ width: `${92 - i * 8}%` }} />
+                  <i style={{ width: `${Math.max(28, 92 - i * 8)}%` }} />
                 </div>
               </div>
             ))}

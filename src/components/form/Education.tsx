@@ -1,4 +1,5 @@
-import { Field, Input, EntryCard, AddButton } from "../ui";
+import { Trash2 } from "lucide-react";
+import { Field, Input, EntryCard, AddButton, Select, IconBtn } from "../ui";
 import { useEntryList } from "./useEntryList";
 import { uid } from "../../lib/date";
 import type { EducationEntry, ProjectEntry, CertificationEntry, LanguageEntry, PublicationEntry, AwardEntry, GrantEntry, PresentationEntry, AffiliationEntry, ReferenceEntry, FluencyLevel } from "../../lib/types";
@@ -36,7 +37,7 @@ export function EducationForm() {
           <Field label="Field of study">
             <Input value={e.field} onChange={(ev) => update(e.id, { field: ev.target.value })} placeholder="Marketing" />
           </Field>
-          <Field label="Institution">
+          <Field label="Institution" wide>
             <Input value={e.institution} onChange={(ev) => update(e.id, { institution: ev.target.value })} placeholder="Northwestern University" />
           </Field>
           <Field label="Location">
@@ -54,10 +55,10 @@ export function EducationForm() {
           <Field label="Honors">
             <Input value={e.honors} onChange={(ev) => update(e.id, { honors: ev.target.value })} placeholder="Magna cum laude" />
           </Field>
-          <Field label="Thesis / dissertation title" hint="Used by the Academic CV template">
+          <Field label="Thesis / dissertation title" wide hint="Used by the Academic CV template">
             <Input value={e.thesis} onChange={(ev) => update(e.id, { thesis: ev.target.value })} placeholder="Title of thesis" />
           </Field>
-          <Field label="Relevant coursework" hint="Mostly for entry-level / recent grads">
+          <Field label="Relevant coursework" wide hint="Mostly for entry-level / recent grads">
             <Input value={e.coursework} onChange={(ev) => update(e.id, { coursework: ev.target.value })} placeholder="Consumer Behavior, Brand Strategy, Data Analytics" />
           </Field>
         </EntryCard>
@@ -80,7 +81,7 @@ export function ProjectsForm() {
           onMoveUp={isEmpty ? undefined : () => move(p.id, -1)}
           onMoveDown={isEmpty ? undefined : () => move(p.id, 1)}
         >
-          <Field label="Project name">
+          <Field label="Project name" wide>
             <Input value={p.name} onChange={(ev) => update(p.id, { name: ev.target.value })} placeholder="Growth Playbook for B2B SaaS" />
           </Field>
           <Field label="Link">
@@ -89,7 +90,7 @@ export function ProjectsForm() {
           <Field label="Tech / tools used">
             <Input value={p.tech} onChange={(ev) => update(p.id, { tech: ev.target.value })} placeholder="Notion, GA4, Figma" />
           </Field>
-          <Field label="Description (1–2 lines, quantified)">
+          <Field label="Description (1–2 lines, quantified)" wide>
             <Input value={p.description} onChange={(ev) => update(p.id, { description: ev.target.value })} placeholder="Drew 12K organic visits and 400 signups in the first quarter." />
           </Field>
         </EntryCard>
@@ -113,7 +114,7 @@ export function CertificationsForm() {
           onMoveUp={isEmpty ? undefined : () => move(c.id, -1)}
           onMoveDown={isEmpty ? undefined : () => move(c.id, 1)}
         >
-          <Field label="Name">
+          <Field label="Name" wide>
             <Input value={c.name} onChange={(ev) => update(c.id, { name: ev.target.value })} placeholder="Google Analytics 4 Certified" />
           </Field>
           <Field label="Issuer">
@@ -133,34 +134,26 @@ export function CertificationsForm() {
 }
 
 export function LanguagesForm() {
-  const { rendered, isEmpty, update, add, remove, move } = useEntryList<LanguageEntry>("languages", emptyLanguage);
+  const { rendered, isEmpty, update, add, remove } = useEntryList<LanguageEntry>("languages", emptyLanguage);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {rendered.map((l) => (
-        <EntryCard
-          key={l.id}
-          title={l.name}
-          subtitle={l.level}
-          onRemove={isEmpty ? undefined : () => remove(l.id)}
-          onMoveUp={isEmpty ? undefined : () => move(l.id, -1)}
-          onMoveDown={isEmpty ? undefined : () => move(l.id, 1)}
-        >
+        <div key={l.id} className="desk-card desk-enter contents-lang">
           <Field label="Language">
             <Input value={l.name} onChange={(ev) => update(l.id, { name: ev.target.value })} placeholder="Spanish" />
           </Field>
           <Field label="Proficiency">
-            <select
-              value={l.level}
-              onChange={(ev) => update(l.id, { level: ev.target.value })}
-              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
-            >
+            <Select value={l.level} onChange={(ev) => update(l.id, { level: ev.target.value as FluencyLevel })}>
               {FLUENCY_LEVELS.map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
-            </select>
+            </Select>
           </Field>
-        </EntryCard>
+          <div className="flex items-end">
+            {isEmpty ? null : <IconBtn title="Remove" danger onClick={() => remove(l.id)}><Trash2 size={15} /></IconBtn>}
+          </div>
+        </div>
       ))}
       <AddButton label="Add language" onClick={add} />
     </div>

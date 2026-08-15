@@ -28,8 +28,10 @@ function arr<T>(v: unknown): T[] {
 const DROPPED_TEMPLATES: Record<string, TemplateKey> = {
   marquee: "classic",
   ledger: "classic",
-  dock: "inkwell",
-  quartz: "inkwell",
+  dock: "classic",
+  quartz: "classic",
+  plinth: "classic",
+  inkwell: "classic",
 };
 
 /** Fill missing keys so old localStorage / imports never crash .trim() in templates. */

@@ -1,20 +1,31 @@
 import { BrandMark } from "./BrandMark";
-import { FileDown, FileText, Palette, Type, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2 } from "lucide-react";
+import { FileDown, FileText, Palette, Type, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2, ListOrdered, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useResume } from "../store/resumeStore";
 import { exportPdf } from "../lib/pdf";
 import { ACCENT_PALETTE, FONT_PAIRS } from "../lib/sampleData";
+import { RESUME_TYPES, getResumeType } from "../lib/resumeTypes";
+import type { ResumeTypeKey } from "../lib/types";
 import { ImportDialog } from "./ImportDialog";
 import { TemplateGallery } from "./TemplateGallery";
 import { TemplateStepper } from "./TemplateStepper";
 
-export function HeaderBar({ onReset, onOpenTailor }: { onReset: () => void; onOpenTailor: () => void }) {
+export function HeaderBar({
+  onReset,
+  onOpenTailor,
+  startInGallery = false,
+}: {
+  onReset: () => void;
+  onOpenTailor: () => void;
+  startInGallery?: boolean;
+}) {
   const { resume, dispatch } = useResume();
   const t = resume.theme;
-  const [panel, setPanel] = useState<null | "template" | "customize">(null);
+  const [panel, setPanel] = useState<null | "template" | "customize">(startInGallery ? "template" : null);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [exportingWord, setExportingWord] = useState(false);
+  const [colorsOpen, setColorsOpen] = useState(false);
   const issueName = (resume.contact?.fullName || "").trim() || "Untitled issue";
 
   const exportWord = async () => {
@@ -157,25 +168,78 @@ export function HeaderBar({ onReset, onOpenTailor }: { onReset: () => void; onOp
       {panel === "template" ? <TemplateGallery onClose={() => setPanel(null)} /> : null}
 
       {panel === "customize" ? (
-        <div className="border-t border-stone-200 bg-white px-4 py-3 sm:px-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <div>
-              <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-                <Palette size={12} className="text-stone-500" /> Accent color
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {ACCENT_PALETTE.map((c) => (
+        <div className="border-t border-stone-200 bg-white px-4 py-4 sm:px-6">
+          <div className="mb-5">
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+              <ListOrdered size={12} className="text-stone-500" /> Issue format
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {RESUME_TYPES.map((fmt) => {
+                const on = resume.meta.type === fmt.key;
+                return (
                   <button
-                    key={c.value}
+                    key={fmt.key}
                     type="button"
-                    title={c.name}
-                    onClick={() => dispatch({ type: "SET_THEME", theme: { accent: c.value } })}
-                    className={`h-7 w-7 rounded-full transition ${t.accent === c.value ? "ring-2 ring-amber-600 ring-offset-2" : "hover:scale-110"}`}
-                    style={{ background: c.value }}
-                  />
-                ))}
-              </div>
+                    title={fmt.bestFor}
+                    onClick={() => dispatch({ type: "SET_TYPE", value: fmt.key })}
+                    className={`rounded-sm border px-2.5 py-1.5 text-left text-xs font-medium transition ${
+                      on ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                    }`}
+                  >
+                    {FORMAT_CHIP[fmt.key]}
+                  </button>
+                );
+              })}
             </div>
+            <p className="folio mt-2.5 text-stone-500">{getResumeType(resume.meta.type).structure.join(" · ")}</p>
+          </div>
+          <div className="mb-5 border border-stone-200">
+            <button
+              type="button"
+              onClick={() => setColorsOpen((o) => !o)}
+              className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-stone-50"
+            >
+              <Palette size={12} className="text-stone-500" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">Accent color</span>
+              <span className="ml-auto flex items-center gap-2">
+                <span
+                  className="h-4 w-4 rounded-full border border-stone-300"
+                  style={{ background: t.accent }}
+                  aria-hidden
+                />
+                <span className="folio hidden text-stone-500 sm:inline">
+                  {ACCENT_PALETTE.find((c) => c.value === t.accent)?.name ?? "Custom"}
+                </span>
+                <ChevronDown size={14} className={`text-stone-400 transition ${colorsOpen ? "rotate-180" : ""}`} />
+              </span>
+            </button>
+            {colorsOpen ? (
+              <div className="border-t border-stone-200 px-3 py-3">
+                <div className="grid grid-cols-6 gap-2.5 sm:grid-cols-9">
+                  {ACCENT_PALETTE.map((c) => {
+                    const on = t.accent === c.value;
+                    return (
+                      <button
+                        key={c.value}
+                        type="button"
+                        title={c.name}
+                        onClick={() => dispatch({ type: "SET_THEME", theme: { accent: c.value } })}
+                        className="flex items-center justify-center"
+                      >
+                        <span
+                          className={`h-7 w-7 rounded-full transition ${
+                            on ? "ring-2 ring-amber-600 ring-offset-2" : "hover:scale-105"
+                          }`}
+                          style={{ background: c.value }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
                 <Type size={12} className="text-stone-500" /> Font pairing
@@ -232,6 +296,16 @@ export function HeaderBar({ onReset, onOpenTailor }: { onReset: () => void; onOp
     </header>
   );
 }
+
+const FORMAT_CHIP: Record<ResumeTypeKey, string> = {
+  combination: "Combination",
+  chronological: "Chronological",
+  functional: "Skills-based",
+  executive: "Executive",
+  "entry-level": "First job",
+  creative: "Creative",
+  cv: "Academic CV",
+};
 
 function WritingTips({ onClose }: { onClose: () => void }) {
   return (

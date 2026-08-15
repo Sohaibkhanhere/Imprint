@@ -7,7 +7,7 @@ export function formatRange(start: string | undefined, end: string | undefined, 
   const fmt = (v: string) => (v.length === 4 ? v : v);
   if (present) return `${s ? fmt(s) : "Present"} \u2013 Present`;
   if (s && e) return `${fmt(s)} \u2013 ${fmt(e)}`;
-  if (s) return `${fmt(s)} \u2013 ${e}`;
+  if (s) return fmt(s);
   return e;
 }
 

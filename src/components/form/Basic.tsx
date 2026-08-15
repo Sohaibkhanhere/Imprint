@@ -8,19 +8,18 @@ export function SummaryForm() {
 
   return (
     <div className="grid grid-cols-1 gap-3">
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-medium text-stone-600">Heading type:</span>
+      <div className="inline-flex rounded-md border border-stone-200 bg-stone-100 p-0.5">
         <button
           type="button"
           onClick={() => dispatch({ type: "PATCH", patch: { useObjective: false } })}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${!useObj ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
+          className={`rounded-[5px] px-3 py-1 text-xs font-medium transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] ${!useObj ? "bg-stone-900 text-stone-50 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
         >
           Summary
         </button>
         <button
           type="button"
           onClick={() => dispatch({ type: "PATCH", patch: { useObjective: true } })}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${useObj ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
+          className={`rounded-[5px] px-3 py-1 text-xs font-medium transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] ${useObj ? "bg-stone-900 text-stone-50 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
         >
           Objective
         </button>
@@ -67,7 +66,7 @@ export function SkillsForm() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {groups.map((g) => (
-        <div key={g.id} className="rounded-lg border border-stone-200 bg-stone-50/60 p-3">
+        <div key={g.id} className="desk-card desk-enter p-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
             <Field label="Group name">
               <Input value={g.name} onChange={(e) => updateGroup(g.id, { name: e.target.value })} placeholder="Technical Skills" />
@@ -82,14 +81,14 @@ export function SkillsForm() {
           </div>
           <div className="mt-1.5">
             <Label>Skills (comma-separated)</Label>
-            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-2 py-1.5 focus-within:ring-2 focus-within:ring-amber-400/50">
+            <div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2 py-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-amber-600/55 focus-within:ring-2 focus-within:ring-amber-500/25">
               {(g.skills ?? []).map((s, i) => (
                 <span key={i} className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700">
                   {s}
                   <button
                     type="button"
                     onClick={() => updateGroup(g.id, { skills: (g.skills ?? []).filter((_, j) => j !== i) })}
-                    className="text-stone-400 hover:text-amber-700"
+                    className="text-stone-400 transition-colors duration-150 hover:text-amber-700"
                     aria-label="Remove skill"
                   >
                     ✕
@@ -116,7 +115,7 @@ export function SkillsForm() {
         <button
           type="button"
           onClick={() => set([...groups, { id: `g${Date.now()}`, name: "", skills: [] }])}
-          className="rounded-sm border border-dashed border-stone-300 px-3 py-2 text-sm font-medium text-stone-600 transition hover:border-stone-900 hover:text-stone-900"
+          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.99]"
         >
           + Add group
         </button>

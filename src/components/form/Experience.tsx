@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sparkles, Trash2 } from "lucide-react";
-import { Field, Input, EntryCard, AddButton } from "../ui";
+import { Field, Input, EntryCard, AddButton, PresentToggle } from "../ui";
 import { ImproveBulletDialog } from "./ImproveBullet";
 import { useEntryList } from "./useEntryList";
 import { uid } from "../../lib/date";
@@ -23,20 +23,20 @@ function BulletList({
       <span className="mb-1.5 block text-xs font-medium text-stone-600">Achievements (3–5 recommended)</span>
       <div className="space-y-2">
         {items.map((b, i) => (
-          <div key={i} className="group flex items-start gap-1.5">
+          <div key={i} className="group flex items-start gap-1">
             <textarea
               value={b ?? ""}
               onChange={(e) => onSet(items.map((x, j) => (j === i ? e.target.value : x)))}
-              rows={Math.max(1, Math.min(4, (b || "").split("\n").length))}
+              rows={Math.max(2, Math.min(4, (b || "").split("\n").length))}
               placeholder="Redesigned the onboarding flow, lifting 30-day retention by 22%…"
-              className="min-w-0 flex-1 resize-y rounded-sm border border-stone-300 bg-white px-3 py-2 text-sm leading-relaxed text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+              className="min-w-0 flex-1 resize-y rounded-md border border-stone-300 bg-white px-3 py-2 text-sm leading-relaxed text-stone-900 placeholder:text-stone-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25"
             />
-            <div className="flex shrink-0 flex-col">
+            <div className="flex shrink-0 flex-col pt-0.5 opacity-70 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
               <button
                 type="button"
                 onClick={() => setImproving(i)}
                 title="Improve this bullet"
-                className="rounded-md p-1.5 text-stone-500 transition hover:bg-stone-100 hover:text-stone-900"
+                className="rounded-md p-1.5 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95"
               >
                 <Sparkles size={15} />
               </button>
@@ -44,7 +44,7 @@ function BulletList({
                 type="button"
                 onClick={() => onSet(items.filter((_, j) => j !== i))}
                 title="Remove bullet"
-                className="rounded-md p-1.5 text-stone-400 transition hover:bg-amber-50 hover:text-amber-700"
+                className="rounded-md p-1.5 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-amber-50 hover:text-amber-700 active:scale-95"
               >
                 <Trash2 size={15} />
               </button>
@@ -86,7 +86,7 @@ export function ExperienceForm() {
           onMoveUp={isEmpty ? undefined : () => move(e.id, -1)}
           onMoveDown={isEmpty ? undefined : () => move(e.id, 1)}
         >
-          <Field label="Job title">
+          <Field wide label="Job title">
             <Input value={e.role} onChange={(ev) => update(e.id, { role: ev.target.value })} placeholder="Senior Marketing Manager" />
           </Field>
           <Field label="Company">
@@ -95,29 +95,18 @@ export function ExperienceForm() {
           <Field label="Location">
             <Input value={e.location} onChange={(ev) => update(e.id, { location: ev.target.value })} placeholder="San Francisco, CA" />
           </Field>
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Start date">
-              <Input value={e.startDate} onChange={(ev) => update(e.id, { startDate: ev.target.value })} placeholder="2021" />
-            </Field>
-            <Field label="End date">
-              <Input value={e.endDate} onChange={(ev) => update(e.id, { endDate: ev.target.value })} placeholder="2023" disabled={e.present} />
-            </Field>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => update(e.id, { present: !e.present })}
-              className={`rounded-md border px-2.5 py-1.5 text-xs font-medium transition ${e.present ? "border-amber-500 bg-amber-50 text-amber-800" : "border-stone-300 text-stone-600 hover:bg-stone-50"}`}
-            >
-              {e.present ? "● Present" : "○ Present"}
-            </button>
-            <span className="text-[11px] text-stone-500">Use present tense for the current role</span>
-          </div>
+          <Field label="Start date">
+            <Input value={e.startDate} onChange={(ev) => update(e.id, { startDate: ev.target.value })} placeholder="2021" />
+          </Field>
+          <Field label="End date">
+            <Input value={e.endDate} onChange={(ev) => update(e.id, { endDate: ev.target.value })} placeholder="2023" disabled={e.present} />
+          </Field>
           <div className="sm:col-span-2">
-            <Field label="Company descriptor (optional)" hint="Only if the company isn't well known — e.g. mid-size DTC apparel brand">
-              <Input value={e.descriptor} onChange={(ev) => update(e.id, { descriptor: ev.target.value })} placeholder="B2B SaaS analytics platform" />
-            </Field>
+            <PresentToggle on={e.present} onChange={(present) => update(e.id, { present })} hint="Use present tense for the current role." />
           </div>
+          <Field wide label="Company descriptor (optional)" hint="Only if the company isn't well known — e.g. mid-size DTC apparel brand">
+            <Input value={e.descriptor} onChange={(ev) => update(e.id, { descriptor: ev.target.value })} placeholder="B2B SaaS analytics platform" />
+          </Field>
           <BulletList bullets={e.bullets ?? []} present={e.present} onSet={(bullets) => update(e.id, { bullets })} />
         </EntryCard>
       ))}
@@ -148,22 +137,14 @@ export function VolunteerForm() {
           <Field label="Location">
             <Input value={e.location} onChange={(ev) => update(e.id, { location: ev.target.value })} placeholder="San Francisco, CA" />
           </Field>
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Start">
-              <Input value={e.startDate} onChange={(ev) => update(e.id, { startDate: ev.target.value })} placeholder="2022" />
-            </Field>
-            <Field label="End">
-              <Input value={e.endDate} onChange={(ev) => update(e.id, { endDate: ev.target.value })} placeholder="2023" disabled={e.present} />
-            </Field>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => update(e.id, { present: !e.present })}
-              className={`rounded-md border px-2.5 py-1.5 text-xs font-medium transition ${e.present ? "border-amber-500 bg-amber-50 text-amber-800" : "border-stone-300 text-stone-600 hover:bg-stone-50"}`}
-            >
-              {e.present ? "● Present" : "○ Present"}
-            </button>
+          <Field label="Start">
+            <Input value={e.startDate} onChange={(ev) => update(e.id, { startDate: ev.target.value })} placeholder="2022" />
+          </Field>
+          <Field label="End">
+            <Input value={e.endDate} onChange={(ev) => update(e.id, { endDate: ev.target.value })} placeholder="2023" disabled={e.present} />
+          </Field>
+          <div className="sm:col-span-2">
+            <PresentToggle on={e.present} onChange={(present) => update(e.id, { present })} />
           </div>
           <BulletList bullets={e.bullets ?? []} present={e.present} onSet={(bullets) => update(e.id, { bullets })} />
         </EntryCard>

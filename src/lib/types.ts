@@ -40,8 +40,6 @@ export type TemplateKey =
   | "polaroid-burst"
   | "forest-geo"
   | "gold-cut"
-  | "plinth"
-  | "inkwell"
   | "gilt"
   | "bevel"
   | "mast"
