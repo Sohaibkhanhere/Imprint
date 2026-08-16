@@ -3,7 +3,7 @@ import { CheckCircle2, X } from "lucide-react";
 import { useResume } from "../store/resumeStore";
 import { runHealthChecks, computeScore, type HealthIssue } from "../lib/validation";
 
-export function HealthPanel({ pages }: { pages: number }) {
+export function HealthPanel({ pages, mobileHidden = false }: { pages: number; mobileHidden?: boolean }) {
   const { resume } = useResume();
   const [issues, setIssues] = useState<HealthIssue[]>([]);
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export function HealthPanel({ pages }: { pages: number }) {
         type="button"
         onClick={() => setOpen(true)}
         title="Open editor's notes"
-        className="no-print fixed bottom-5 right-5 z-40 flex items-center gap-2.5 rounded-sm border border-stone-300 bg-white px-3 py-2 shadow-[0_8px_24px_-12px_rgba(28,27,23,0.45)] transition hover:border-stone-900 active:scale-[0.98]"
+        className={`no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 z-40 flex items-center gap-2.5 rounded-sm border border-stone-300 bg-white px-3 py-2 shadow-[0_8px_24px_-12px_rgba(28,27,23,0.45)] transition hover:border-stone-900 active:scale-[0.98] md:bottom-5 md:left-auto md:right-5 ${mobileHidden ? "max-md:hidden" : ""}`}
       >
         <span className="font-serif text-[13px] font-bold tracking-tight text-stone-900">Notes</span>
         {reviewCount ? (
@@ -55,13 +55,13 @@ export function HealthPanel({ pages }: { pages: number }) {
 
       {open ? (
         <div
-          className="no-print notes-overlay fixed inset-0 z-50 flex items-end justify-center bg-stone-900/45 p-4 sm:items-center"
+          className="no-print notes-overlay fixed inset-0 z-50 flex items-end justify-center bg-stone-900/45 p-0 sm:items-center sm:p-4"
           onClick={() => setOpen(false)}
         >
           <div
             role="dialog"
             aria-labelledby="notes-title"
-            className="notes-card w-full max-w-md overflow-hidden rounded-sm bg-white shadow-xl"
+            className="notes-card w-full max-w-md overflow-hidden rounded-t-lg bg-white shadow-xl sm:rounded-sm"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="masthead-rule" />
@@ -113,7 +113,7 @@ export function HealthPanel({ pages }: { pages: number }) {
               </div>
             ) : null}
 
-            <div className="flex justify-end border-t border-stone-200 px-5 py-3">
+            <div className="flex justify-end border-t border-stone-200 px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               <button
                 type="button"
                 onClick={() => setOpen(false)}

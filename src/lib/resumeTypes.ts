@@ -36,6 +36,7 @@ const VIS = (keys: VisibilityKey[]) =>
         "affiliations",
         "references",
         "portfolio",
+        "extras",
       ] as VisibilityKey[]
     ).map((k) => [k, keys.includes(k)]),
   ) as Record<VisibilityKey, boolean>;
@@ -194,21 +195,22 @@ export function defaultVisibility(type: ResumeTypeKey): Record<VisibilityKey, bo
 
 export function defaultSectionOrder(type: ResumeTypeKey): SectionKey[] {
   const def = getResumeType(type);
+  const withExtras = (order: SectionKey[]): SectionKey[] => (order.includes("extras") ? order : [...order, "extras"]);
   const order: SectionKey[] = ["summary", "experience", "education", "skills", "projects", "certifications", "languages"];
   if (def.summaryMode === "objective") order[0] = "objective";
   switch (type) {
     case "cv":
-      return ["summary", "education", "publications", "teaching", "grants", "presentations", "awards", "affiliations", "skills", "references"];
+      return withExtras(["summary", "education", "publications", "teaching", "grants", "presentations", "awards", "affiliations", "skills", "references"]);
     case "entry-level":
-      return ["objective", "education", "projects", "skills", "certifications", "languages", "volunteer", "awards"];
+      return withExtras(["objective", "education", "projects", "skills", "certifications", "languages", "volunteer", "awards"]);
     case "creative":
-      return ["summary", "portfolio", "skills", "experience", "projects", "certifications", "languages"];
+      return withExtras(["summary", "portfolio", "skills", "experience", "projects", "certifications", "languages"]);
     case "functional":
-      return ["summary", "skills", "projects", "experience", "education", "certifications", "languages", "volunteer"];
+      return withExtras(["summary", "skills", "projects", "experience", "education", "certifications", "languages", "volunteer"]);
     case "executive":
-      return ["summary", "skills", "experience", "awards", "education", "certifications", "languages", "portfolio"];
+      return withExtras(["summary", "skills", "experience", "awards", "education", "certifications", "languages", "portfolio"]);
     default:
-      return order;
+      return withExtras(order);
   }
 }
 

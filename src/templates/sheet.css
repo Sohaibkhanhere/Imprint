@@ -22,6 +22,7 @@
 .resume-sheet-fit {
   box-sizing: border-box;
   width: 100%;
+  height: 100%;
   min-height: 100%;
 }
 
@@ -68,6 +69,25 @@
   letter-spacing: 0.06em;
 }
 
+.tpl-stream .rs-portrait-fallback,
+.tpl-reel .rs-portrait-fallback,
+.tpl-circuit-dark .rs-portrait-fallback,
+.tpl-dark-modern .rs-portrait-fallback,
+.tpl-tech-dark .rs-portrait-fallback {
+  background: color-mix(in srgb, var(--accent) 24%, #1a1a1a);
+  color: #f4f4f4;
+}
+
+.tpl-boardroom .rs-portrait-fallback {
+  background: color-mix(in srgb, var(--metal, #c9a66b) 22%, #12263a);
+  color: var(--metal, #c9a66b);
+}
+
+.tpl-gilt .rs-portrait-fallback {
+  background: #2a2a2a;
+  color: var(--accent);
+}
+
 .resume-sheet .sheet-name {
   font-family: var(--font-display);
   color: var(--ink, #23211c);
@@ -84,16 +104,21 @@
   break-inside: avoid;
 }
 
+.resume-sheet .sheet-section + .sheet-section {
+  margin-top: var(--s3, 16px);
+}
+
 .resume-sheet .sheet-section-head {
   font-family: var(--font-display);
-  font-size: var(--h-size, 11px);
+  font-size: var(--h-size, 13px);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  line-height: 1.25;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
-  border-bottom: 1.5px solid var(--accent);
-  padding-bottom: var(--s1, 6px);
-  margin-bottom: var(--s2, 10px);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.45em;
+  margin-bottom: var(--s2, 11px);
   break-after: avoid;
 }
 
@@ -247,18 +272,25 @@
 /* ===== Shared t-* section classes (skinned per template) ===== */
 
 .resume-sheet .t-section {
-  margin-top: var(--s3, 16px);
+  margin-top: calc(var(--s3, 16px) + 4px);
   break-inside: avoid;
+}
+
+.resume-sheet .t-section:first-child,
+.resume-sheet .t-section:first-of-type {
+  margin-top: 0;
 }
 
 .resume-sheet .t-head {
   font-family: var(--font-display);
-  font-size: var(--h-size, 11px);
+  font-size: var(--h-size, 13px);
   font-weight: 700;
-  letter-spacing: 0.13em;
+  line-height: 1.25;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: var(--s2, 10px);
+  margin-bottom: var(--s2, 11px);
+  padding-bottom: 0.15em;
   break-after: avoid;
 }
 
@@ -385,6 +417,43 @@
   color: #8a8476;
 }
 
+.resume-sheet .t-extras {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 12px;
+  row-gap: 3px;
+  font-size: var(--body-size, 11px);
+  line-height: 1.45;
+}
+
+.resume-sheet .t-extra-row {
+  display: contents;
+}
+
+.resume-sheet .t-extra-k {
+  font-weight: 650;
+  color: #3a362f;
+}
+
+.resume-sheet .t-extra-k::after {
+  content: ":";
+}
+
+.resume-sheet .t-extra-v {
+  color: #33312b;
+  min-width: 0;
+}
+
+.resume-sheet .t-side .t-extras {
+  grid-template-columns: 1fr;
+}
+
+.resume-sheet .t-side .t-extra-row {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 8px;
+}
+
 .resume-sheet .t-pub-cite {
   font-size: var(--body-size, 11px);
   line-height: 1.5;
@@ -429,7 +498,7 @@
   --body-size: 10.5px;
   --meta-size: 10px;
   --role-size: 11.5px;
-  --h-size: 10px;
+  --h-size: 12px;
 }
 
 .resume-sheet[data-density="comfortable"] {
@@ -440,8 +509,8 @@
   --s4: 24px;
   --body-size: 11px;
   --meta-size: 10.5px;
-  --role-size: 12.5px;
-  --h-size: 11px;
+  --role-size: 12px;
+  --h-size: 13.5px;
 }
 
 /* ===== Shared t-* section classes (skinned per template) ===== */
@@ -842,8 +911,8 @@
 .tpl-photo-sidebar .ps-layout {
   display: grid;
   grid-template-columns: minmax(0, 230px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: var(--page-h);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
 }
 .tpl-photo-sidebar .ps-side {
   background: var(--accent);
@@ -1057,7 +1126,7 @@
 .tpl-dark-modern .dm-grid {
   display: grid;
   grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
-  min-height: calc(var(--page-h) - 120px);
+  min-height: calc(100% - 120px);
 }
 .tpl-dark-modern .dm-side {
   background: #f3ede9;
@@ -1179,8 +1248,8 @@
 .tpl-bold-diagonal .bd-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 230px);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: var(--page-h);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
 }
 .tpl-bold-diagonal .bd-main {
   padding: 28px 28px 26px;
@@ -1349,7 +1418,7 @@
 }
 .tpl-tech-dark .td-wrap {
   padding: 14px 20px;
-  min-height: var(--page-h);
+  min-height: 100%;
 }
 .tpl-tech-dark .td-top {
   display: flex;
@@ -1623,7 +1692,7 @@
 .tpl-photo-header .ph-main .t-head {
   color: var(--accent);
   border-bottom: 1.5px solid color-mix(in srgb, var(--accent) 30%, #fff);
-  padding-bottom: 3px;
+  padding-bottom: 0.4em;
 }
 .tpl-photo-header .ph-side {
   background: color-mix(in srgb, var(--accent) 7%, #fff);
@@ -1680,13 +1749,15 @@
   font-family: Georgia, "Source Serif 4", "Times New Roman", serif;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   color: var(--accent);
   text-align: center;
-  margin-bottom: var(--s1, 7px);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--accent) 45%, #c9c2b2);
+  padding-bottom: 0.4em;
+  margin-bottom: var(--s2, 11px);
 }
 .tpl-classic-serif .t-section {
-  margin-top: var(--s2, 12px);
+  margin-top: var(--s3, 16px);
 }
 .tpl-classic-serif .t-role {
   font-weight: 700;
@@ -1706,7 +1777,7 @@
   border: 1.5px solid var(--accent);
   margin: 0;
   padding: 0 24px 12px;
-  min-height: calc(var(--page-h) - 24px);
+  min-height: calc(100% - 24px);
 }
 .tpl-creative-border .cb-corner {
   position: absolute;
@@ -1802,8 +1873,8 @@
 .tpl-colored-sidebar .cl-layout {
   display: grid;
   grid-template-columns: minmax(0, 225px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: calc(var(--page-h) - 1px);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
 }
 .tpl-colored-sidebar .cl-side {
   background: var(--accent);
@@ -1881,9 +1952,9 @@
   margin-top: 0;
 }
 .tpl-colored-sidebar .cl-main .t-head {
-  color: var(--accent);
-  border-bottom: 1.5px solid color-mix(in srgb, var(--accent) 25%, #fff);
-  padding-bottom: 3px;
+  color: color-mix(in srgb, var(--accent) 68%, #111);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 5px;
   margin-bottom: var(--s1, 7px);
 }
 .tpl-colored-sidebar .cl-main .t-role {
@@ -2232,7 +2303,7 @@
   padding-bottom: 8px;
 }
 .tpl-modern-minimal .t-section {
-  margin-top: 14px;
+  margin-top: 18px;
 }
 
 .tpl-executive .ex-header {
@@ -2251,7 +2322,7 @@
   margin-top: 10px;
 }
 .tpl-executive .t-section {
-  margin-top: 13px;
+  margin-top: 18px;
 }
 .tpl-executive .t-entry {
   margin-bottom: 8px;
@@ -2262,13 +2333,13 @@
   padding: 16px 53px 12px;
 }
 .tpl-creative .t-section {
-  margin-top: 14px;
+  margin-top: 18px;
 }
 .tpl-creative .t-entry {
   margin-bottom: 9px;
 }
 .tpl-creative .t-head {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .tpl-academic-cv .ac-header {
@@ -2276,7 +2347,7 @@
   margin-bottom: 11px;
 }
 .tpl-academic-cv .t-section {
-  margin-top: 13px;
+  margin-top: 18px;
 }
 .tpl-academic-cv .t-entry {
   margin-bottom: 5px;
@@ -2286,7 +2357,7 @@
   margin-bottom: 15px;
 }
 .tpl-skills-based .t-section {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 .tpl-skills-based .t-skillgroup {
   margin-bottom: 4px;
@@ -2296,13 +2367,13 @@
   margin-bottom: 12px;
 }
 .tpl-tech .t-section {
-  margin-top: 14px;
+  margin-top: 18px;
 }
 .tpl-tech .t-entry {
   margin-bottom: 9px;
 }
 .tpl-tech .t-head {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .tpl-manifest .mn-header {
@@ -2311,14 +2382,14 @@
   margin-bottom: 13px;
 }
 .tpl-manifest .t-section {
-  margin-top: 13px;
+  margin-top: 18px;
 }
 .tpl-manifest .t-entry {
   margin-bottom: 8px;
 }
 .tpl-manifest .t-head {
-  padding-bottom: 4px;
-  margin-bottom: 8px;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .tpl-blueprint .bp-header {
@@ -2329,25 +2400,25 @@
   font-size: 24px;
 }
 .tpl-blueprint .t-section {
-  margin-top: 11px;
+  margin-top: 16px;
 }
 .tpl-blueprint .t-entry {
   margin-bottom: 6px;
 }
 .tpl-blueprint .t-head {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .tpl-broadside .bd-header {
   margin-bottom: 13px;
 }
 .tpl-broadside .t-section {
-  margin-top: 13px;
+  margin-top: 18px;
 }
 .tpl-broadside .t-entry {
   margin-bottom: 8px;
 }
 .tpl-broadside .t-head {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 

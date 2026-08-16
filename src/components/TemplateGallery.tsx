@@ -12,6 +12,7 @@ import {
 } from "../templates/registry";
 import { PAGE_DIMS } from "../templates/shared";
 import type { Resume } from "../lib/types";
+import { resumeForGalleryPreview, resumeLooksEmpty } from "../lib/sampleData";
 import { TemplateStepper } from "./TemplateStepper";
 
 function useInView(rootMargin = "240px") {
@@ -77,11 +78,13 @@ function LayoutCard({
   tp,
   resume,
   active,
+  sample,
   onApply,
 }: {
   tp: (typeof TEMPLATES)[number];
   resume: Resume;
   active: boolean;
+  sample: boolean;
   onApply: () => void;
 }) {
   const { ref, visible } = useInView("280px");
@@ -117,6 +120,11 @@ function LayoutCard({
           ) : (
             <span className="absolute inset-0 bg-stone-50" />
           )}
+          {sample ? (
+            <span className="absolute left-1.5 top-1.5 z-10 rounded-sm bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-500 shadow-sm">
+              Sample
+            </span>
+          ) : null}
           {active ? (
             <span className="absolute right-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-sm bg-amber-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
               <Check size={10} /> Current
@@ -135,7 +143,8 @@ function LayoutCard({
 
 export function TemplateGallery({ onClose }: { onClose: () => void }) {
   const { resume, dispatch } = useResume();
-  const [thumbResume] = useState(resume);
+  const [thumbResume] = useState(() => resumeForGalleryPreview(resume));
+  const showingSample = resumeLooksEmpty(resume);
   const [query, setQuery] = useState("");
   const [finish, setFinish] = useState<FinishFilter>("all");
   const [role, setRole] = useState<RoleFilter>("all");
@@ -162,15 +171,16 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
   }, [resume.theme.template]);
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-[92vh] w-[min(1180px,96vw)] flex-col rounded-sm bg-stone-100 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-wrap items-center gap-3 rounded-t-sm border-b border-stone-300 bg-white px-5 py-3">
-          <div className="min-w-0">
+    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-stone-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <div className="flex max-h-[100dvh] w-full flex-col rounded-none bg-stone-100 shadow-2xl sm:max-h-[92vh] sm:w-[min(1180px,96vw)] sm:rounded-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-wrap items-center gap-2 rounded-none border-b border-stone-300 bg-white px-4 py-3 sm:gap-3 sm:rounded-t-sm sm:px-5">
+          <div className="min-w-0 flex-1">
             <p className="font-serif text-base font-bold text-stone-900">Template gallery</p>
             <p className="folio text-stone-500">
               {filtered.length === TEMPLATES.length
                 ? `${TEMPLATES.length} layouts`
                 : `${filtered.length} of ${TEMPLATES.length} layouts`}
+              {showingSample ? " · sample text so you can see the design" : ""}
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -239,6 +249,7 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
                 tp={tp}
                 resume={thumbResume}
                 active={resume.theme.template === tp.key}
+                sample={showingSample}
                 onApply={() => applyLayout(tp.key)}
               />
             ))}

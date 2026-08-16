@@ -1,5 +1,5 @@
 import type { Resume } from "../lib/types";
-import { Sheet, SectionHead, Bullets, Dates, contactParts, safeContact, headingFor, effectiveSections, citePublication } from "./shared";
+import { Sheet, SectionHead, Bullets, Dates, ExtraDetails, contactParts, safeContact, headingFor, effectiveSections, citePublication } from "./shared";
 import { cleanUrl } from "../lib/date";
 
 function Header({ resume }: { resume: Resume }) {
@@ -308,6 +308,13 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
                 <p className="c-summary">
                   <span style={{ color: "var(--accent)", fontWeight: 600 }}>{cleanUrl(r.contact.portfolioUrl)}</span>
                 </p>
+              </section>
+            );
+          case "extras":
+            return (
+              <section key={s} className="sheet-section">
+                <SectionHead label={headingFor("extras", resume)} />
+                <ExtraDetails resume={resume} />
               </section>
             );
           default:

@@ -46,8 +46,21 @@ export function Sheet({
     if (!outer || !inner) return;
     const measure = () => {
       const avail = outer.clientHeight;
+      if (!avail) return;
+      const prevTransform = inner.style.transform;
+      const prevWidth = inner.style.width;
+      const prevHeight = inner.style.height;
+      const prevMinHeight = inner.style.minHeight;
+      inner.style.transform = "none";
+      inner.style.width = "100%";
+      inner.style.height = "auto";
+      inner.style.minHeight = "0";
       const need = inner.scrollHeight;
-      if (!avail || !need) return;
+      inner.style.transform = prevTransform;
+      inner.style.width = prevWidth;
+      inner.style.height = prevHeight;
+      inner.style.minHeight = prevMinHeight;
+      if (!need) return;
       const next = need > avail + 2 ? avail / need : 1;
       setFit((prev) => (Math.abs(prev - next) < 0.003 ? prev : next));
     };
@@ -83,8 +96,9 @@ export function Sheet({
         data-ats={ats}
         style={{
           padding: SHEET_PADDING,
-          width: "100%",
-          minHeight: "100%",
+          width: fit < 0.999 ? `${100 / fit}%` : "100%",
+          height: fit < 0.999 ? `${100 / fit}%` : "100%",
+          minHeight: fit < 0.999 ? 0 : "100%",
           transform: fit < 0.999 ? `scale(${fit})` : undefined,
           transformOrigin: "top left",
           ...style,
@@ -153,6 +167,21 @@ export function contactParts(resume: Resume): string[] {
   return parts;
 }
 
+export function ExtraDetails({ resume }: { resume: Resume }) {
+  const rows = (resume.extras ?? []).filter((d) => t(d.label) && t(d.value));
+  if (!rows.length) return null;
+  return (
+    <div className="t-extras">
+      {rows.map((d) => (
+        <div key={d.id} className="t-extra-row">
+          <span className="t-extra-k">{d.label}</span>
+          <span className="t-extra-v">{d.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function headingFor(section: string, resume: Resume): string {
   const type = resume.meta?.type;
   switch (section) {
@@ -190,6 +219,8 @@ export function headingFor(section: string, resume: Resume): string {
       return "References";
     case "portfolio":
       return "Portfolio";
+    case "extras":
+      return "Personal Details";
     default:
       return section;
   }
@@ -231,6 +262,8 @@ export function shouldRender(section: string, resume: Resume): boolean {
       return (resume.references ?? []).length > 0;
     case "portfolio":
       return t(resume.contact?.portfolioUrl).length > 0;
+    case "extras":
+      return (resume.extras ?? []).some((d) => t(d.label) && t(d.value));
     default:
       return true;
   }

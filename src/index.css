@@ -40,6 +40,10 @@ html,
 body,
 #root {
   height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
@@ -47,6 +51,9 @@ body {
   color: var(--color-stone-900);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
 
 /* ===== Motion ===== */
@@ -255,6 +262,29 @@ body {
   padding: 10px 10px 10px;
 }
 
+@media (max-width: 639px) {
+  .contents-lang {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .contents-head,
+  .contents-head-main {
+    min-height: 44px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  textarea {
+    min-height: 5.5rem;
+  }
+}
+
 .editor-mark {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -324,10 +354,44 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+  .preview-frame {
+    padding: 52px 10px 88px;
+    justify-content: flex-start;
+  }
+
+  .preview-folio {
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .preview-pagecount {
+    top: 8px;
+    right: 8px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .preview-frame {
+    padding: 64px 14px 48px;
+  }
 }
 
 .preview-canvas {
   flex: none;
+  position: relative;
+}
+
+.preview-canvas-clip {
+  overflow: hidden;
+}
+
+.preview-canvas-inner {
   transform-origin: top left;
 }
 
@@ -391,8 +455,10 @@ body {
   body,
   #root {
     height: auto !important;
+    max-height: none !important;
     overflow: hidden !important;
     background: #fff !important;
+    padding: 0 !important;
   }
 
   .no-print,
@@ -400,8 +466,11 @@ body {
     display: none !important;
   }
 
+  .h-dvh,
+  .max-h-dvh,
   .h-screen {
     height: auto !important;
+    max-height: none !important;
     display: block !important;
   }
 
@@ -428,9 +497,13 @@ body {
     display: block !important;
   }
 
-  .preview-canvas {
+  .preview-canvas,
+  .preview-canvas-clip,
+  .preview-canvas-inner {
     transform: none !important;
     width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .preview-sheet {

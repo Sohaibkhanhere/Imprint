@@ -21,10 +21,16 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
     setDraft(null);
     try {
       const text = await extractCvText(file);
-      if (!text.trim()) throw new Error("No text found in the file — it may be a scanned image. Please export a text-based PDF/DOCX.");
+      if (!text.trim()) throw new Error("This file has no selectable text. Scanned or image-only PDFs cannot be imported — export a text PDF from Word or Google Docs, or type the details in Contents.");
       const parsed = parseCvText(text);
       if (!hasMeaningfulContent(parsed)) {
-        throw new Error("Couldn't find recognizable resume content (name, work, education). Try a PDF/DOCX exported from Word or Google Docs.");
+        const blob = text.replace(/\s+/g, " ").trim();
+        if (blob.length >= 80) {
+          parsed.summary = parsed.summary || blob.slice(0, 1400);
+          parsed.warnings.push("This file did not split cleanly into sections. Check Contents and move items if needed.");
+        } else {
+          throw new Error("Couldn't find recognizable resume content (name, work, education). Try a PDF/DOCX exported from Word or Google Docs.");
+        }
       }
       setDraft(parsed);
       setFileName(file.name);
@@ -49,9 +55,9 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
   const warns = draft?.warnings ?? [];
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-sm bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-stone-300 px-5 py-3.5">
+    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-stone-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[min(92dvh,100%)] w-full max-w-xl overflow-y-auto rounded-t-lg bg-white shadow-xl sm:rounded-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-3 border-b border-stone-300 px-4 py-3.5 sm:px-5">
           <div>
             <p className="font-serif text-base font-bold text-stone-900">Import an existing resume</p>
             <p className="folio text-stone-500">We rebuild it into our templates — everything stays editable</p>
@@ -65,7 +71,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,.docx,.txt,.md"
+            accept=".pdf,.docx,.txt,.md,.rtf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             className="hidden"
             onChange={(e) => void handleFile(e.target.files?.[0])}
           />
@@ -76,6 +82,14 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
               onClick={() => inputRef.current?.click()}
               disabled={busy}
               className="flex w-full flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center transition hover:border-amber-600 hover:bg-amber-50/50 disabled:opacity-60"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                void handleFile(e.dataTransfer.files?.[0]);
+              }}
             >
               {busy ? <Loader2 size={28} className="animate-spin text-amber-700" /> : <UploadCloud size={28} className="text-stone-400" />}
               <span className="text-sm font-semibold text-stone-800">{busy ? "Reading and rebuilding…" : "Choose your old resume file"}</span>
@@ -151,7 +165,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
             <p className="mt-3 rounded-sm border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs leading-relaxed text-red-800">{error}</p>
           ) : null}
 
-          <div className="mt-5 flex items-center justify-between">
+          <div className="mt-5 flex flex-col-reverse gap-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[11px] leading-snug text-stone-500">
               Imported resumes are rebuilt automatically. After import you can edit, customize, and switch templates freely.
             </p>
@@ -159,7 +173,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={doImport}
               disabled={!draft}
-              className="inline-flex shrink-0 items-center gap-2 rounded-sm bg-stone-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:opacity-40"
+              className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-sm bg-stone-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:opacity-40 sm:w-auto"
             >
               Import resume <UploadCloud size={14} />
             </button>

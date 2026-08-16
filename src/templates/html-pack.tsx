@@ -803,7 +803,7 @@ export function StreamTemplate({ resume }: { resume: Resume }) {
               </span>
             </div>
             <p>
-              {j.role}
+              {j.role && j.company && j.role.toLowerCase() !== j.company.toLowerCase() ? j.role : ""}
               {j.location ? ` · ${j.location}` : ""}
             </p>
             <Bullets items={j.bullets} />
@@ -888,10 +888,14 @@ export function GroveTemplate({ resume }: { resume: Resume }) {
                       <Dates start={j.startDate} end={j.endDate} present={j.present} />
                     </span>
                   </div>
-                  <p>
-                    {j.company}
-                    {j.location ? ` — ${j.location}` : ""}
-                  </p>
+                  {j.role && j.company ? (
+                    <p>
+                      {j.company}
+                      {j.location ? ` — ${j.location}` : ""}
+                    </p>
+                  ) : j.location ? (
+                    <p>{j.location}</p>
+                  ) : null}
                   <Bullets items={j.bullets} />
                 </div>
               ))}

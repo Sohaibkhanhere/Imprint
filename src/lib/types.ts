@@ -195,6 +195,12 @@ export interface ReferenceEntry {
   phone: string;
 }
 
+export interface CustomDetail {
+  id: ID;
+  label: string;
+  value: string;
+}
+
 export type SectionKey =
   | "contact"
   | "summary"
@@ -213,7 +219,8 @@ export type SectionKey =
   | "presentations"
   | "affiliations"
   | "references"
-  | "portfolio";
+  | "portfolio"
+  | "extras";
 
 export type VisibilityKey = Exclude<SectionKey, "contact">;
 
@@ -261,6 +268,7 @@ export interface Resume {
   presentations: PresentationEntry[];
   affiliations: AffiliationEntry[];
   references: ReferenceEntry[];
+  extras: CustomDetail[];
   sectionOrder: SectionKey[];
   visibility: SectionVisibility;
   theme: ThemeConfig;
@@ -279,7 +287,8 @@ export type ListSectionKey =
   | "grants"
   | "presentations"
   | "affiliations"
-  | "references";
+  | "references"
+  | "extras";
 
 export interface FieldDef<T extends SectionKey> {
   key: T;

@@ -185,5 +185,13 @@ export function coerceResume(resume: Resume): Resume {
         phone: str(x.phone),
       };
     }),
+    extras: arr<Resume["extras"][number]>(resume?.extras).map((raw) => {
+      const x = obj(raw);
+      return {
+        ...x,
+        label: str(x.label),
+        value: str(x.value),
+      };
+    }),
   };
 }

@@ -53,7 +53,7 @@ export function TemplateStepper({
         <ChevronLeft size={14} />
         <span className={bar ? "hidden sm:inline" : "hidden lg:inline"}>Previous</span>
       </button>
-      <div className={`min-w-0 px-1.5 text-center ${bar ? "min-w-[9.5rem]" : ""}`}>
+      <div className={`min-w-0 px-1.5 text-center ${bar ? "min-w-[6.5rem] sm:min-w-[9.5rem]" : ""}`}>
         <p className="truncate text-xs font-semibold text-stone-900">{current.label}</p>
         <p className="folio text-[10px] text-stone-400">
           {index + 1} / {total}

@@ -41,32 +41,32 @@ function ShellInner() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-stone-100">
+    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-stone-100">
       <HeaderBar onReset={reset} onOpenTailor={() => setShowTailor((s) => !s)} startInGallery={firstIssue} />
-      <div className="no-print flex border-b border-stone-200 bg-white md:hidden">
+      <div className="no-print flex shrink-0 border-b border-stone-200 bg-white md:hidden">
         <button
           type="button"
           onClick={() => setMobileTab("copy")}
-          className={`flex flex-1 items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition ${
+          className={`flex min-h-11 flex-1 items-center justify-center gap-2 border-b-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition ${
             mobileTab === "copy" ? "border-amber-600 text-stone-900" : "border-transparent text-stone-500"
           }`}
         >
-          <span className="contents-number">01</span> Copy desk
+          <span className="contents-number">01</span> Copy
         </button>
         <button
           type="button"
           onClick={() => setMobileTab("proof")}
-          className={`flex flex-1 items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition ${
+          className={`flex min-h-11 flex-1 items-center justify-center gap-2 border-b-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition ${
             mobileTab === "proof" ? "border-amber-600 text-stone-900" : "border-transparent text-stone-500"
           }`}
         >
-          <span className="contents-number">02</span> Proof sheet
+          <span className="contents-number">02</span> Proof
         </button>
       </div>
-      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
         <aside
-          className={`no-print flex-col overflow-y-auto border-b border-stone-300 bg-white md:flex md:w-[28rem] md:flex-col md:border-b-0 md:border-r ${
-            mobileTab === "copy" ? "flex" : "hidden"
+          className={`no-print min-h-0 min-w-0 flex-col overflow-y-auto overflow-x-hidden border-b border-stone-300 bg-white md:flex md:w-[min(22rem,40vw)] md:flex-none md:border-b-0 md:border-r lg:w-[28rem] ${
+            mobileTab === "copy" ? "flex flex-1" : "hidden"
           }`}
         >
           <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-4 py-3.5 backdrop-blur-[6px]">
@@ -78,18 +78,18 @@ function ShellInner() {
             <p className="mt-1.5 text-[12px] leading-snug text-stone-500">Every field updates the proof live.</p>
           </div>
           {showTailor ? <div className="border-b border-stone-200 px-4 py-3"><TailorPanel onClose={() => setShowTailor(false)} /></div> : null}
-          <div className="px-4 pb-10 pt-3">
+          <div className="px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-3">
             <FormPanel />
           </div>
         </aside>
 
-        <main className={`flex flex-1 flex-col overflow-hidden md:flex ${mobileTab === "proof" ? "flex" : "hidden"}`}>
-          <div className="flex-1 overflow-hidden">
+        <main className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex ${mobileTab === "proof" ? "flex" : "hidden"}`}>
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
             <PreviewPane onPages={setPages} />
           </div>
         </main>
       </div>
-      <HealthPanel pages={pages} />
+      <HealthPanel pages={pages} mobileHidden={mobileTab === "copy"} />
     </div>
   );
 }
@@ -98,7 +98,7 @@ function Shell() {
   return (
     <ErrorBoundary
       fallback={(reset) => (
-        <div className="flex h-screen flex-col items-center justify-center gap-3 bg-stone-100 px-6 text-center">
+        <div className="flex h-dvh flex-col items-center justify-center gap-3 bg-stone-100 px-6 text-center">
           <p className="font-serif text-lg font-bold text-stone-900">Imprint hit a snag</p>
           <p className="max-w-sm text-sm text-stone-600">Your saved data is safe. Reset to a blank resume to keep working.</p>
           <div className="flex gap-2">

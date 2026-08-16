@@ -17,6 +17,8 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
   const template = getTemplate(resume.theme.template);
   const Template = template.component;
   const page = PAGE_DIMS[resume.theme.pageSize] ?? PAGE_DIMS.a4;
+  const visualW = page.width * scale;
+  const visualH = page.height * scale;
 
   useEffect(() => {
     applyPageStyle(resume.theme.pageSize ?? "a4");
@@ -27,7 +29,8 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
     if (!el) return;
     const update = () => {
       const w = el.clientWidth;
-      setScale(Math.min(1, (w - 40) / page.width));
+      const gutter = w < 640 ? 16 : w < 1024 ? 28 : 40;
+      setScale(Math.min(1, Math.max(0.28, (w - gutter) / page.width)));
     };
     update();
     const ro = new ResizeObserver(update);
@@ -48,21 +51,33 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
         </div>
       </div>
       <div ref={frameRef} id="preview-frame" className="preview-frame">
-        <div className="preview-canvas" style={{ transform: `scale(${scale})`, width: page.cssWidth }}>
-          <div ref={sheetRef} className="preview-sheet relative">
-            <ErrorBoundary
-              key={resume.theme.template}
-              fallback={() => (
-                <div className="flex h-64 flex-col items-center justify-center gap-2 bg-white px-6 text-center">
-                  <p className="font-serif text-sm font-bold text-stone-900">The proof couldn't render this data</p>
-                  <p className="text-xs text-stone-500">A field in your resume is confusing this template. Try another layout or fix the affected section — your data is safe.</p>
-                </div>
-              )}
+        <div className="preview-canvas" style={{ width: visualW }}>
+          <div className="preview-canvas-clip" style={{ width: visualW, height: visualH }}>
+            <div
+              className="preview-canvas-inner"
+              style={{
+                width: page.cssWidth,
+                height: page.cssHeight,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
             >
-              <Template resume={deferred} />
-            </ErrorBoundary>
+              <div ref={sheetRef} className="preview-sheet relative">
+                <ErrorBoundary
+                  key={resume.theme.template}
+                  fallback={() => (
+                    <div className="flex h-64 flex-col items-center justify-center gap-2 bg-white px-6 text-center">
+                      <p className="font-serif text-sm font-bold text-stone-900">The proof couldn't render this data</p>
+                      <p className="text-xs text-stone-500">A field in your resume is confusing this template. Try another layout or fix the affected section — your data is safe.</p>
+                    </div>
+                  )}
+                >
+                  <Template resume={deferred} />
+                </ErrorBoundary>
+              </div>
+            </div>
           </div>
-          <div className="preview-folio" style={{ width: page.cssWidth }}>
+          <div className="preview-folio">
             <span className="folio">Proof</span>
             <span className="folio truncate text-stone-600">{(resume.contact?.fullName || "").trim() || "Untitled issue"}</span>
             <span className="folio">

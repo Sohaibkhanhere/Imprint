@@ -1,6 +1,6 @@
 import { BrandMark } from "./BrandMark";
-import { FileDown, FileText, Palette, Type, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2, ListOrdered, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { FileDown, FileText, Palette, Type, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2, ListOrdered, ChevronDown, MoreHorizontal } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useResume } from "../store/resumeStore";
 import { exportPdf } from "../lib/pdf";
 import { ACCENT_PALETTE, FONT_PAIRS } from "../lib/sampleData";
@@ -26,7 +26,25 @@ export function HeaderBar({
   const [showImport, setShowImport] = useState(false);
   const [exportingWord, setExportingWord] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
   const issueName = (resume.contact?.fullName || "").trim() || "Untitled issue";
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!moreRef.current?.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [moreOpen]);
 
   const exportWord = async () => {
     if (exportingWord) return;
@@ -44,16 +62,16 @@ export function HeaderBar({
   return (
     <header id="app-chrome" className="no-print border-b border-stone-300 bg-white">
       <div className="masthead-rule" />
-      <div className="flex items-center gap-3 px-4 py-2.5 sm:px-6">
-        <button type="button" onClick={() => setPanel(panel === "template" ? null : "template")} className="group flex items-center gap-2.5">
+      <div className="flex min-w-0 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5 lg:px-6">
+        <button type="button" onClick={() => setPanel(panel === "template" ? null : "template")} className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
           <BrandMark size={32} />
-          <span className="flex flex-col items-start leading-tight">
+          <span className="flex min-w-0 flex-col items-start leading-tight">
             <span className="font-serif text-[15px] font-bold tracking-tight text-stone-900">Imprint</span>
             <span className="folio hidden text-stone-500 sm:block">The resume press</span>
           </span>
         </button>
 
-        <nav className="ml-2 flex flex-1 items-center gap-0.5 overflow-x-auto xl:gap-1">
+        <nav className="ml-1 hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto sm:flex xl:gap-1">
           <button
             type="button"
             onClick={() => setPanel(panel === "template" ? null : "template")}
@@ -92,7 +110,18 @@ export function HeaderBar({
           </button>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setMoreOpen(false);
+              setShowImport(true);
+            }}
+            className="inline-flex min-h-10 min-w-10 items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-stone-50 hover:text-stone-900 sm:hidden"
+            title="Import CV"
+          >
+            <Upload size={16} />
+          </button>
           <select
             value={t.pageSize ?? "a4"}
             onChange={(e) => dispatch({ type: "SET_THEME", theme: { pageSize: e.target.value as "a4" | "letter" } })}
@@ -106,69 +135,99 @@ export function HeaderBar({
             type="button"
             title={t.atsSafe ? "ATS-safe mode on" : "Toggle ATS-safe mode"}
             onClick={() => dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } })}
-            className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-1.5 text-xs font-medium transition ${
+            className={`hidden items-center gap-1.5 rounded-sm border px-2 py-1.5 text-xs font-medium transition sm:inline-flex ${
               t.atsSafe ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-stone-300 text-stone-500 hover:bg-stone-50"
             }`}
           >
-            <ShieldCheck size={14} /> <span className="hidden sm:inline">ATS Safe</span>
+            <ShieldCheck size={14} /> <span className="hidden md:inline">ATS Safe</span>
           </button>
           <button
             type="button"
             title="Start fresh — clear all fields"
             onClick={onReset}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-stone-300 px-2.5 py-1.5 text-xs font-medium text-stone-500 transition hover:bg-stone-50"
+            className="hidden min-h-9 items-center gap-1.5 rounded-sm border border-stone-300 px-2 py-1.5 text-xs font-medium text-stone-500 transition hover:bg-stone-50 sm:inline-flex"
           >
             <RotateCcw size={14} />
           </button>
-          <div className="flex shrink-0 flex-col items-stretch gap-0.5">
-            <span className="folio hidden text-right text-stone-400 2xl:block">Export</span>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    exportPdf(resume);
-                  } catch (e) {
-                    window.alert((e as Error).message || "Could not export PDF.");
-                  }
-                }}
-                title="Download a PDF that matches this template exactly (print to PDF from the dialog)"
-                className="inline-flex items-center gap-1.5 rounded-sm bg-stone-900 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
-              >
-                <FileDown size={15} /> <span className="hidden sm:inline">PDF</span>
-                <span className="hidden text-[10px] font-normal text-stone-300 xl:inline">exact</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => void exportWord()}
-                disabled={exportingWord}
-                title="Download a Word file that matches this template, same look as PDF"
-                className="inline-flex items-center gap-1.5 rounded-sm border border-stone-300 px-2.5 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:cursor-wait disabled:opacity-60"
-              >
-                {exportingWord ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} />}
-                <span className="hidden sm:inline">{exportingWord ? "Exporting" : "Word"}</span>
-                <span className="hidden text-[10px] text-stone-400 xl:inline">exact</span>
-              </button>
-            </div>
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                exportPdf(resume);
+              } catch (e) {
+                window.alert((e as Error).message || "Could not export PDF.");
+              }
+            }}
+            title="Download a PDF that matches this template exactly (print to PDF from the dialog)"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-sm bg-stone-900 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 active:scale-[0.98]"
+          >
+            <FileDown size={15} /> <span className="hidden sm:inline">PDF</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void exportWord()}
+            disabled={exportingWord}
+            title="Download a Word file that matches this template, same look as PDF"
+            className="hidden min-h-9 items-center gap-1.5 rounded-sm border border-stone-300 px-2.5 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:cursor-wait disabled:opacity-60 sm:inline-flex"
+          >
+            {exportingWord ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} />}
+            <span className="hidden md:inline">{exportingWord ? "Exporting" : "Word"}</span>
+          </button>
+          <div ref={moreRef} className="relative sm:hidden">
+            <button
+              type="button"
+              onClick={() => setMoreOpen((o) => !o)}
+              className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm border border-stone-300 text-stone-600 transition hover:bg-stone-50"
+              aria-expanded={moreOpen}
+              aria-label="More actions"
+            >
+              <MoreHorizontal size={16} />
+            </button>
+            {moreOpen ? (
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 overflow-hidden rounded-sm border border-stone-200 bg-white py-1 shadow-lg">
+                {(
+                  [
+                    { label: "Template", run: () => setPanel(panel === "template" ? null : "template") },
+                    { label: "Customize", run: () => setPanel(panel === "customize" ? null : "customize") },
+                    { label: "Writing tips", run: () => setShowChecklist((s) => !s) },
+                    { label: "Tailor to a job", run: onOpenTailor },
+                    { label: "Import CV", run: () => setShowImport(true) },
+                    { label: exportingWord ? "Exporting Word…" : "Export Word", run: () => void exportWord() },
+                    { label: t.atsSafe ? "ATS Safe on" : "ATS Safe off", run: () => dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } }) },
+                    { label: "Start fresh", run: onReset },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      item.run();
+                    }}
+                    className="block w-full px-3 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-50"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-t border-stone-200 px-4 py-1.5 sm:px-6">
-        <span className="folio text-stone-500">The current issue</span>
-        <span className="folio text-stone-500">·</span>
+      <div className="flex min-w-0 items-center gap-2 border-t border-stone-200 px-3 py-1.5 sm:gap-3 sm:px-4 lg:px-6">
+        <span className="folio hidden text-stone-500 sm:inline">Issue</span>
         <span className="folio truncate text-stone-600">{issueName}</span>
-        <span className="ml-auto flex shrink-0 items-center gap-3">
+        <span className="ml-auto flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <TemplateStepper keyboard />
-          <span className="folio hidden text-stone-500 sm:inline">{t.pageSize?.toUpperCase() ?? "A4"}</span>
-          {t.fontPair === "editorial" ? <span className="folio hidden text-stone-500 sm:inline">Editorial</span> : null}
+          <span className="folio hidden text-stone-500 md:inline">{t.pageSize?.toUpperCase() ?? "A4"}</span>
         </span>
       </div>
 
       {panel === "template" ? <TemplateGallery onClose={() => setPanel(null)} /> : null}
 
       {panel === "customize" ? (
-        <div className="border-t border-stone-200 bg-white px-4 py-4 sm:px-6">
+        <div className="max-h-[min(58dvh,32rem)] overflow-y-auto border-t border-stone-200 bg-white px-4 py-4 sm:px-6">
           <div className="mb-5">
             <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
               <ListOrdered size={12} className="text-stone-500" /> Issue format
@@ -309,7 +368,7 @@ const FORMAT_CHIP: Record<ResumeTypeKey, string> = {
 
 function WritingTips({ onClose }: { onClose: () => void }) {
   return (
-    <div className="border-t border-stone-200 bg-stone-50 px-4 py-3 sm:px-6">
+    <div className="max-h-[min(50dvh,22rem)] overflow-y-auto border-t border-stone-200 bg-stone-50 px-4 py-3 sm:px-6">
       <div className="flex items-start justify-between">
         <div>
           <p className="folio mb-2 text-stone-500">Copy desk — bullet formula &amp; writing rules</p>

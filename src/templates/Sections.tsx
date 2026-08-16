@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Resume, SectionKey } from "../lib/types";
-import { Bullets, Dates, headingFor, shouldRender, citePublication, effectiveSections } from "./shared";
+import { Bullets, Dates, ExtraDetails, headingFor, shouldRender, citePublication, effectiveSections } from "./shared";
 import { cleanUrl } from "../lib/date";
 
 function SectionHead({ label }: { label: string }) {
@@ -48,7 +48,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
               <span className="t-dates"><Dates start={j.startDate} end={j.endDate} present={j.present} /></span>
             </div>
             <div className="t-org">
-              {j.company}
+              {j.company && j.role && j.company.toLowerCase() !== j.role.toLowerCase() ? j.company : ""}
               {j.location ? <span className="t-loc">{j.location}</span> : null}
             </div>
             {j.descriptor ? <p className="t-desc">{j.descriptor}</p> : null}
@@ -220,6 +220,9 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
           <div className="t-meta">{cleanUrl(resume.contact?.portfolioUrl)}</div>
         </div>,
       );
+      break;
+    case "extras":
+      out.push(<ExtraDetails key="extras" resume={resume} />);
       break;
     default:
       break;

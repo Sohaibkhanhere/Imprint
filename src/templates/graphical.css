@@ -2,12 +2,13 @@
 
 .g-sheet {
   overflow-x: clip;
-  min-height: var(--page-h);
+  height: 100%;
+  min-height: 100%;
   font-family: Outfit, Inter, "Segoe UI", sans-serif;
-  --ink: color-mix(in srgb, var(--accent) 72%, #111);
-  --deep: color-mix(in srgb, var(--accent) 88%, #050505);
-  --soft: color-mix(in srgb, var(--accent) 16%, #f7f4ee);
-  --glow: color-mix(in srgb, var(--accent) 35%, #9ff6ee);
+  --ink: #1c1a16;
+  --deep: color-mix(in srgb, var(--accent) 78%, #0a0a0a);
+  --soft: color-mix(in srgb, var(--accent) 10%, #f7f4ee);
+  --glow: color-mix(in srgb, var(--accent) 22%, #d4ece8);
 }
 
 .g-sheet h1 {
@@ -27,16 +28,16 @@
 }
 
 .g-sheet .t-section {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .g-sheet .t-head {
   border: 0;
-  padding: 0;
-  margin-bottom: 8px;
-  letter-spacing: 0.12em;
+  padding: 0 0 0.15em;
+  margin-bottom: 10px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: 12.5px;
 }
 
 .g-sheet .t-entry {
@@ -58,8 +59,8 @@
 .tpl-ribbon-navy .rn-layout {
   display: grid;
   grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: var(--page-h);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
 }
 
 .tpl-ribbon-navy .rn-side {
@@ -128,7 +129,7 @@
 
 .tpl-ribbon-navy .rn-main .t-head {
   display: inline-block;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 82%, #0a1628);
   color: #fff;
   padding: 6px 18px 6px 22px;
   clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
@@ -145,7 +146,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   grid-template-rows: auto auto 1fr;
-  min-height: var(--page-h);
+  min-height: 100%;
   background: #f3f1ea;
 }
 
@@ -162,9 +163,9 @@
 
 .tpl-sage-overlap .so-about {
   grid-column: 1 / -1;
-  margin: -12px 28px 0;
-  background: color-mix(in srgb, var(--accent) 58%, #8fb48a);
-  color: #fff;
+  margin: -8px 28px 12px;
+  background: var(--deep);
+  color: #f6f3ea;
   border-radius: 999px;
   padding: 14px 28px;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--deep) 28%, transparent);
@@ -174,7 +175,8 @@
 
 .tpl-sage-overlap .so-about span {
   display: inline-block;
-  background: var(--deep);
+  background: color-mix(in srgb, #fff 82%, var(--accent));
+  color: var(--deep);
   border-radius: 999px;
   font-size: 10px;
   letter-spacing: 0.12em;
@@ -219,7 +221,7 @@
 
 .tpl-sage-overlap .so-left .t-head {
   display: inline-block;
-  background: color-mix(in srgb, var(--accent) 55%, #9cba8f);
+  background: var(--deep);
   color: #fff;
   border-radius: 999px;
   padding: 4px 12px;
@@ -243,7 +245,8 @@
 
 .tpl-sage-overlap .so-right .t-head {
   display: inline-block;
-  background: color-mix(in srgb, var(--accent) 50%, #9cba8f);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.55);
   color: #fff;
   border-radius: 999px;
   padding: 4px 12px;
@@ -267,7 +270,7 @@
 
 .tpl-circuit-dark .cd-wrap {
   position: relative;
-  min-height: var(--page-h);
+  min-height: 100%;
   padding: 28px 26px 36px;
   background: radial-gradient(1200px 500px at 10% 0%, color-mix(in srgb, var(--accent) 55%, #071428), #07101c 42%);
   color: #f4f7fb;
@@ -382,8 +385,8 @@
 .tpl-terra-wave .tw-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: var(--page-h);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
   position: relative;
   background: #f6efe4;
   overflow: hidden;
@@ -487,7 +490,7 @@
   display: grid;
   grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
-  min-height: var(--page-h);
+  min-height: 100%;
   background: #f3ead9;
 }
 
@@ -511,7 +514,7 @@
 }
 
 .tpl-stadium-banner .sb-banner > div > p:first-of-type {
-  color: color-mix(in srgb, var(--accent) 40%, #f3ead9);
+  color: #efe6d4;
   margin-top: 4px;
 }
 
@@ -587,7 +590,7 @@
 /* ===== Polaroid Burst ===== */
 
 .tpl-polaroid-burst .pb-layout {
-  min-height: var(--page-h);
+  min-height: 100%;
   background: #fff;
   position: relative;
   overflow: hidden;
@@ -631,7 +634,7 @@
 
 .tpl-polaroid-burst .pb-head h1 {
   font-size: 30px;
-  color: var(--accent);
+  color: #161616;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -660,7 +663,7 @@
 }
 
 .tpl-polaroid-burst .pb-cols main {
-  background: color-mix(in srgb, var(--accent) 28%, #ffe566);
+  background: color-mix(in srgb, var(--accent) 10%, #fff8e4);
   padding: 18px 24px 32px;
 }
 
@@ -681,7 +684,7 @@
   display: grid;
   grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
   grid-template-rows: auto 1fr auto;
-  min-height: var(--page-h);
+  min-height: 100%;
   position: relative;
   background: #fff;
 }
@@ -693,8 +696,8 @@
   right: 0;
   height: 72px;
   background:
-    linear-gradient(118deg, transparent 38%, color-mix(in srgb, var(--accent) 55%, #8bc34a) 38% 52%, transparent 52%),
-    linear-gradient(118deg, var(--accent) 0 28%, transparent 28%);
+    linear-gradient(118deg, transparent 68%, color-mix(in srgb, var(--accent) 55%, #8bc34a) 68% 82%, transparent 82%),
+    linear-gradient(118deg, transparent 0 78%, var(--accent) 78%);
   pointer-events: none;
 }
 
@@ -709,9 +712,10 @@
 
 .tpl-forest-geo .fg-head h1 {
   font-size: 28px;
-  color: var(--deep);
+  color: #161616;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  padding-right: 8px;
 }
 
 .tpl-forest-geo .fg-head p {
@@ -775,8 +779,8 @@
 .tpl-gold-cut .gc-layout {
   display: grid;
   grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: var(--page-h);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
   position: relative;
   background: #fff;
   overflow: hidden;
@@ -786,8 +790,9 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 280px;
-  height: 120px;
+  width: 200px;
+  height: 96px;
+  z-index: 0;
   background:
     linear-gradient(135deg, var(--accent) 0 38%, transparent 38%),
     linear-gradient(135deg, transparent 48%, var(--deep) 48% 70%, transparent 70%);
@@ -831,7 +836,7 @@
 }
 
 .tpl-gold-cut .gc-main {
-  padding: 48px 32px 36px 28px;
+  padding: 48px 40px 36px 28px;
   position: relative;
   z-index: 1;
 }
@@ -860,9 +865,9 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 0;
-  width: 18px;
-  height: 18px;
+  top: 0.35em;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--accent);
 }

@@ -50,6 +50,127 @@ export const FONT_PAIRS = [
   },
 ];
 
+export function createDemoResume(): Resume {
+  const base = createBlankResume();
+  return {
+    ...base,
+    meta: { ...base.meta, name: "Sample resume" },
+    contact: {
+      fullName: "Ayesha Rahman",
+      title: "Operations Manager",
+      phone: "+92 300 1234567",
+      email: "ayesha.rahman@email.com",
+      city: "Karachi",
+      country: "Pakistan",
+      linkedin: "linkedin.com/in/ayesha",
+      website: "ayesharahman.com",
+      github: "",
+      portfolioUrl: "",
+      photoUrl: "",
+    },
+    summary:
+      "Operations manager with eight years leading delivery teams. Tightens workflows, keeps clients on schedule, and turns messy handoffs into a process people can actually follow.",
+    experience: [
+      {
+        id: uid(),
+        company: "Northwind Logistics",
+        role: "Operations Manager",
+        location: "Karachi",
+        startDate: "2022",
+        endDate: "",
+        present: true,
+        descriptor: "",
+        bullets: [
+          "Cut order-cycle time 18% by rebuilding the weekly dispatch board.",
+          "Lead a team of 12 across warehouse, client success, and planning.",
+        ],
+      },
+      {
+        id: uid(),
+        company: "Harbor & Co.",
+        role: "Team Lead",
+        location: "Karachi",
+        startDate: "2018",
+        endDate: "2022",
+        present: false,
+        descriptor: "",
+        bullets: [
+          "Ran onboarding for 40+ hires and kept first-month error rates under 3%.",
+          "Built a simple KPI pack that leadership still uses in Monday reviews.",
+        ],
+      },
+    ],
+    education: [
+      {
+        id: uid(),
+        institution: "Institute of Business Administration",
+        degree: "BBA",
+        field: "Management",
+        location: "Karachi",
+        startDate: "2014",
+        endDate: "2018",
+        gpa: "",
+        honors: "",
+        coursework: "",
+        thesis: "",
+      },
+    ],
+    skills: [
+      { id: uid(), name: "Operations", skills: ["Process design", "Vendor management", "KPI reporting"] },
+      { id: uid(), name: "Tools", skills: ["Excel", "Notion", "Power BI"] },
+    ],
+    projects: [
+      {
+        id: uid(),
+        name: "Dispatch board",
+        description: "Replaced a shared spreadsheet with a live board so warehouse and sales see the same queue.",
+        tech: "Airtable, Slack",
+        link: "",
+      },
+    ],
+    certifications: [{ id: uid(), name: "Lean Six Sigma Green Belt", issuer: "ASQ", year: "2021", expires: "" }],
+    languages: [
+      { id: uid(), name: "English", level: "Fluent" },
+      { id: uid(), name: "Urdu", level: "Native" },
+    ],
+    visibility: {
+      ...base.visibility,
+      summary: true,
+      experience: true,
+      education: true,
+      skills: true,
+      projects: true,
+      certifications: true,
+      languages: true,
+    },
+  };
+}
+
+export function resumeLooksEmpty(r: Resume): boolean {
+  const named = (r.contact?.fullName || "").trim();
+  const sum = (r.summary || "").trim() || (r.objective || "").trim();
+  const jobs = (r.experience ?? []).some((j) => (j.role || "").trim() || (j.company || "").trim());
+  const edu = (r.education ?? []).some((e) => (e.degree || "").trim() || (e.institution || "").trim());
+  const skills = (r.skills ?? []).some((g) => (g.skills ?? []).some((s) => s.trim()));
+  return !named && !sum && !jobs && !edu && !skills;
+}
+
+/** Gallery thumbs use sample copy when the live resume is still empty. */
+export function resumeForGalleryPreview(live: Resume): Resume {
+  if (!resumeLooksEmpty(live)) return live;
+  const demo = createDemoResume();
+  return {
+    ...demo,
+    theme: {
+      ...demo.theme,
+      pageSize: live.theme?.pageSize ?? demo.theme.pageSize,
+      density: live.theme?.density ?? demo.theme.density,
+      atsSafe: live.theme?.atsSafe ?? demo.theme.atsSafe,
+      fontPair: live.theme?.fontPair ?? demo.theme.fontPair,
+    },
+  };
+}
+
 export function createBlankResume(): Resume {
   const type = "combination";
   return {
@@ -73,11 +194,12 @@ export function createBlankResume(): Resume {
     presentations: [],
     affiliations: [],
     references: [],
+    extras: [],
     sectionOrder: defaultSectionOrder(type),
     visibility: defaultVisibility(type),
     theme: {
-      template: "classic",
-      accent: ACCENT_PALETTE[0].value,
+      template: "boardroom",
+      accent: "#c9a66b",
       fontPair: "editorial",
       density: "comfortable",
       atsSafe: false,

@@ -246,6 +246,21 @@ function buildSections(resume: Resume, accent: string, right: number): (Paragrap
       case "portfolio":
         out.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: cleanUrl(resume.contact.portfolioUrl), size: 21 })] }));
         break;
+      case "extras":
+        (resume.extras ?? [])
+          .filter((d) => t(d.label) && t(d.value))
+          .forEach((d) => {
+            out.push(
+              new Paragraph({
+                spacing: { after: 40 },
+                children: [
+                  new TextRun({ text: t(d.label) + ": ", bold: true, size: 21 }),
+                  new TextRun({ text: t(d.value), size: 21 }),
+                ],
+              }),
+            );
+          });
+        break;
       default:
         break;
     }

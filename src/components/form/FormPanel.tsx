@@ -7,6 +7,7 @@ import { ContactForm } from "./Contact";
 import { SummaryForm, PortfolioForm, SkillsForm } from "./Basic";
 import { ExperienceForm, VolunteerForm, TeachingForm } from "./Experience";
 import { EducationForm, ProjectsForm, CertificationsForm, LanguagesForm, PublicationsForm, AwardsForm, GrantsForm, PresentationsForm, AffiliationsForm, ReferencesForm } from "./Education";
+import { CustomDetailsForm } from "./CustomDetails";
 
 const SECTION_META: Record<SectionKey, { label: string; hint: string }> = {
   contact: { label: "Contact & Header", hint: "Name, title, phone, email, location, links" },
@@ -27,6 +28,7 @@ const SECTION_META: Record<SectionKey, { label: string; hint: string }> = {
   affiliations: { label: "Professional Affiliations", hint: "Memberships & societies" },
   references: { label: "References", hint: "Named references only" },
   portfolio: { label: "Portfolio", hint: "Prominent links for creative roles" },
+  extras: { label: "Personal details", hint: "Date of birth, father name, CNIC, or any field you add" },
 };
 
 function isOptional(s: SectionKey): s is VisibilityKey {
@@ -189,6 +191,8 @@ export function FormPanel() {
         return <ReferencesForm />;
       case "portfolio":
         return <PortfolioForm />;
+      case "extras":
+        return <CustomDetailsForm />;
       default:
         return null;
     }

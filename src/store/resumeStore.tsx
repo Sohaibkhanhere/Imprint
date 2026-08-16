@@ -53,6 +53,8 @@ function newListEntry(key: ListSectionKey): unknown {
       return { id, name: "", role: "", years: "" };
     case "references":
       return { id, name: "", title: "", org: "", email: "", phone: "" };
+    case "extras":
+      return { id, label: "", value: "" };
     default:
       return { id };
   }

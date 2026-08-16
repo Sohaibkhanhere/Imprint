@@ -3,7 +3,8 @@
 .hp-sheet {
   overflow-x: clip;
   overflow-wrap: anywhere;
-  min-height: var(--page-h);
+  height: 100%;
+  min-height: 100%;
 }
 
 .hp-sheet .t-head {
@@ -99,7 +100,7 @@
 .tpl-gilt {
   display: grid;
   grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
+  grid-template-rows: minmax(100%, max-content);
   background: #fff;
   font-family: Inter, "Segoe UI", sans-serif;
   position: relative;
@@ -249,8 +250,8 @@
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 255px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
-  min-height: var(--page-h);
+  grid-template-rows: minmax(100%, max-content);
+  min-height: 100%;
 }
 
 .tpl-bevel aside {
@@ -275,12 +276,14 @@
   overflow: hidden;
 }
 
-.hp-bevel-sh {
+.tpl-bevel .hp-bevel-sh,
+.tpl-bevel aside .t-head {
   font-family: Archivo, Outfit, sans-serif;
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 0.08em;
   margin: 0 0 10px;
+  color: #2a2a2a;
 }
 
 .hp-bevel-block {
@@ -346,7 +349,9 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin: 22px 0 12px;
-  color: var(--accent);
+  color: #1c1c1c;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 4px;
 }
 
 .hp-bevel-job {
@@ -570,9 +575,13 @@
 .tpl-carmine h2 {
   font-family: Poppins, Outfit, sans-serif;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   margin: 0 0 14px;
-  color: var(--accent);
+  color: #1c1c1c;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 6px;
 }
 
 .hp-car-item {
@@ -582,7 +591,7 @@
 .hp-car-item p {
   font-weight: 700;
   font-size: 12.5px;
-  color: var(--accent);
+  color: #333;
   margin: 0 0 3px;
 }
 
@@ -590,7 +599,7 @@
   font-family: Poppins, Outfit, sans-serif;
   font-weight: 700;
   font-size: 14px;
-  color: var(--accent);
+  color: #1c1c1c;
 }
 
 .hp-car-jm {
@@ -624,7 +633,7 @@
   gap: 32px;
   padding: 44px 44px;
   position: relative;
-  min-height: var(--page-h);
+  min-height: 100%;
 }
 
 .hp-blush-v {
@@ -674,7 +683,7 @@
   font-family: Poppins, Outfit, sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: var(--accent);
+  color: #1e1e1e;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -785,7 +794,7 @@
 
 .hp-reel-page {
   padding: 32px 40px 40px;
-  min-height: var(--page-h);
+  min-height: 100%;
 }
 
 .hp-reel-hero {
@@ -980,7 +989,7 @@
   font-family: Inter, "Segoe UI", sans-serif;
   display: flex;
   flex-direction: column;
-  min-height: var(--page-h);
+  min-height: 100%;
 }
 
 .hp-lag-head {
@@ -992,7 +1001,8 @@
   margin: 0;
   font-family: Poppins, Outfit, sans-serif;
   font-size: 30px;
-  color: var(--accent);
+  color: #1a2423;
+  padding-right: 160px;
 }
 
 .hp-lag-head p {
@@ -1003,6 +1013,7 @@
   text-transform: uppercase;
   color: var(--accent);
   margin-top: 6px;
+  padding-right: 160px;
 }
 
 .hp-lag-photo-wrap {
@@ -1114,6 +1125,11 @@
   color: #333;
 }
 
+.tpl-lagoon[data-ats="true"] h1,
+.tpl-lagoon[data-ats="true"] .hp-lag-head p {
+  padding-right: 0;
+}
+
 /* ===== Stream ===== */
 
 .tpl-stream {
@@ -1124,7 +1140,7 @@
 
 .hp-str-page {
   padding: 34px 42px;
-  min-height: var(--page-h);
+  min-height: 100%;
 }
 
 .hp-str-bar {
@@ -1147,8 +1163,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
-  font-size: 11px;
-  color: #a6a6a6;
+  font-size: 12px;
+  color: #c8c8c8;
 }
 
 .hp-str-hero {
@@ -1163,9 +1179,15 @@
   height: 100%;
   min-height: 160px;
   background: #1f1f1f;
-  border: 1px solid #333;
+  border: 1px solid #444;
   border-radius: 4px;
   object-fit: cover;
+}
+
+.tpl-stream .hp-str-poster.rs-portrait-fallback {
+  background: #3a1518;
+  color: #fff;
+  border-color: var(--accent);
 }
 
 .tpl-stream h1 {
@@ -1194,8 +1216,8 @@
 
 .tpl-stream h2 {
   font-family: "Bebas Neue", Archivo, sans-serif;
-  font-size: 18px;
-  letter-spacing: 0.06em;
+  font-size: 22px;
+  letter-spacing: 0.08em;
   color: var(--accent);
   margin: 0 0 10px;
 }
@@ -1264,8 +1286,8 @@
 }
 
 .hp-str-job span {
-  color: var(--accent);
-  font-size: 11px;
+  color: color-mix(in srgb, var(--accent) 55%, #fff);
+  font-size: 11.5px;
   font-weight: 700;
 }
 
@@ -1328,7 +1350,7 @@
   font-family: Inter, "Segoe UI", sans-serif;
   display: flex;
   flex-direction: column;
-  min-height: var(--page-h);
+  min-height: 100%;
 }
 
 .hp-grove-head {
@@ -1367,12 +1389,12 @@
 .hp-grove-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 220px);
-  margin-top: -18px;
+  margin-top: -6px;
   flex: 1 1 auto;
 }
 
 .hp-grove-grid main {
-  padding: 0 18px 36px 42px;
+  padding: 10px 18px 36px 42px;
 }
 
 .hp-grove-grid aside {
@@ -1414,14 +1436,14 @@
 
 .hp-grove-job b {
   font-family: Manrope, Outfit, sans-serif;
-  color: var(--accent);
+  color: #1a1a1a;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
 .hp-grove-job span {
   font-size: 11.5px;
-  color: color-mix(in srgb, var(--accent) 72%, #111);
+  color: #5c5c5c;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1462,13 +1484,18 @@
   border: 0;
 }
 
+.tpl-grove[data-ats="true"] .hp-grove-strip {
+  color: #444;
+}
+
 /* ===== Boardroom ===== */
 
 .tpl-boardroom {
   display: grid;
   grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
-  grid-template-rows: minmax(var(--page-h), max-content);
+  grid-template-rows: minmax(100%, max-content);
   font-family: Inter, "Segoe UI", sans-serif;
+  --metal: color-mix(in srgb, var(--accent) 18%, #b08940);
 }
 
 .hp-br-side {
@@ -1481,11 +1508,11 @@
   width: 84px;
   height: 84px;
   border-radius: 50%;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--metal);
   object-fit: cover;
   margin: 0 auto 16px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--metal) 18%, #12263a);
 }
 
 .tpl-boardroom .hp-br-side h1 {
@@ -1501,14 +1528,14 @@
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--metal);
   margin-top: 6px;
 }
 
 .hp-br-rule {
   width: 36px;
   height: 2px;
-  background: var(--accent);
+  background: var(--metal);
   margin: 16px auto;
 }
 
@@ -1516,7 +1543,7 @@
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--metal);
   margin: 18px 0 10px;
 }
 
@@ -1547,7 +1574,7 @@
 .hp-br-sk i {
   display: block;
   height: 100%;
-  background: var(--accent);
+  background: var(--metal);
 }
 
 .hp-br-lang {
@@ -1558,7 +1585,7 @@
 }
 
 .hp-br-lang span:last-child {
-  color: var(--accent);
+  color: var(--metal);
   font-size: 11px;
 }
 
@@ -1570,19 +1597,23 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--metal);
   font-weight: 700;
-  margin: 0 0 12px;
+  margin: 20px 0 12px;
+}
+
+.tpl-boardroom .hp-br-main section:first-of-type h2 {
+  margin-top: 0;
 }
 
 .tpl-boardroom .hp-br-main h2::after {
   content: "";
   flex: 1;
   height: 1px;
-  background: #e4e7ec;
+  background: color-mix(in srgb, var(--metal) 45%, #e4e7ec);
 }
 
 .hp-br-tl {
@@ -1614,7 +1645,7 @@
   height: 11px;
   border-radius: 50%;
   background: #fff;
-  border: 2.5px solid var(--accent);
+  border: 2.5px solid var(--metal);
 }
 
 .hp-br-tl > div > div {
@@ -1627,8 +1658,9 @@
 
 .hp-br-tl span {
   font-size: 11px;
-  color: #fff;
-  background: #12263a;
+  color: #12263a;
+  background: color-mix(in srgb, var(--metal) 16%, #fff);
+  border: 1px solid var(--metal);
   padding: 3px 10px;
   border-radius: 12px;
   white-space: nowrap;
@@ -1651,5 +1683,9 @@
 .tpl-boardroom[data-ats="true"] .hp-br-side h1,
 .tpl-boardroom[data-ats="true"] .hp-br-side p {
   color: #111;
+  text-align: left;
+}
+
+.tpl-boardroom[data-ats="true"] .hp-br-role {
   text-align: left;
 }

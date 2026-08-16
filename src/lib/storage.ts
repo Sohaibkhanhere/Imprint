@@ -88,8 +88,19 @@ export function hydrateResume(raw: Resume): Resume {
     presentations: arr(raw?.presentations),
     affiliations: arr(raw?.affiliations),
     references: arr(raw?.references),
-    sectionOrder: arr(raw?.sectionOrder).length ? arr(raw?.sectionOrder) : blank.sectionOrder,
-    visibility: vis,
+    extras: arr(raw?.extras),
+    sectionOrder: (() => {
+      const order = (arr(raw?.sectionOrder).length ? arr(raw?.sectionOrder) : blank.sectionOrder) as Resume["sectionOrder"];
+      return order.includes("extras") ? order : [...order, "extras"];
+    })(),
+    visibility: (() => {
+      const extrasFilled = arr(raw?.extras).some((d) => {
+        const row = d as { label?: string; value?: string };
+        return Boolean(str(row.label) && str(row.value));
+      });
+      if (extrasFilled) return vis;
+      return { ...vis, extras: false };
+    })(),
     theme,
   };
   const filled = coerceResume(base);
@@ -111,6 +122,7 @@ export function hydrateResume(raw: Resume): Resume {
     presentations: withIds(filled.presentations),
     affiliations: withIds(filled.affiliations),
     references: withIds(filled.references),
+    extras: withIds(filled.extras ?? []),
   };
 }
 

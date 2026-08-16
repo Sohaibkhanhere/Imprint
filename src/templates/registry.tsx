@@ -91,11 +91,11 @@ export function templateMatches(tp: TemplateDef, query: string, finish: FinishFi
   return true;
 }
 
-export const TEMPLATES: TemplateDef[] = [
+const TEMPLATE_CATALOG: TemplateDef[] = [
   {
     key: "gilt",
-    label: "Gilt Edge",
-    description: "Dark sidebar, gold rings, and a timeline for work and school.",
+    label: "Gold Ring",
+    description: "Black-and-gold sidebar, ring portrait, and a timeline.",
     suitFor: ["Creative", "Executive", "Combination"],
     atsSafeVariant: false,
     photo: true,
@@ -104,8 +104,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "bevel",
-    label: "Bevel Cut",
-    description: "Angled grey panel, pink photo ring, and a clean experience column.",
+    label: "Pink Cut",
+    description: "Angled grey panel, pink photo ring, light experience column.",
     suitFor: ["Creative", "Entry-level", "Combination"],
     atsSafeVariant: false,
     photo: true,
@@ -114,8 +114,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "mast",
-    label: "Masthead",
-    description: "Oversized surname on grey paper with a photo and skills column.",
+    label: "Poster Name",
+    description: "Huge surname on grey paper, photo, and a skills column.",
     suitFor: ["Creative", "Portfolio", "Executive"],
     atsSafeVariant: false,
     photo: true,
@@ -124,8 +124,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "carmine",
-    label: "Carmine",
-    description: "Circle portrait, red name, and a compact contact column.",
+    label: "Red Circle",
+    description: "Round portrait, red name, compact contact column.",
     suitFor: ["Combination", "Entry-level", "Creative"],
     atsSafeVariant: true,
     photo: true,
@@ -134,8 +134,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "blush",
-    label: "Blush Ring",
-    description: "Blush paper, circled photo, and orange section marks.",
+    label: "Blush",
+    description: "Blush paper, circled photo, orange section marks.",
     suitFor: ["Creative", "Portfolio", "Combination"],
     atsSafeVariant: false,
     photo: true,
@@ -144,7 +144,7 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "reel",
-    label: "Night Reel",
+    label: "Night Show",
     description: "Dark hero, numbered jobs, and activity cards.",
     suitFor: ["Creative", "Portfolio", "Tech"],
     atsSafeVariant: false,
@@ -154,8 +154,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "lagoon",
-    label: "Lagoon",
-    description: "Teal name, objective band, and a two-column body.",
+    label: "Teal",
+    description: "Teal name band, photo, and a two-column body.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -164,8 +164,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "stream",
-    label: "Playbill",
-    description: "Dark profile cards and red accent bars, built like a watch page.",
+    label: "Netflix",
+    description: "Black page, red marks, poster photo. Built like a streaming profile.",
     suitFor: ["Creative", "Tech", "Portfolio"],
     atsSafeVariant: false,
     photo: true,
@@ -174,8 +174,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "grove",
-    label: "Grove",
-    description: "Forest header with a clipped edge, amber marks, and a skills rail.",
+    label: "Forest",
+    description: "Deep green header, clipped edge, amber marks, skills rail.",
     suitFor: ["Combination", "Executive", "Tech"],
     atsSafeVariant: true,
     photo: false,
@@ -184,8 +184,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "boardroom",
-    label: "Boardroom",
-    description: "Navy sidebar, gold rules, and a timeline of roles.",
+    label: "Navy Gold",
+    description: "Navy sidebar, gold rules, portrait, and a job timeline.",
     suitFor: ["Executive", "Combination", "CV"],
     atsSafeVariant: false,
     photo: true,
@@ -194,8 +194,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "classic",
-    label: "Gazette",
-    description: "Serif, conservative, single column. The ATS-safe default that recruiters never stumble on.",
+    label: "Classic",
+    description: "Serif, single column, underline heads. Safe for any ATS.",
     suitFor: ["Chronological", "Combination", "CV", "Executive"],
     atsSafeVariant: true,
     photo: false,
@@ -204,8 +204,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "modern-minimal",
-    label: "Hairline",
-    description: "Clean sans-serif, generous whitespace, hairline accents. Tracks well in ATS.",
+    label: "Minimal",
+    description: "Clean sans, lots of white space, thin rules. ATS-safe.",
     suitFor: ["Combination", "Chronological", "Entry-level"],
     atsSafeVariant: true,
     photo: false,
@@ -214,8 +214,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "two-column",
-    label: "Twin Column",
-    description: "Sidebar for skills and certifications, main column for history. Stacks to one column in ATS mode.",
+    label: "Two Column",
+    description: "Skills on the side, jobs in the main column. Stacks in ATS mode.",
     suitFor: ["Functional", "Combination", "Creative"],
     atsSafeVariant: true,
     photo: false,
@@ -224,8 +224,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "executive",
-    label: "Chairman",
-    description: "Refined serif, centered header, room to breathe. Built for C-level and leadership resumes.",
+    label: "Executive",
+    description: "Centered serif header, wide margins. Built for leadership roles.",
     suitFor: ["Executive", "Combination", "Chronological"],
     atsSafeVariant: true,
     photo: false,
@@ -234,8 +234,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "creative",
-    label: "Studio Mark",
-    description: "Bold accent band, initials mark, skill chips. Personality with structure.",
+    label: "Color Band",
+    description: "Bold color header, initials mark, skill chips.",
     suitFor: ["Creative", "Entry-level", "Portfolio"],
     atsSafeVariant: false,
     photo: false,
@@ -244,8 +244,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "academic-cv",
-    label: "Faculty CV",
-    description: "Dense, structured, citation-aware. Publications, teaching, grants, presentations and more.",
+    label: "Academic",
+    description: "Dense CV: publications, teaching, grants, talks.",
     suitFor: ["CV"],
     atsSafeVariant: true,
     photo: false,
@@ -254,8 +254,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "skills-based",
-    label: "Skill Matrix",
-    description: "Core skills first as a matrix, then work history. Ideal for functional formats and career changers.",
+    label: "Skills First",
+    description: "Skills on top, then a short job list. For career changers.",
     suitFor: ["Functional", "Combination"],
     atsSafeVariant: true,
     photo: false,
@@ -264,8 +264,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "entry-level",
-    label: "First Issue",
-    description: "Objective-first, education-forward, friendly sans with skill chips. Built for grads.",
+    label: "Fresh Grad",
+    description: "Objective first, education up top, skill chips. For new grads.",
     suitFor: ["Entry-level", "Combination"],
     atsSafeVariant: true,
     photo: false,
@@ -274,8 +274,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "tech",
-    label: "Commit Log",
-    description: "Sans body with monospace accents, skill chips, GitHub link emphasized. Engineer-credible.",
+    label: "Engineer",
+    description: "Sans body, monospace kicks, skill chips, GitHub up front.",
     suitFor: ["Combination", "Chronological", "Tech"],
     atsSafeVariant: true,
     photo: false,
@@ -284,8 +284,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "portfolio",
-    label: "Lookbook",
-    description: "Accent band header, portfolio and project links front and center.",
+    label: "Portfolio",
+    description: "Color header with projects and portfolio links first.",
     suitFor: ["Creative", "Portfolio", "Entry-level"],
     atsSafeVariant: false,
     photo: false,
@@ -294,8 +294,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "photo-sidebar",
-    label: "Portrait Rail",
-    description: "Accent sidebar with avatar mark, contact and skills; bright main column.",
+    label: "Photo Rail",
+    description: "Color sidebar with photo, contact, and skills; light main column.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -304,8 +304,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "dark-modern",
-    label: "Night Press",
-    description: "Ink header with portrait and tag, warm sidebar, crisp modern body.",
+    label: "Dark Header",
+    description: "Ink header with photo, warm sidebar, light body.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -314,8 +314,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "bold-diagonal",
-    label: "Slash Mark",
-    description: "Strong serif name, diagonal accent flash, dark index sidebar with portrait.",
+    label: "Slash",
+    description: "Big serif name, diagonal flash, dark photo sidebar.",
     suitFor: ["Creative", "Entry-level", "Portfolio"],
     atsSafeVariant: false,
     photo: true,
@@ -324,8 +324,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "tech-dark",
-    label: "Night Shift",
-    description: "Dark engineering layout: contact bar, headline, carded sections.",
+    label: "Dark Tech",
+    description: "Dark page, contact bar, headline, carded sections.",
     suitFor: ["Tech", "Combination", "Chronological"],
     atsSafeVariant: false,
     photo: false,
@@ -334,8 +334,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "compact",
-    label: "Digest",
-    description: "Dense single-column with hairline heads. Packs a senior profile onto one page.",
+    label: "Compact",
+    description: "Tight single column. Packs a long career onto one page.",
     suitFor: ["Executive", "Chronological", "Combination"],
     atsSafeVariant: true,
     photo: false,
@@ -344,8 +344,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "photo-header",
-    label: "Banner Shot",
-    description: "Accent banner with avatar mark, headline, contact; chips sidebar beside the main column.",
+    label: "Banner Photo",
+    description: "Color banner with photo and name, chips in a side column.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -354,8 +354,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "classic-serif",
-    label: "Caslon",
-    description: "Elegant full-serif layout with centered name and refined small-caps section heads.",
+    label: "Fine Serif",
+    description: "All-serif page, centered name, small-caps heads.",
     suitFor: ["CV", "Executive", "Chronological"],
     atsSafeVariant: true,
     photo: false,
@@ -364,8 +364,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "creative-border",
-    label: "Plate Frame",
-    description: "Accent-framed canvas with monogram header and corner marks; two-column body.",
+    label: "Frame",
+    description: "Color frame, monogram header, two-column body.",
     suitFor: ["Creative", "Portfolio", "Entry-level"],
     atsSafeVariant: false,
     photo: false,
@@ -374,8 +374,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "colored-sidebar",
-    label: "Ink Column",
-    description: "Full-bleed accent sidebar with avatar and light chip skills; airy main column.",
+    label: "Color Rail",
+    description: "Full-color sidebar with photo and chips, airy main column.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -384,8 +384,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "manifest",
-    label: "Manifest",
-    description: "Editorial table-of-contents layout with index numbers and hairline rules.",
+    label: "Index",
+    description: "Numbered contents list, hairline rules, editorial page.",
     suitFor: ["Executive", "Combination", "Chronological"],
     atsSafeVariant: true,
     photo: false,
@@ -404,8 +404,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "broadside",
-    label: "Broadside",
-    description: "Magazine masthead header with double rule and a ruled sidebar column.",
+    label: "Magazine",
+    description: "Newspaper masthead, double rule, ruled sidebar.",
     suitFor: ["Creative", "Combination", "Executive"],
     atsSafeVariant: false,
     photo: false,
@@ -424,8 +424,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "sage-overlap",
-    label: "Sage Fold",
-    description: "Forest panel, sage pills, overlapping About bar. Soft and modern.",
+    label: "Sage",
+    description: "Sage-green panel, soft pills, overlapping About bar.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -434,8 +434,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "circuit-dark",
-    label: "Circuit",
-    description: "Night-blue canvas, floating cards, neon titles. Built for design and tech portfolios.",
+    label: "Neon",
+    description: "Night-blue page, floating cards, neon titles.",
     suitFor: ["Creative", "Portfolio", "Tech"],
     atsSafeVariant: false,
     photo: true,
@@ -444,8 +444,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "terra-wave",
-    label: "Terra Wave",
-    description: "Cream page, dark sidebar, orange corner waves, overlapping portrait.",
+    label: "Terra",
+    description: "Cream page, dark sidebar, orange waves, overlapping photo.",
     suitFor: ["Creative", "Combination", "Portfolio"],
     atsSafeVariant: false,
     photo: true,
@@ -454,8 +454,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "stadium-banner",
-    label: "Arena",
-    description: "Curved header with portrait, cream index, dark timeline column.",
+    label: "Curve",
+    description: "Curved header with photo, cream index, dark timeline.",
     suitFor: ["Creative", "Combination", "Executive"],
     atsSafeVariant: false,
     photo: true,
@@ -474,8 +474,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     key: "forest-geo",
-    label: "Canopy",
-    description: "Green parallelograms, rounded portrait frame, bold bar headings.",
+    label: "Green Cut",
+    description: "Green parallelograms, round photo, bold bar heads.",
     suitFor: ["Creative", "Combination", "Entry-level"],
     atsSafeVariant: false,
     photo: true,
@@ -493,6 +493,67 @@ export const TEMPLATES: TemplateDef[] = [
     component: GoldCutTemplate,
   },
 ];
+
+/** Strongest first-look layouts up front. New users should see designed pages, not empty ATS sheets. */
+const FEATURED_ORDER: TemplateKey[] = [
+  "boardroom",
+  "grove",
+  "stream",
+  "lagoon",
+  "gilt",
+  "carmine",
+  "colored-sidebar",
+  "ribbon-navy",
+  "gold-cut",
+  "mast",
+  "photo-header",
+  "sage-overlap",
+  "terra-wave",
+  "blush",
+  "stadium-banner",
+  "bevel",
+  "photo-sidebar",
+  "creative",
+  "forest-geo",
+  "executive",
+  "two-column",
+  "manifest",
+  "blueprint",
+  "broadside",
+  "modern-minimal",
+  "classic",
+  "classic-serif",
+  "tech",
+  "entry-level",
+  "portfolio",
+  "creative-border",
+  "dark-modern",
+  "bold-diagonal",
+  "tech-dark",
+  "reel",
+  "circuit-dark",
+  "compact",
+  "skills-based",
+  "academic-cv",
+  "polaroid-burst",
+];
+
+export const TEMPLATES: TemplateDef[] = (() => {
+  const byKey = new Map(TEMPLATE_CATALOG.map((t) => [t.key, t]));
+  const seen = new Set<TemplateKey>();
+  const ordered: TemplateDef[] = [];
+  for (const key of FEATURED_ORDER) {
+    const tp = byKey.get(key);
+    if (!tp || seen.has(key)) continue;
+    ordered.push(tp);
+    seen.add(key);
+  }
+  for (const tp of TEMPLATE_CATALOG) {
+    if (seen.has(tp.key)) continue;
+    ordered.push(tp);
+  }
+  return ordered;
+})();
 
 export function getTemplate(key: TemplateKey): TemplateDef {
   return TEMPLATES.find((t) => t.key === key) ?? TEMPLATES[0];
@@ -555,4 +616,4 @@ export function templateDefaultAccent(key: TemplateKey): string {
   return DEFAULT_ACCENTS[key] ?? "#1d2130";
 }
 
-export const DEFAULT_TEMPLATE: TemplateKey = "classic";
+export const DEFAULT_TEMPLATE: TemplateKey = "boardroom";
