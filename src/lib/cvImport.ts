@@ -1725,9 +1725,11 @@ function collectPersonalDetails(lines: string[]): Partial<CustomDetail>[] {
 const PROJECT_TITLE_RE = /\b(?:tool|generator|scraper|app|plugin|platform|dashboard|bot|extension|chathead)\b/i;
 const PROJECT_START_RE = /^(developed|built|created|designed|automated|made)\b/i;
 
+type ProjectDraft = Partial<ProjectEntry> & { startDate?: string; endDate?: string };
+
 function parseProjects(rawLines: string[]): Partial<ProjectEntry>[] {
-  const out: Partial<ProjectEntry>[] = [];
-  let current: Partial<ProjectEntry> | null = null;
+  const out: ProjectDraft[] = [];
+  let current: ProjectDraft | null = null;
 
   const finish = () => {
     if (current && (current.name || current.description)) out.push(current);
@@ -2217,9 +2219,11 @@ function setDates(entry: Partial<ExperienceEntry> & Partial<VolunteerEntry>, dat
   entry.present = dates.present;
 }
 
-function parseExperience(rawLines: string[], isVolunteer = false): Partial<ExperienceEntry | VolunteerEntry>[] {
-  const entries: Partial<ExperienceEntry | VolunteerEntry>[] = [];
-  let current: (Partial<ExperienceEntry> & Partial<VolunteerEntry>) | null = null;
+type JobDraft = Partial<ExperienceEntry> & Partial<VolunteerEntry>;
+
+function parseExperience(rawLines: string[], isVolunteer = false): JobDraft[] {
+  const entries: JobDraft[] = [];
+  let current: JobDraft | null = null;
   let pending: string | null = null;
   let lastCompany = "";
 
@@ -2677,12 +2681,17 @@ function isEduLine(l: string): boolean {
   return /\b(?:19|20)\d{2}\b|university|college|institute|board|school|from|\bin\b/i.test(rest);
 }
 
+type EduDraft = Partial<EducationEntry> & { present?: boolean };
+
 function parseEducation(rawLines: string[]): Partial<EducationEntry>[] {
-  const entries: Partial<EducationEntry>[] = [];
-  let current: Partial<EducationEntry> | null = null;
+  const entries: EduDraft[] = [];
+  let current: EduDraft | null = null;
 
   const finish = () => {
-    if (current && (current.institution || current.degree)) entries.push(current);
+    if (current && (current.institution || current.degree)) {
+      if (current.present && !current.endDate) current.endDate = "Present";
+      entries.push(current);
+    }
     current = null;
   };
 
