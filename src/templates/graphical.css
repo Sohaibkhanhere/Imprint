@@ -95,6 +95,8 @@
 .tpl-ribbon-navy .rn-side .t-meta,
 .tpl-ribbon-navy .rn-side .t-org,
 .tpl-ribbon-navy .rn-side .t-lang,
+.tpl-ribbon-navy .rn-side .t-lang-level,
+.tpl-ribbon-navy .rn-side .t-desc,
 .tpl-ribbon-navy .rn-side .t-role,
 .tpl-ribbon-navy .rn-side .t-dates,
 .tpl-ribbon-navy .rn-side .sheet-bullets li {
@@ -258,8 +260,11 @@
 .tpl-sage-overlap .so-right .t-dates,
 .tpl-sage-overlap .so-right .t-skills,
 .tpl-sage-overlap .so-right .t-lang,
+.tpl-sage-overlap .so-right .t-lang-level,
+.tpl-sage-overlap .so-right .t-desc,
+.tpl-sage-overlap .so-right .t-summary,
 .tpl-sage-overlap .so-right .sheet-bullets li {
-  color: #f6f3ea;
+  color: #fff;
 }
 
 .tpl-sage-overlap .so-contact {
@@ -364,8 +369,10 @@
 .tpl-circuit-dark .cd-card .t-meta,
 .tpl-circuit-dark .cd-card .t-dates,
 .tpl-circuit-dark .cd-card .t-summary,
+.tpl-circuit-dark .cd-card .t-desc,
 .tpl-circuit-dark .cd-card .t-skills,
 .tpl-circuit-dark .cd-card .t-lang,
+.tpl-circuit-dark .cd-card .t-lang-level,
 .tpl-circuit-dark .cd-card .sheet-bullets li {
   color: #d5dde8;
 }
@@ -476,6 +483,8 @@
 .tpl-terra-wave .tw-side .t-dates,
 .tpl-terra-wave .tw-side .t-skills,
 .tpl-terra-wave .tw-side .t-lang,
+.tpl-terra-wave .tw-side .t-lang-level,
+.tpl-terra-wave .tw-side .t-desc,
 .tpl-terra-wave .tw-side .sheet-bullets li {
   color: #f6efe4;
 }
@@ -583,6 +592,9 @@
 .tpl-stadium-banner .sb-right .t-dates,
 .tpl-stadium-banner .sb-right .t-skills,
 .tpl-stadium-banner .sb-right .t-lang,
+.tpl-stadium-banner .sb-right .t-lang-level,
+.tpl-stadium-banner .sb-right .t-desc,
+.tpl-stadium-banner .sb-right .t-summary,
 .tpl-stadium-banner .sb-right .sheet-bullets li {
   color: #f4f1ea;
 }
@@ -831,6 +843,8 @@
 .tpl-gold-cut .gc-side .t-dates,
 .tpl-gold-cut .gc-side .t-skills,
 .tpl-gold-cut .gc-side .t-lang,
+.tpl-gold-cut .gc-side .t-lang-level,
+.tpl-gold-cut .gc-side .t-desc,
 .tpl-gold-cut .gc-side .sheet-bullets li {
   color: #f4f1ea;
 }

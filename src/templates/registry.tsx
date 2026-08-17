@@ -127,7 +127,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
     label: "Red Circle",
     description: "Round portrait, red name, compact contact column.",
     suitFor: ["Combination", "Entry-level", "Creative"],
-    atsSafeVariant: true,
+    atsSafeVariant: false,
     photo: true,
     dark: false,
     component: CarmineTemplate,
@@ -177,7 +177,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
     label: "Forest",
     description: "Deep green header, clipped edge, amber marks, skills rail.",
     suitFor: ["Combination", "Executive", "Tech"],
-    atsSafeVariant: true,
+    atsSafeVariant: false,
     photo: false,
     dark: false,
     component: GroveTemplate,
@@ -617,11 +617,10 @@ export function templateDefaultAccent(key: TemplateKey): string {
 }
 
 export function themePatchForTemplate(key: TemplateKey): Partial<ThemeConfig> {
-  const tp = getTemplate(key);
   return {
     template: key,
     accent: templateDefaultAccent(key),
-    atsSafe: tp.atsSafeVariant,
+    atsSafe: false,
   };
 }
 

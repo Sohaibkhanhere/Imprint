@@ -165,13 +165,9 @@ export function HeaderBar({
           </button>
           <button
             type="button"
-            title={t.atsSafe ? "ATS Safe on: parser layout, standard headings, system fonts. Click to restore the designed look." : "ATS Safe off. Click to flatten this layout and auto-improve wording."}
+            title={t.atsSafe ? "ATS Safe on: parser layout, standard headings, system fonts. Click to restore the designed look." : "ATS Safe off. Click to flatten this layout for parsers."}
             onClick={() => {
-              if (t.atsSafe) {
-                dispatch({ type: "SET_THEME", theme: { atsSafe: false } });
-                return;
-              }
-              applyImprove();
+              dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } });
             }}
             className={`ats-safe-toggle${t.atsSafe ? " is-on" : ""}`}
             aria-pressed={t.atsSafe}
@@ -237,8 +233,7 @@ export function HeaderBar({
                     { label: "ATS Compatibility Score", run: () => onOpenNotes?.() },
                     { label: "Improve ATS", run: applyImprove },
                     { label: t.atsSafe ? "ATS Safe on" : "ATS Safe off", run: () => {
-                      if (t.atsSafe) dispatch({ type: "SET_THEME", theme: { atsSafe: false } });
-                      else applyImprove();
+                      dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } });
                     } },
                     { label: "Start fresh", run: onReset },
                   ] as { label: string; run: () => void }[]

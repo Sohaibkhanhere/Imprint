@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useResume } from "../store/resumeStore";
-import { TEMPLATES, adjacentTemplate, templateDefaultAccent, templateIndex } from "../templates/registry";
+import { TEMPLATES, adjacentTemplate, templateIndex, themePatchForTemplate } from "../templates/registry";
 
 export function useCycleTemplate(opts?: { keyboard?: boolean }) {
   const { resume, dispatch } = useResume();
@@ -10,7 +10,7 @@ export function useCycleTemplate(opts?: { keyboard?: boolean }) {
 
   const go = (dir: -1 | 1) => {
     const next = adjacentTemplate(resume.theme.template, dir);
-    dispatch({ type: "SET_THEME", theme: { template: next.key, accent: templateDefaultAccent(next.key) } });
+    dispatch({ type: "SET_THEME", theme: themePatchForTemplate(next.key) });
   };
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function useCycleTemplate(opts?: { keyboard?: boolean }) {
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
       e.preventDefault();
       const next = adjacentTemplate(resume.theme.template, e.key === "ArrowLeft" ? -1 : 1);
-      dispatch({ type: "SET_THEME", theme: { template: next.key, accent: templateDefaultAccent(next.key) } });
+      dispatch({ type: "SET_THEME", theme: themePatchForTemplate(next.key) });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

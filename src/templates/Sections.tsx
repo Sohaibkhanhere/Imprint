@@ -109,7 +109,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
           {(resume.languages ?? []).map((l) => (
             <span key={l.id} className="t-lang">
               {l.name}
-              {l.level ? <span className="t-lang-level">— {l.level}</span> : null}
+              {l.level ? <span className="t-lang-level"> · {l.level}</span> : null}
             </span>
           ))}
         </div>,

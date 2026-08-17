@@ -113,6 +113,13 @@
 .tpl-ats-safe .sheet-bullets li,
 .tpl-ats-safe .t-bullets li {
   margin: 0 0 3px;
+  padding-left: 0;
+}
+
+.tpl-ats-safe .sheet-bullets li::before,
+.tpl-ats-safe .t-bullets li::before {
+  content: none;
+  display: none;
 }
 
 .tpl-ats-safe .t-skillgroup {

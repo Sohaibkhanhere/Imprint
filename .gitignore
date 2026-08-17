@@ -26,5 +26,6 @@ Model Train/
 scripts/train-dump/
 Sohiab Resume.docx
 .tmp-gen.mjs
+tmp/
 
 .vercel

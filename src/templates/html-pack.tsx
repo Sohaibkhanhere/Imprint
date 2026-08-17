@@ -246,12 +246,17 @@ export function BevelTemplate({ resume }: { resume: Resume }) {
               ))}
             </>
           ) : null}
-          {certs.map((x) => (
-            <div key={x.id} className="hp-bevel-job">
-              <p className="hp-bevel-job-t">{x.name}</p>
-              <p className="hp-bevel-job-m">{[x.issuer, x.year].filter(Boolean).join(" | ")}</p>
-            </div>
-          ))}
+          {certs.length ? (
+            <>
+              <h2>Certifications</h2>
+              {certs.map((x) => (
+                <div key={x.id} className="hp-bevel-job">
+                  <p className="hp-bevel-job-t">{x.name}</p>
+                  <p className="hp-bevel-job-m">{[x.issuer, x.year].filter(Boolean).join(" | ")}</p>
+                </div>
+              ))}
+            </>
+          ) : null}
           {rest.map((k) => (
             <SectionBlock key={k} resume={resume} section={k} chips={false} />
           ))}
@@ -404,6 +409,18 @@ export function CarmineTemplate({ resume }: { resume: Resume }) {
             <div className="hp-car-item">
               <p>Email</p>
               <span>{c.email}</span>
+            </div>
+          ) : null}
+          {c.linkedin ? (
+            <div className="hp-car-item">
+              <p>LinkedIn</p>
+              <span>{cleanUrl(c.linkedin)}</span>
+            </div>
+          ) : null}
+          {c.github ? (
+            <div className="hp-car-item">
+              <p>GitHub</p>
+              <span>{cleanUrl(c.github)}</span>
             </div>
           ) : null}
           {c.website || c.portfolioUrl ? (
@@ -574,6 +591,13 @@ export function ReelTemplate({ resume }: { resume: Resume }) {
             <Portrait name={c.fullName} src={c.photoUrl} className="hp-reel-ava" />
           </div>
           {blurb(resume) ? <p className="hp-reel-quote">{blurb(resume)}</p> : null}
+          {contactParts(resume).length ? (
+            <div className="hp-reel-contact">
+              {contactParts(resume).map((p) => (
+                <span key={p}>{p}</span>
+              ))}
+            </div>
+          ) : null}
           {edu.length ? (
             <div className="hp-reel-edu">
               {edu.map((e) => (
@@ -689,13 +713,18 @@ export function LagoonTemplate({ resume }: { resume: Resume }) {
               ))}
             </section>
           ) : null}
-          {vol.map((v) => (
-            <div key={v.id} className="hp-lag-item">
-              <p>{v.org}</p>
-              <p>{v.title}</p>
-              <Bullets items={v.bullets} />
-            </div>
-          ))}
+          {vol.length ? (
+            <section>
+              <h3>Volunteer</h3>
+              {vol.map((v) => (
+                <div key={v.id} className="hp-lag-item">
+                  <p>{v.org}</p>
+                  <p>{v.title}</p>
+                  <Bullets items={v.bullets} />
+                </div>
+              ))}
+            </section>
+          ) : null}
         </div>
         <div>
           {skills.length ? (
@@ -715,18 +744,28 @@ export function LagoonTemplate({ resume }: { resume: Resume }) {
               <p>{langs.map((l) => [l.name, l.level].filter(Boolean).join(" ")).join(", ")}</p>
             </section>
           ) : null}
-          {awards.map((a) => (
-            <div key={a.id} className="hp-lag-item">
-              <p>{a.year}</p>
-              <p>{[a.title, a.org].filter(Boolean).join(" — ")}</p>
-            </div>
-          ))}
-          {certs.map((x) => (
-            <div key={x.id} className="hp-lag-item">
-              <p>{x.year}</p>
-              <p>{[x.name, x.issuer].filter(Boolean).join(" — ")}</p>
-            </div>
-          ))}
+          {awards.length ? (
+            <section>
+              <h3>Awards</h3>
+              {awards.map((a) => (
+                <div key={a.id} className="hp-lag-item">
+                  <p>{a.year}</p>
+                  <p>{[a.title, a.org].filter(Boolean).join(" — ")}</p>
+                </div>
+              ))}
+            </section>
+          ) : null}
+          {certs.length ? (
+            <section>
+              <h3>Certifications</h3>
+              {certs.map((x) => (
+                <div key={x.id} className="hp-lag-item">
+                  <p>{x.year}</p>
+                  <p>{[x.name, x.issuer].filter(Boolean).join(" — ")}</p>
+                </div>
+              ))}
+            </section>
+          ) : null}
           {rest.map((k) => (
             <SectionBlock key={k} resume={resume} section={k} chips={false} />
           ))}
@@ -760,10 +799,7 @@ export function StreamTemplate({ resume }: { resume: Resume }) {
           <Portrait name={c.fullName} src={c.photoUrl} className="hp-str-poster" />
           <div>
             <h1>{(c.fullName || "Your Name").toUpperCase()}</h1>
-            <p>
-              <b>Top candidate</b>
-              {c.title ? <span> {c.title}</span> : null}
-            </p>
+            {c.title ? <p className="hp-str-role">{c.title}</p> : null}
             {blurb(resume) ? <p className="hp-str-sum">{blurb(resume)}</p> : null}
           </div>
         </div>
@@ -925,11 +961,16 @@ export function GroveTemplate({ resume }: { resume: Resume }) {
               ))}
             </section>
           ) : null}
-          {langs.map((l) => (
-            <p key={l.id}>
-              {l.name} <span>{l.level}</span>
-            </p>
-          ))}
+          {langs.length ? (
+            <section>
+              <h3>Languages</h3>
+              {langs.map((l) => (
+                <p key={l.id}>
+                  {l.name} <span>{l.level}</span>
+                </p>
+              ))}
+            </section>
+          ) : null}
         </aside>
       </div>
     </Sheet>

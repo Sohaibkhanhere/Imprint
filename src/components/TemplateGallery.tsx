@@ -116,7 +116,7 @@ function LayoutCard({
                 transform: `scale(${scale})`,
               }}
             >
-              <Template resume={{ ...resume, theme: { ...resume.theme, template: tp.key, accent: templateDefaultAccent(tp.key) } }} />
+              <Template resume={{ ...resume, theme: { ...resume.theme, template: tp.key, accent: templateDefaultAccent(tp.key), atsSafe: false } }} />
             </span>
           ) : (
             <span className="absolute inset-0 bg-stone-50" />

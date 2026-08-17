@@ -342,7 +342,8 @@
   margin: 18px 0 22px;
 }
 
-.tpl-bevel main h2 {
+.tpl-bevel main h2,
+.tpl-bevel main .t-head {
   font-family: Archivo, Outfit, sans-serif;
   font-weight: 800;
   font-size: 14px;
@@ -848,6 +849,16 @@
   max-width: 520px;
 }
 
+.hp-reel-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #c8cdd3;
+}
+
 .hp-reel-edu {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -937,8 +948,10 @@
 .tpl-reel .t-meta,
 .tpl-reel .t-dates,
 .tpl-reel .t-summary,
+.tpl-reel .t-desc,
 .tpl-reel .t-skills,
 .tpl-reel .t-lang,
+.tpl-reel .t-lang-level,
 .tpl-reel .sheet-bullets li {
   color: #e8e8e8;
 }
@@ -1198,13 +1211,10 @@
   color: #fff;
 }
 
-.hp-str-hero b {
-  background: var(--accent);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  padding: 3px 8px;
-  border-radius: 3px;
-  margin-right: 8px;
+.hp-str-role {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #e8e8e8;
 }
 
 .hp-str-sum {
@@ -1301,8 +1311,10 @@
 .tpl-stream .t-meta,
 .tpl-stream .t-dates,
 .tpl-stream .t-summary,
+.tpl-stream .t-desc,
 .tpl-stream .t-skills,
 .tpl-stream .t-lang,
+.tpl-stream .t-lang-level,
 .tpl-stream .sheet-bullets li {
   color: #e8e8e8;
 }

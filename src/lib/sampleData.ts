@@ -203,7 +203,7 @@ export function createBlankResume(): Resume {
       accent: "#1d2130",
       fontPair: "sans-modern",
       density: "comfortable",
-      atsSafe: true,
+      atsSafe: false,
       pageSize: "a4",
       maxPages: 1,
       citationFormat: "apa",
