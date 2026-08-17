@@ -42,7 +42,7 @@ export function TemplateStepper({
   const bar = size === "bar";
 
   return (
-    <div className={`flex items-center gap-1 ${bar ? "rounded-sm border border-stone-300 bg-white/95 px-1.5 py-1 shadow-sm backdrop-blur-sm" : ""}`}>
+    <div className={`flex items-center gap-1 ${bar ? "rounded-sm border border-stone-300 bg-stone-50/95 px-1.5 py-1 shadow-sm backdrop-blur-sm" : ""}`}>
       <button
         type="button"
         onClick={() => go(-1)}

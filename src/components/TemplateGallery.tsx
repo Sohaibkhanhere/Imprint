@@ -7,6 +7,7 @@ import {
   TEMPLATES,
   templateDefaultAccent,
   templateMatches,
+  themePatchForTemplate,
   type FinishFilter,
   type RoleFilter,
 } from "../templates/registry";
@@ -66,7 +67,7 @@ function Chip({
       className={`rounded-sm border px-2.5 py-1 text-[11px] font-semibold tracking-wide transition ${
         active
           ? "border-amber-600 bg-amber-50 text-amber-800"
-          : "border-stone-300 bg-white text-stone-600 hover:border-stone-500 hover:text-stone-900"
+          : "border-stone-300 bg-stone-50 text-stone-600 hover:border-stone-500 hover:text-stone-900"
       }`}
     >
       {children}
@@ -97,13 +98,13 @@ function LayoutCard({
       <button
         type="button"
         onClick={onApply}
-        className={`group flex w-full flex-col rounded-sm border bg-white p-3 text-left transition ${
+        className={`group flex w-full flex-col rounded-sm border bg-stone-50 p-3 text-left transition ${
           active ? "border-amber-600 ring-2 ring-amber-500/30" : "border-stone-300 hover:border-stone-500 hover:shadow-md"
         }`}
       >
         <div
           ref={box}
-          className="relative w-full overflow-hidden rounded-sm border border-stone-200 bg-white"
+          className="relative w-full overflow-hidden rounded-sm border border-stone-200 bg-stone-50"
           style={{ aspectRatio: `${page.width} / ${page.height}` }}
         >
           {visible && scale ? (
@@ -121,12 +122,12 @@ function LayoutCard({
             <span className="absolute inset-0 bg-stone-50" />
           )}
           {sample ? (
-            <span className="absolute left-1.5 top-1.5 z-10 rounded-sm bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-500 shadow-sm">
+            <span className="absolute left-1.5 top-1.5 z-10 rounded-sm bg-stone-50/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-500 shadow-sm">
               Sample
             </span>
           ) : null}
           {active ? (
-            <span className="absolute right-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-sm bg-amber-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+            <span className="absolute right-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-sm bg-amber-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-100 shadow-sm">
               <Check size={10} /> Current
             </span>
           ) : null}
@@ -157,7 +158,7 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
   const filtersActive = finish !== "all" || role !== "all" || query.trim().length > 0;
 
   const applyLayout = (key: (typeof TEMPLATES)[number]["key"]) => {
-    dispatch({ type: "SET_THEME", theme: { template: key, accent: templateDefaultAccent(key) } });
+    dispatch({ type: "SET_THEME", theme: themePatchForTemplate(key) });
   };
 
   const clearFilters = () => {
@@ -171,11 +172,12 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
   }, [resume.theme.template]);
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-stone-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
       <div className="flex max-h-[100dvh] w-full flex-col rounded-none bg-stone-100 shadow-2xl sm:max-h-[92vh] sm:w-[min(1180px,96vw)] sm:rounded-sm" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-wrap items-center gap-2 rounded-none border-b border-stone-300 bg-white px-4 py-3 sm:gap-3 sm:rounded-t-sm sm:px-5">
+        <div className="masthead-rule" />
+        <div className="flex flex-wrap items-center gap-2 rounded-none border-b border-stone-300 bg-stone-50 px-4 py-3 sm:gap-3 sm:rounded-t-sm sm:px-5">
           <div className="min-w-0 flex-1">
-            <p className="font-serif text-base font-bold text-stone-900">Template gallery</p>
+            <p className="qd-wordmark text-[22px] leading-none">Layouts</p>
             <p className="folio text-stone-500">
               {filtered.length === TEMPLATES.length
                 ? `${TEMPLATES.length} layouts`
@@ -188,7 +190,7 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 rounded-sm bg-stone-900 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-stone-800"
+              className="inline-flex items-center gap-1.5 rounded-sm bg-amber-500 px-3.5 py-2 text-xs font-semibold text-stone-100 shadow-sm transition hover:bg-amber-400"
             >
               Done
             </button>
@@ -198,7 +200,7 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="border-b border-stone-300 bg-white px-5 py-3">
+        <div className="border-b border-stone-300 bg-stone-50 px-5 py-3">
           <label className="relative block">
             <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
@@ -206,7 +208,7 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name"
-              className="w-full rounded-sm border border-stone-300 bg-stone-50 py-2 pl-8 pr-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-600 focus:bg-white"
+              className="w-full rounded-sm border border-stone-300 bg-stone-100 py-2 pl-8 pr-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-600"
             />
           </label>
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -231,12 +233,12 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
 
         {filtered.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 px-5 py-16 text-center">
-            <p className="font-serif text-lg font-bold text-stone-900">No layouts match</p>
+            <p className="qd-wordmark text-[26px] leading-none">No layouts match</p>
             <p className="text-sm text-stone-500">Try another name, or clear the filters.</p>
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-2 rounded-sm bg-stone-900 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+              className="mt-2 rounded-sm bg-amber-500 px-3.5 py-2 text-xs font-semibold text-stone-100 transition hover:bg-amber-400"
             >
               Show all layouts
             </button>

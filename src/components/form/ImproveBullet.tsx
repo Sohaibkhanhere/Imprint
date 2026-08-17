@@ -31,9 +31,9 @@ export function ImproveBulletDialog({ bullet, present, onApply, onClose }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-stone-900/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-6" onClick={onClose}>
       <div
-        className="max-h-[min(88dvh,100%)] w-full overflow-y-auto rounded-t-2xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:max-w-lg sm:rounded-2xl"
+        className="max-h-[min(88dvh,100%)] w-full overflow-y-auto rounded-t-2xl bg-stone-50 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:max-w-lg sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start justify-between">
@@ -51,8 +51,8 @@ export function ImproveBulletDialog({ bullet, present, onApply, onClose }: Props
           </button>
         </div>
 
-        <div className="mb-2 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500 line-through decoration-stone-300">
-          {bullet.trim() || "—"}
+        <div className="mb-2 rounded-lg bg-stone-100 px-3 py-2 text-xs text-stone-500 line-through decoration-stone-300">
+          {bullet.trim() || "-"}
         </div>
 
         <textarea
@@ -100,7 +100,7 @@ export function ImproveBulletDialog({ bullet, present, onApply, onClose }: Props
                   key={v}
                   type="button"
                   onClick={() => setDraft(draft.replace(/^[A-Za-z]+/, v).replace(/^[a-z]/, (c) => c.toUpperCase()))}
-                  className={`rounded-md border px-2 py-1 text-xs font-medium transition ${active ? "border-amber-500 bg-amber-50 text-amber-800" : "border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50"}`}
+                  className={`rounded-md border px-2 py-1 text-xs font-medium transition ${active ? "border-amber-500 bg-amber-50 text-amber-800" : "border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-200"}`}
                 >
                   {v}
                 </button>

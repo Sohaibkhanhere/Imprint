@@ -71,12 +71,12 @@ function ContentsSection({
         </button>
         <span className="ml-auto flex shrink-0 items-center">
           {canUp ? (
-            <button type="button" onClick={onUp} className="rounded-md px-1.5 py-1 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95" title="Move earlier in the issue">
+            <button type="button" onClick={onUp} className="rounded-md px-1.5 py-1 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95" title="Move section up">
               <ChevronUp size={14} />
             </button>
           ) : null}
           {canDown ? (
-            <button type="button" onClick={onDown} className="rounded-md px-1.5 py-1 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95" title="Move later in the issue">
+            <button type="button" onClick={onDown} className="rounded-md px-1.5 py-1 text-stone-400 transition-[color,background-color,transform] duration-150 hover:bg-stone-100 hover:text-stone-900 active:scale-95" title="Move section down">
               <ChevronDown size={14} />
             </button>
           ) : null}
@@ -226,14 +226,14 @@ export function FormPanel() {
       })}
 
       <div className="pt-3">
-        <Collapse title="Held copy" subtitle="tap to show" defaultOpen={false}>
+        <Collapse title="Hidden sections" subtitle="tap to show" defaultOpen={false}>
           <div className="flex flex-wrap gap-2">
             {hidden.map((k) => (
               <button
                 key={k}
                 type="button"
                 onClick={() => dispatch({ type: "SET_VISIBILITY", key: k as VisibilityKey, visible: true })}
-                className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.98]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.98]"
               >
                 <Eye size={13} /> {SECTION_META[k].label}
               </button>

@@ -3,6 +3,7 @@ import { defaultSectionOrder, defaultVisibility } from "./resumeTypes";
 import { todayISO, uid } from "./date";
 
 export const ACCENT_PALETTE = [
+  { name: "Quantum Gold", value: "#f4a850" },
   { name: "Ink", value: "#1d2130" },
   { name: "Editorial Red", value: "#b0302a" },
   { name: "Slate", value: "#334155" },
@@ -165,7 +166,7 @@ export function resumeForGalleryPreview(live: Resume): Resume {
       ...demo.theme,
       pageSize: live.theme?.pageSize ?? demo.theme.pageSize,
       density: live.theme?.density ?? demo.theme.density,
-      atsSafe: live.theme?.atsSafe ?? demo.theme.atsSafe,
+      atsSafe: false,
       fontPair: live.theme?.fontPair ?? demo.theme.fontPair,
     },
   };
@@ -198,11 +199,11 @@ export function createBlankResume(): Resume {
     sectionOrder: defaultSectionOrder(type),
     visibility: defaultVisibility(type),
     theme: {
-      template: "boardroom",
-      accent: "#c9a66b",
-      fontPair: "editorial",
+      template: "classic",
+      accent: "#1d2130",
+      fontPair: "sans-modern",
       density: "comfortable",
-      atsSafe: false,
+      atsSafe: true,
       pageSize: "a4",
       maxPages: 1,
       citationFormat: "apa",

@@ -29,7 +29,7 @@ function BulletList({
               onChange={(e) => onSet(items.map((x, j) => (j === i ? e.target.value : x)))}
               rows={Math.max(2, Math.min(4, (b || "").split("\n").length))}
               placeholder="Redesigned the onboarding flow, lifting 30-day retention by 22%…"
-              className="min-w-0 flex-1 resize-y rounded-md border border-stone-300 bg-white px-3 py-2 text-sm leading-relaxed text-stone-900 placeholder:text-stone-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25"
+              className="min-w-0 flex-1 resize-y rounded-md border border-stone-300 bg-stone-50 px-3 py-2 text-sm leading-relaxed text-stone-900 placeholder:text-stone-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25"
             />
             <div className="flex shrink-0 flex-col pt-0.5 opacity-70 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
               <button
@@ -104,7 +104,7 @@ export function ExperienceForm() {
           <div className="sm:col-span-2">
             <PresentToggle on={e.present} onChange={(present) => update(e.id, { present })} hint="Use present tense for the current role." />
           </div>
-          <Field wide label="Company descriptor (optional)" hint="Only if the company isn't well known — e.g. mid-size DTC apparel brand">
+          <Field wide label="Company descriptor (optional)" hint="Only if the company isn't well known, e.g. mid-size DTC apparel brand">
             <Input value={e.descriptor} onChange={(ev) => update(e.id, { descriptor: ev.target.value })} placeholder="B2B SaaS analytics platform" />
           </Field>
           <BulletList bullets={e.bullets ?? []} present={e.present} onSet={(bullets) => update(e.id, { bullets })} />
@@ -175,7 +175,7 @@ export function TeachingForm() {
             <Input value={e.institution} onChange={(ev) => update(e.id, { institution: ev.target.value })} placeholder="Stanford University" />
           </Field>
           <Field label="Course">
-            <Input value={e.course} onChange={(ev) => update(e.id, { course: ev.target.value })} placeholder="CS106A — Programming Methodology" />
+            <Input value={e.course} onChange={(ev) => update(e.id, { course: ev.target.value })} placeholder="CS106A: Programming Methodology" />
           </Field>
           <Field label="Location">
             <Input value={e.location} onChange={(ev) => update(e.id, { location: ev.target.value })} placeholder="Stanford, CA" />

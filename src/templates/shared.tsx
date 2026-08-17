@@ -184,17 +184,19 @@ export function ExtraDetails({ resume }: { resume: Resume }) {
 
 export function headingFor(section: string, resume: Resume): string {
   const type = resume.meta?.type;
+  const ats = Boolean(resume.theme?.atsSafe);
   switch (section) {
     case "summary":
+      if (ats) return "Professional Summary";
       return type === "executive" ? "Executive Summary" : "Professional Summary";
     case "objective":
       return "Objective";
     case "experience":
-      return type === "functional" ? "Work History" : "Work Experience";
+      return ats ? "Work Experience" : type === "functional" ? "Work History" : "Work Experience";
     case "skills":
-      return type === "functional" ? "Core Skills" : "Skills";
+      return ats ? "Skills" : type === "functional" ? "Core Skills" : "Skills";
     case "education":
-      return type === "cv" ? "Education & Training" : "Education";
+      return ats ? "Education" : type === "cv" ? "Education & Training" : "Education";
     case "projects":
       return "Projects";
     case "certifications":
@@ -202,11 +204,11 @@ export function headingFor(section: string, resume: Resume): string {
     case "languages":
       return "Languages";
     case "volunteer":
-      return type === "entry-level" ? "Leadership & Volunteer" : "Volunteer Experience";
+      return ats ? "Volunteer Experience" : type === "entry-level" ? "Leadership & Volunteer" : "Volunteer Experience";
     case "publications":
       return "Publications";
     case "awards":
-      return "Awards & Honors";
+      return ats ? "Awards" : "Awards & Honors";
     case "teaching":
       return "Teaching Experience";
     case "grants":

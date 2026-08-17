@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { useResume } from "../store/resumeStore";
 import { getTemplate } from "../templates/registry";
 import { PAGE_DIMS } from "../templates/shared";
+import { AtsSafeTemplate } from "../templates/ats-safe";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { TemplateStepper } from "./TemplateStepper";
 import { applyPageStyle } from "../lib/pdf";
@@ -14,9 +15,11 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
   const [scale, setScale] = useState(0.72);
   const [pages, setPages] = useState(1);
 
-  const template = getTemplate(resume.theme.template);
-  const Template = template.component;
-  const page = PAGE_DIMS[resume.theme.pageSize] ?? PAGE_DIMS.a4;
+  const liveTheme = resume.theme;
+  const previewResume = { ...deferred, theme: liveTheme };
+  const template = getTemplate(liveTheme.template);
+  const Template = liveTheme.atsSafe ? AtsSafeTemplate : template.component;
+  const page = PAGE_DIMS[liveTheme.pageSize] ?? PAGE_DIMS.a4;
   const visualW = page.width * scale;
   const visualH = page.height * scale;
 
@@ -64,22 +67,22 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
             >
               <div ref={sheetRef} className="preview-sheet relative">
                 <ErrorBoundary
-                  key={resume.theme.template}
+                  key={`${liveTheme.template}-${liveTheme.atsSafe ? "ats" : "design"}`}
                   fallback={() => (
                     <div className="flex h-64 flex-col items-center justify-center gap-2 bg-white px-6 text-center">
-                      <p className="font-serif text-sm font-bold text-stone-900">The proof couldn't render this data</p>
-                      <p className="text-xs text-stone-500">A field in your resume is confusing this template. Try another layout or fix the affected section — your data is safe.</p>
+                      <p className="text-sm font-bold text-[#151c24]">This layout couldn't render this data</p>
+                      <p className="text-xs text-[#5c5c5c]">A field in your resume is confusing this template. Try another layout or fix the affected section. Your data is safe.</p>
                     </div>
                   )}
                 >
-                  <Template resume={deferred} />
+                  <Template resume={previewResume} />
                 </ErrorBoundary>
               </div>
             </div>
           </div>
           <div className="preview-folio">
-            <span className="folio">Proof</span>
-            <span className="folio truncate text-stone-600">{(resume.contact?.fullName || "").trim() || "Untitled issue"}</span>
+            <span className={`folio ${liveTheme.atsSafe ? "text-[#5eead4]" : ""}`}>{liveTheme.atsSafe ? "ATS Safe" : "Preview"}</span>
+            <span className="folio truncate text-stone-600">{(resume.contact?.fullName || "").trim() || "Untitled resume"}</span>
             <span className="folio">
               <span className="folio-tick">·</span> {template.label} <span className="folio-tick">·</span> {page.label}
             </span>

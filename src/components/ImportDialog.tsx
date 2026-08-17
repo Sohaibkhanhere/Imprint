@@ -21,7 +21,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
     setDraft(null);
     try {
       const text = await extractCvText(file);
-      if (!text.trim()) throw new Error("This file has no selectable text. Scanned or image-only PDFs cannot be imported — export a text PDF from Word or Google Docs, or type the details in Contents.");
+      if (!text.trim()) throw new Error("This file has no selectable text. Scanned or image-only PDFs cannot be imported. Export a text PDF from Word or Google Docs, or type the details in Contents.");
       const parsed = parseCvText(text);
       if (!hasMeaningfulContent(parsed)) {
         const blob = text.replace(/\s+/g, " ").trim();
@@ -55,12 +55,13 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
   const warns = draft?.warnings ?? [];
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-stone-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
-      <div className="max-h-[min(92dvh,100%)] w-full max-w-xl overflow-y-auto rounded-t-lg bg-white shadow-xl sm:rounded-sm" onClick={(e) => e.stopPropagation()}>
+    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[min(92dvh,100%)] w-full max-w-xl overflow-y-auto rounded-t-lg bg-stone-50 shadow-xl sm:rounded-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="masthead-rule" />
         <div className="flex items-start justify-between gap-3 border-b border-stone-300 px-4 py-3.5 sm:px-5">
           <div>
-            <p className="font-serif text-base font-bold text-stone-900">Import an existing resume</p>
-            <p className="folio text-stone-500">We rebuild it into our templates — everything stays editable</p>
+            <p className="qd-wordmark text-[22px] leading-none">Import resume</p>
+            <p className="folio text-stone-500">Rebuilt into QD layouts, still fully editable</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-md p-1.5 text-stone-500 hover:bg-stone-100">
             <X size={18} />
@@ -97,14 +98,14 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
             </button>
           ) : (
             <div>
-              <div className="flex items-center justify-between rounded-sm border border-emerald-200 bg-emerald-50 px-3.5 py-2.5">
-                <span className="flex items-center gap-2 text-sm font-medium text-emerald-900">
+              <div className="flex items-center justify-between rounded-sm border border-emerald-700/50 bg-emerald-950/60 px-3.5 py-2.5">
+                <span className="flex items-center gap-2 text-sm font-medium text-emerald-200">
                   <FileText size={16} /> {fileName}
                 </span>
                 <button
                   type="button"
                   onClick={() => inputRef.current?.click()}
-                  className="text-xs font-medium text-emerald-800 underline-offset-2 hover:underline"
+                  className="text-xs font-medium text-emerald-300 underline-offset-2 hover:underline"
                 >
                   Choose another
                 </button>
@@ -140,7 +141,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
                   type="button"
                   onClick={() => setTemplate("")}
                   className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium transition ${
-                    template === "" ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-50"
+                    template === "" ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
                   Keep current ({resume.theme.template.replace(/-/g, " ")})
@@ -151,7 +152,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
                     type="button"
                     onClick={() => setTemplate(tp.key)}
                     className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium transition ${
-                      template === tp.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-50"
+                      template === tp.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-200"
                     }`}
                   >
                     {tp.label}
@@ -162,7 +163,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
           )}
 
           {error ? (
-            <p className="mt-3 rounded-sm border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs leading-relaxed text-red-800">{error}</p>
+            <p className="mt-3 rounded-sm border border-red-800/60 bg-red-950/70 px-3.5 py-2.5 text-xs leading-relaxed text-red-200">{error}</p>
           ) : null}
 
           <div className="mt-5 flex flex-col-reverse gap-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between">
@@ -173,7 +174,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={doImport}
               disabled={!draft}
-              className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-sm bg-stone-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:opacity-40 sm:w-auto"
+              className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-sm bg-amber-500 px-4 py-2 text-sm font-semibold text-stone-100 shadow-sm transition hover:bg-amber-400 disabled:opacity-40 sm:w-auto"
             >
               Import resume <UploadCloud size={14} />
             </button>

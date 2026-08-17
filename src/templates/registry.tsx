@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { Resume, TemplateKey } from "../lib/types";
+import type { Resume, TemplateKey, ThemeConfig } from "../lib/types";
 import { ClassicTemplate } from "./classic";
 import { ModernMinimalTemplate } from "./modern-minimal";
 import { TwoColumnTemplate } from "./two-column";
@@ -616,4 +616,13 @@ export function templateDefaultAccent(key: TemplateKey): string {
   return DEFAULT_ACCENTS[key] ?? "#1d2130";
 }
 
-export const DEFAULT_TEMPLATE: TemplateKey = "boardroom";
+export function themePatchForTemplate(key: TemplateKey): Partial<ThemeConfig> {
+  const tp = getTemplate(key);
+  return {
+    template: key,
+    accent: templateDefaultAccent(key),
+    atsSafe: tp.atsSafeVariant,
+  };
+}
+
+export const DEFAULT_TEMPLATE: TemplateKey = "classic";

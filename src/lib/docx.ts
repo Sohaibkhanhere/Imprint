@@ -1,25 +1,20 @@
 import {
-  AlignmentType,
   BorderStyle,
   Document,
-  HorizontalPositionRelativeFrom,
-  ImageRun,
   Packer,
   Paragraph,
   TabStopType,
   TextRun,
-  TextWrappingType,
-  VerticalPositionRelativeFrom,
 } from "docx";
 import type { Resume } from "./types";
 import { formatRange, exportStem, cleanUrl } from "./date";
-import { effectiveSections, headingFor, citePublication, PAGE_DIMS } from "../templates/shared";
+import { effectiveSections, headingFor, citePublication } from "../templates/shared";
 import { coerceResume } from "./coerceResume";
 import { t } from "./safe";
 
 export { Packer };
 
-const SERIF = "Times New Roman";
+const FONT = "Arial";
 
 const PAGE_TWIPS: Record<Resume["theme"]["pageSize"], { width: number; height: number }> = {
   a4: { width: 11906, height: 16838 },
@@ -50,7 +45,7 @@ function contactLine(resume: Resume): string {
   if (t(c.linkedin)) parts.push(cleanUrl(c.linkedin));
   if (t(c.github)) parts.push(cleanUrl(c.github));
   if (t(c.website)) parts.push(cleanUrl(c.website));
-  return parts.join("  ·  ");
+  return parts.join(" | ");
 }
 
 function sectionHeading(text: string, accent: string): Paragraph {
@@ -70,11 +65,12 @@ function entryRole(role: string, dates: string, right: number): Paragraph {
   ]);
 }
 
-function entryOrg(org: string, loc?: string): Paragraph {
+function entryOrg(org: string, loc?: string): Paragraph | null {
   const runs: TextRun[] = [];
   if (org.trim()) runs.push(new TextRun({ text: org, italics: true, size: 21, color: "3A362F" }));
-  if (loc?.trim()) runs.push(new TextRun({ text: (runs.length ? "  ·  " : "") + loc, size: 20, color: "5C574D" }));
-  return new Paragraph({ spacing: { after: 60 }, children: runs.length ? runs : [] });
+  if (loc?.trim()) runs.push(new TextRun({ text: (runs.length ? "  |  " : "") + loc, size: 20, color: "5C574D" }));
+  if (!runs.length) return null;
+  return new Paragraph({ spacing: { after: 60 }, children: runs });
 }
 
 function bullets(items: string[]): Paragraph[] {
@@ -105,7 +101,7 @@ function buildSections(resume: Resume, accent: string, right: number): (Paragrap
       case "experience":
         resume.experience.forEach((j) => {
           out.push(entryRole(j.role || j.company, formatRange(j.startDate, j.endDate, j.present), right));
-          out.push(entryOrg(j.company, j.location));
+          out.push(entryOrg(j.company && j.role && j.company.toLowerCase() !== j.role.toLowerCase() ? j.company : "", j.location));
           out.push(...bullets(j.bullets));
         });
         break;
@@ -280,33 +276,32 @@ export function buildResumeDocx(resume: Resume): Document {
   if (t(c.fullName)) {
     header.push(
       new Paragraph({
-        alignment: AlignmentType.CENTER,
         spacing: { after: 40 },
-        children: [new TextRun({ text: t(c.fullName), bold: true, size: 44 })],
+        children: [new TextRun({ text: t(c.fullName), bold: true, size: 44, font: FONT })],
       }),
     );
   }
   if (t(c.title)) {
     header.push(
       new Paragraph({
-        alignment: AlignmentType.CENTER,
         spacing: { after: 80 },
-        children: [new TextRun({ text: t(c.title).toUpperCase(), size: 20, color: accent, characterSpacing: 60 })],
+        children: [new TextRun({ text: t(c.title), size: 22, color: accent, font: FONT })],
       }),
     );
   }
   const contact = contactLine(resume);
   if (contact) {
-    header.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 }, children: [new TextRun({ text: contact, size: 20, color: "4A463E" })] }));
+    header.push(new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: contact, size: 20, color: "4A463E", font: FONT })] }));
   }
 
   const body = header.concat(...buildSections(resume, accent, right).filter((p): p is Paragraph => p !== null));
 
   return new Document({
+    title: exportStem(resume.contact),
     styles: {
       default: {
         document: {
-          run: { font: SERIF, size: 22, color: "23211C" },
+          run: { font: FONT, size: 22, color: "23211C" },
           paragraph: { spacing: { line: 260, after: 60 } },
         },
       },
@@ -322,156 +317,8 @@ export function buildResumeDocx(resume: Resume): Document {
   });
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = window.setTimeout(() => reject(new Error(message)), ms);
-    promise.then(
-      (value) => {
-        window.clearTimeout(timer);
-        resolve(value);
-      },
-      (err) => {
-        window.clearTimeout(timer);
-        reject(err);
-      },
-    );
-  });
-}
-
-function waitForImages(root: HTMLElement): Promise<void> {
-  const imgs = Array.from(root.querySelectorAll("img"));
-  return Promise.all(
-    imgs.map((img) =>
-      img.complete
-        ? Promise.resolve()
-        : new Promise<void>((resolve) => {
-            img.addEventListener("load", () => resolve(), { once: true });
-            img.addEventListener("error", () => resolve(), { once: true });
-          }),
-    ),
-  ).then(() => undefined);
-}
-
-function canvasToPng(canvas: HTMLCanvasElement): Promise<Uint8Array> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error("Could not encode the Word page image."));
-        return;
-      }
-      void blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf)), reject);
-    }, "image/png");
-  });
-}
-
-async function captureSheetPages(sheet: HTMLElement, pageW: number, pageH: number): Promise<Uint8Array[]> {
-  const host = document.createElement("div");
-  host.setAttribute("data-docx-capture", "true");
-  host.style.cssText = "position:absolute;left:-200vw;top:0;pointer-events:none;";
-  const clone = sheet.cloneNode(true) as HTMLElement;
-  clone.style.transform = "none";
-  clone.style.width = `${pageW}px`;
-  clone.style.maxWidth = `${pageW}px`;
-  clone.style.height = `${pageH}px`;
-  clone.style.minHeight = `${pageH}px`;
-  clone.style.maxHeight = `${pageH}px`;
-  clone.style.overflow = "hidden";
-  clone.style.margin = "0";
-  clone.style.boxShadow = "none";
-  host.appendChild(clone);
-  document.body.appendChild(host);
-
-  try {
-    await document.fonts.ready;
-    await waitForImages(clone);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-
-    const { toCanvas } = await import("html-to-image");
-    const source = await withTimeout(
-      toCanvas(clone, {
-        pixelRatio: 2,
-        cacheBust: true,
-        backgroundColor: "#ffffff",
-        skipAutoScale: true,
-        width: pageW,
-        height: pageH,
-        canvasWidth: Math.round(pageW * 2),
-        canvasHeight: Math.round(pageH * 2),
-        style: { transform: "none", width: `${pageW}px`, height: `${pageH}px`, overflow: "hidden" },
-        filter: (node) => !node.classList?.contains("no-print"),
-        onImageErrorHandler: () => undefined,
-      }),
-      20000,
-      "Word export timed out while capturing the proof sheet.",
-    );
-
-    const pageCanvas = document.createElement("canvas");
-    pageCanvas.width = Math.round(pageW * 2);
-    pageCanvas.height = Math.round(pageH * 2);
-    const ctx = pageCanvas.getContext("2d");
-    if (!ctx) throw new Error("Could not draw Word pages.");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-    ctx.drawImage(source, 0, 0, pageCanvas.width, pageCanvas.height);
-    return [await canvasToPng(pageCanvas)];
-  } finally {
-    host.remove();
-  }
-}
-
-function buildVisualDocx(resume: Resume, pngPages: Uint8Array[]): Document {
-  const theme = resume.theme;
-  const page = PAGE_TWIPS[theme?.pageSize] ?? PAGE_TWIPS.a4;
-  const dims = PAGE_DIMS[theme?.pageSize] ?? PAGE_DIMS.a4;
-  const imgW = Math.floor(dims.width);
-  const imgH = Math.floor(dims.height);
-  const name = t(resume.contact?.fullName) || "Resume";
-
-  return new Document({
-    title: exportStem(resume.contact),
-    sections: pngPages.map((data, i) => ({
-      properties: {
-        page: {
-          size: { width: page.width, height: page.height },
-          margin: { top: 0, right: 0, bottom: 0, left: 0 },
-        },
-      },
-      children: [
-        new Paragraph({
-          spacing: { before: 0, after: 0 },
-          children: [
-            new ImageRun({
-              type: "png",
-              data,
-              transformation: { width: imgW, height: imgH },
-              floating: {
-                horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: 0 },
-                verticalPosition: { relative: VerticalPositionRelativeFrom.PAGE, offset: 0 },
-                wrap: { type: TextWrappingType.NONE },
-                behindDocument: false,
-                allowOverlap: true,
-              },
-              altText: { title: name, description: `${name} page ${i + 1}`, name },
-            }),
-          ],
-        }),
-      ],
-    })),
-  });
-}
-
 export async function exportDocx(resume: Resume): Promise<void> {
-  resume = coerceResume(resume);
-  const sheet = document.querySelector(".resume-sheet") as HTMLElement | null;
-  if (!sheet) {
-    throw new Error("The proof sheet is not on screen yet. Open the proof pane, then export Word.");
-  }
-
-  const dims = PAGE_DIMS[resume.theme?.pageSize] ?? PAGE_DIMS.a4;
-  const pngPages = await captureSheetPages(sheet, dims.width, dims.height);
-  if (!pngPages.length) throw new Error("Could not capture the resume for Word export.");
-
-  const doc = buildVisualDocx(resume, pngPages);
+  const doc = buildResumeDocx(resume);
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

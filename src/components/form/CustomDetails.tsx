@@ -44,7 +44,7 @@ export function CustomDetailsForm() {
               type="button"
               disabled={taken}
               onClick={() => add(emptyDetail(p.label, ""))}
-              className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-700 transition hover:border-stone-900 hover:text-stone-900 disabled:cursor-default disabled:opacity-40"
+              className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-medium text-stone-700 transition hover:border-stone-900 hover:text-stone-900 disabled:cursor-default disabled:opacity-40"
             >
               <span className="inline-flex items-center gap-1">
                 <Plus size={11} /> {p.label}

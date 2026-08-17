@@ -72,7 +72,7 @@ export function ContactForm() {
       <Field label="Country">
         <Input value={c.country} onChange={(e) => set({ country: e.target.value })} placeholder="USA" />
       </Field>
-      <Field wide label="LinkedIn" hint="Clean URL — no tracking parameters">
+      <Field wide label="LinkedIn" hint="Clean URL, no tracking parameters">
         <Input value={c.linkedin} onChange={(e) => set({ linkedin: e.target.value })} placeholder="linkedin.com/in/name" />
       </Field>
       <Field label="Website / Portfolio">

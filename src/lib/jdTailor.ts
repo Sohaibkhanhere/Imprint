@@ -1,5 +1,6 @@
 import type { Resume } from "./types";
 import { cleanUrl } from "./date";
+import { t } from "./safe";
 
 const STOP_WORDS = new Set(
   `a an and are as at be by for from has he her his in is it its of on or she that the their them they this to was were will with you your our we our i me my am`.split(" "),
@@ -50,9 +51,10 @@ export function multiWordTerms(jd: string, limit = 10): string[] {
 export interface TailorReport {
   keywords: string[];
   matchedKeywords: string[];
+  partialKeywords: string[];
+  missingKeywords: string[];
   matchedSkills: string[];
   matchedBullets: { jobIndex: number; bulletIndex: number; bullet: string; terms: string[] }[];
-  missingKeywords: string[];
   totalKeywords: number;
   coverage: number;
   recommendations: string[];
@@ -60,57 +62,118 @@ export interface TailorReport {
 }
 
 function keywordMatches(term: string, text: string): boolean {
-  const t = text.toLowerCase();
-  return t.includes(term) || term.includes(t);
+  const hay = text.toLowerCase();
+  const k = term.toLowerCase();
+  return hay.includes(k) || (k.length > 4 && k.includes(hay) && hay.length > 3);
+}
+
+function resumeHaystack(r: Resume): string {
+  const bits = [
+    r.summary,
+    r.objective,
+    r.contact?.title,
+    ...(r.skills ?? []).flatMap((g) => [g.name, ...(g.skills ?? [])]),
+    ...(r.experience ?? []).flatMap((j) => [j.role, j.company, j.descriptor, ...(j.bullets ?? [])]),
+    ...(r.projects ?? []).flatMap((p) => [p.name, p.description, p.tech]),
+    ...(r.certifications ?? []).map((c) => `${c.name} ${c.issuer}`),
+    ...(r.education ?? []).flatMap((e) => [e.degree, e.field, e.institution]),
+  ];
+  return bits.map((x) => t(x)).join(" \n ").toLowerCase();
+}
+
+function classifyKeyword(term: string, haystack: string): "matched" | "partial" | "missing" {
+  const k = term.toLowerCase().trim();
+  if (!k) return "missing";
+  if (haystack.includes(k)) return "matched";
+  const parts = k.split(/[\s/+-]+/).filter((w) => w.length > 3);
+  if (parts.length >= 2 && parts.some((p) => haystack.includes(p))) return "partial";
+  const stem = k.replace(/(ing|tion|ment|er|ed|s)$/i, "");
+  if (stem.length >= 4 && haystack.includes(stem)) return "partial";
+  return "missing";
 }
 
 export function tailorResume(r: Resume, jd: string): TailorReport {
   const single = extractKeywords(jd, 18);
   const multi = multiWordTerms(jd, 8);
   const keywords = [...multi, ...single.map((s) => s.term)].slice(0, 26);
+  const haystack = resumeHaystack(r);
 
-  const allSkills = r.skills.flatMap((g) => g.skills.map((s) => s.trim().toLowerCase()));
+  const matchedKeywords: string[] = [];
+  const partialKeywords: string[] = [];
+  const missingKeywords: string[] = [];
+  for (const k of keywords) {
+    const kind = classifyKeyword(k, haystack);
+    if (kind === "matched") matchedKeywords.push(k);
+    else if (kind === "partial") partialKeywords.push(k);
+    else missingKeywords.push(k);
+  }
 
   const matchedSkills: string[] = [];
-  for (const g of r.skills) {
-    for (const s of g.skills) {
+  for (const g of r.skills ?? []) {
+    for (const s of g.skills ?? []) {
       const lower = s.toLowerCase();
       if (keywords.some((k) => keywordMatches(k, lower))) matchedSkills.push(s);
     }
   }
 
-  const matchedKeywords = keywords.filter((k) => {
-    const inSkills = allSkills.some((s) => keywordMatches(k, s));
-    const inBullets = r.experience.some((job) => job.bullets.some((b) => keywordMatches(k, b)));
-    return inSkills || inBullets;
-  });
-
-  const missingKeywords = keywords.filter((k) => !matchedKeywords.includes(k));
-
   const matchedBullets: TailorReport["matchedBullets"] = [];
-  r.experience.forEach((job, jobIndex) => {
-    job.bullets.forEach((b, bulletIndex) => {
+  (r.experience ?? []).forEach((job, jobIndex) => {
+    (job.bullets ?? []).forEach((b, bulletIndex) => {
       const terms = keywords.filter((k) => b.toLowerCase().includes(k));
       if (terms.length) matchedBullets.push({ jobIndex, bulletIndex, bullet: b, terms: terms.slice(0, 4) });
     });
   });
 
-  const coverage = keywords.length ? Math.round((matchedKeywords.length / keywords.length) * 100) : 0;
+  const coverage = keywords.length
+    ? Math.round(((matchedKeywords.length + partialKeywords.length * 0.5) / keywords.length) * 100)
+    : 0;
 
   const recommendations: string[] = [];
-  if (missingKeywords.length) recommendations.push("Add missing keywords as skills or weave them into bullets: " + missingKeywords.slice(0, 6).join(", ") + ".");
-  if (r.experience.length && matchedBullets.length === 0) recommendations.push("None of your current bullets reference job keywords — rewrite your top 3 bullets with the terms above.");
-  if (keywords.length && matchedKeywords.length < keywords.length * 0.5) recommendations.push("Aim for 70%+ keyword coverage; mirror the exact phrasing used in the job ad.");
+  if (missingKeywords.length) {
+    recommendations.push(
+      "Missing from this resume (not added automatically). Include them only if they are true: " +
+        missingKeywords.slice(0, 6).join(", ") +
+        ".",
+    );
+  }
+  if (partialKeywords.length) {
+    recommendations.push(
+      "Partial matches. Use the posting's exact wording where it accurately describes your work: " +
+        partialKeywords.slice(0, 6).join(", ") +
+        ".",
+    );
+  }
+  if ((r.experience ?? []).length && matchedBullets.length === 0) {
+    recommendations.push("None of your current bullets use this posting's terms. Rewrite existing bullets with accurate wording from the job.");
+  }
 
-  const rankSkills = (g: Resume["skills"][number]) => g.skills.filter((s) => keywords.some((k) => keywordMatches(k, s))).length;
-  const skills = [...r.skills].sort((a, b) => rankSkills(b) - rankSkills(a));
+  const rankSkills = (g: Resume["skills"][number]) =>
+    (g.skills ?? []).filter((s) => keywords.some((k) => keywordMatches(k, s))).length;
+  const skills = [...(r.skills ?? [])].sort((a, b) => rankSkills(b) - rankSkills(a));
 
-  const rankJob = (job: Resume["experience"][number]) => job.bullets.filter((b) => keywords.some((k) => b.toLowerCase().includes(k))).length;
-  const experience = [...r.experience].sort((a, b) => rankJob(b) - rankJob(a));
+  const rankJob = (job: Resume["experience"][number]) =>
+    (job.bullets ?? []).filter((b) => keywords.some((k) => b.toLowerCase().includes(k))).length;
+  const experience = [...(r.experience ?? [])].sort((a, b) => rankJob(b) - rankJob(a));
 
-  const tailored: Resume = { ...r, skills, experience };
+  const tailored: Resume = {
+    ...r,
+    skills,
+    experience,
+    target: { jobDescription: jd, enabled: jd.trim().length > 20 },
+  };
 
-  return { keywords, matchedKeywords, matchedSkills, matchedBullets, missingKeywords, totalKeywords: keywords.length, coverage, recommendations, tailored };
+  return {
+    keywords,
+    matchedKeywords,
+    partialKeywords,
+    matchedSkills,
+    matchedBullets,
+    missingKeywords,
+    totalKeywords: keywords.length,
+    coverage,
+    recommendations,
+    tailored,
+  };
 }
 
 export function linkedinClean(url: string): string {

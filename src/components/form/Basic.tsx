@@ -12,14 +12,14 @@ export function SummaryForm() {
         <button
           type="button"
           onClick={() => dispatch({ type: "PATCH", patch: { useObjective: false } })}
-          className={`rounded-[5px] px-3 py-1 text-xs font-medium transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] ${!useObj ? "bg-stone-900 text-stone-50 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
+          className={`rounded-[5px] px-3 py-1 text-xs font-medium transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] ${!useObj ? "bg-amber-500 text-stone-100 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
         >
           Summary
         </button>
         <button
           type="button"
           onClick={() => dispatch({ type: "PATCH", patch: { useObjective: true } })}
-          className={`rounded-[5px] px-3 py-1 text-xs font-medium transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] ${useObj ? "bg-stone-900 text-stone-50 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
+          className={`rounded-[5px] px-3 py-1 text-xs font-medium transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] ${useObj ? "bg-amber-500 text-stone-100 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
         >
           Objective
         </button>
@@ -28,7 +28,7 @@ export function SummaryForm() {
         label={useObj ? "Objective (1–2 sentences)" : "Professional summary (2–4 sentences)"}
         hint={
           useObj
-            ? "Framed around value to the employer — what role you seek and what you bring."
+            ? "Framed around value to the employer: what role you seek and what you bring."
             : "Who you are professionally, years of experience, top 2–3 strengths, one standout result."
         }
       >
@@ -81,7 +81,7 @@ export function SkillsForm() {
           </div>
           <div className="mt-1.5">
             <Label>Skills (comma-separated)</Label>
-            <div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2 py-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-amber-600/55 focus-within:ring-2 focus-within:ring-amber-500/25">
+            <div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-md border border-stone-300 bg-stone-50 px-2 py-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-amber-600/55 focus-within:ring-2 focus-within:ring-amber-500/25">
               {(g.skills ?? []).map((s, i) => (
                 <span key={i} className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700">
                   {s}
@@ -115,7 +115,7 @@ export function SkillsForm() {
         <button
           type="button"
           onClick={() => set([...groups, { id: `g${Date.now()}`, name: "", skills: [] }])}
-          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.99]"
+          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.99]"
         >
           + Add group
         </button>

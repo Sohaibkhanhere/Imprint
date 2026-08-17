@@ -8,6 +8,7 @@ import { TailorPanel } from "./components/TailorPanel";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import type { TemplateKey } from "./lib/types";
 import { STORAGE_KEY } from "./lib/storage";
+import { themePatchForTemplate } from "./templates/registry";
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ function ShellInner() {
   const [showTailor, setShowTailor] = useState(false);
   const [pages, setPages] = useState(1);
   const [mobileTab, setMobileTab] = useState<"copy" | "proof">("copy");
+  const [notesOpen, setNotesOpen] = useState(false);
   const [firstIssue] = useState(() => !window.localStorage.getItem(STORAGE_KEY));
 
   const sections = useMemo(
@@ -31,7 +33,7 @@ function ShellInner() {
 
   useEffect(() => {
     const tpl = new URLSearchParams(window.location.search).get("template") as TemplateKey | null;
-    if (tpl) dispatch({ type: "SET_THEME", theme: { template: tpl } });
+    if (tpl) dispatch({ type: "SET_THEME", theme: themePatchForTemplate(tpl) });
   }, [dispatch]);
 
   const reset = () => {
@@ -42,8 +44,8 @@ function ShellInner() {
 
   return (
     <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-stone-100">
-      <HeaderBar onReset={reset} onOpenTailor={() => setShowTailor((s) => !s)} startInGallery={firstIssue} />
-      <div className="no-print flex shrink-0 border-b border-stone-200 bg-white md:hidden">
+      <HeaderBar onReset={reset} onOpenTailor={() => setShowTailor((s) => !s)} onOpenNotes={() => setNotesOpen(true)} startInGallery={firstIssue} />
+      <div className="no-print flex shrink-0 border-b border-stone-200 bg-stone-50 md:hidden">
         <button
           type="button"
           onClick={() => setMobileTab("copy")}
@@ -51,7 +53,7 @@ function ShellInner() {
             mobileTab === "copy" ? "border-amber-600 text-stone-900" : "border-transparent text-stone-500"
           }`}
         >
-          <span className="contents-number">01</span> Copy
+          <span className="contents-number">01</span> Contents
         </button>
         <button
           type="button"
@@ -60,22 +62,22 @@ function ShellInner() {
             mobileTab === "proof" ? "border-amber-600 text-stone-900" : "border-transparent text-stone-500"
           }`}
         >
-          <span className="contents-number">02</span> Proof
+            <span className="contents-number">02</span> Preview
         </button>
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
         <aside
-          className={`no-print min-h-0 min-w-0 flex-col overflow-y-auto overflow-x-hidden border-b border-stone-300 bg-white md:flex md:w-[min(22rem,40vw)] md:flex-none md:border-b-0 md:border-r lg:w-[28rem] ${
+          className={`no-print min-h-0 min-w-0 flex-col overflow-y-auto overflow-x-hidden border-b border-stone-300 bg-stone-50 md:flex md:w-[min(22rem,40vw)] md:flex-none md:border-b-0 md:border-r lg:w-[28rem] ${
             mobileTab === "copy" ? "flex flex-1" : "hidden"
           }`}
         >
-          <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-4 py-3.5 backdrop-blur-[6px]">
+          <div className="sticky top-0 z-10 border-b border-stone-200 bg-stone-50/95 px-4 py-3.5 backdrop-blur-[6px]">
             <div className="masthead-rule mb-2.5 w-10" />
             <div className="flex items-end justify-between gap-3">
-              <h2 className="font-serif text-[22px] font-semibold leading-none tracking-tight text-stone-900">Contents</h2>
-              <p className="folio text-stone-500">{String(sections.length).padStart(2, "0")} · this issue</p>
+              <h2 className="qd-wordmark text-[26px] leading-none">Contents</h2>
+              <p className="folio text-stone-500">{String(sections.length).padStart(2, "0")} sections</p>
             </div>
-            <p className="mt-1.5 text-[12px] leading-snug text-stone-500">Every field updates the proof live.</p>
+            <p className="mt-1.5 text-[12px] leading-snug text-stone-500">Every field updates the preview live.</p>
           </div>
           {showTailor ? <div className="border-b border-stone-200 px-4 py-3"><TailorPanel onClose={() => setShowTailor(false)} /></div> : null}
           <div className="px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-3">
@@ -89,7 +91,7 @@ function ShellInner() {
           </div>
         </main>
       </div>
-      <HealthPanel pages={pages} mobileHidden={mobileTab === "copy"} />
+      <HealthPanel pages={pages} mobileHidden={mobileTab === "copy"} open={notesOpen} onOpenChange={setNotesOpen} />
     </div>
   );
 }
@@ -99,13 +101,14 @@ function Shell() {
     <ErrorBoundary
       fallback={(reset) => (
         <div className="flex h-dvh flex-col items-center justify-center gap-3 bg-stone-100 px-6 text-center">
-          <p className="font-serif text-lg font-bold text-stone-900">Imprint hit a snag</p>
+          <p className="qd-wordmark text-[28px]">Resume by QD</p>
+          <p className="text-sm font-semibold text-amber-500">Something went wrong</p>
           <p className="max-w-sm text-sm text-stone-600">Your saved data is safe. Reset to a blank resume to keep working.</p>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={reset}
-              className="rounded-sm bg-stone-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
+              className="rounded-sm bg-amber-500 px-4 py-2 text-sm font-semibold text-stone-100 shadow-sm transition hover:bg-amber-400"
             >
               Try again
             </button>
@@ -115,7 +118,7 @@ function Shell() {
                 window.localStorage.removeItem(STORAGE_KEY);
                 window.location.reload();
               }}
-              className="rounded-sm border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+              className="rounded-sm border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
             >
               Reset to blank
             </button>

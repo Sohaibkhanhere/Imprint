@@ -5,9 +5,9 @@ export function Button({ children, variant = "primary", className = "", ...props
   const base =
     "inline-flex items-center justify-center gap-2 rounded-sm text-sm font-medium transition-[color,background-color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
   const styles: Record<string, string> = {
-    primary: "bg-stone-900 text-stone-50 hover:bg-stone-800 px-3.5 py-2",
+    primary: "bg-amber-500 text-stone-100 hover:bg-amber-400 px-3.5 py-2",
     ghost: "text-stone-600 hover:text-stone-900 hover:bg-stone-100 px-2.5 py-2",
-    outline: "border border-stone-300 text-stone-700 hover:bg-stone-50 bg-white px-3.5 py-2",
+    outline: "border border-stone-300 text-stone-700 hover:bg-stone-100 bg-stone-50 px-3.5 py-2",
     danger: "text-amber-700 hover:bg-amber-50 px-2.5 py-2",
   };
   return (
@@ -18,7 +18,7 @@ export function Button({ children, variant = "primary", className = "", ...props
 }
 
 const inputBase =
-  "w-full min-w-0 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25 transition-[border-color,box-shadow] duration-150 ease";
+  "w-full min-w-0 rounded-md border border-stone-300 bg-stone-100 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25 transition-[border-color,box-shadow] duration-150 ease";
 
 export function Label({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
@@ -48,14 +48,14 @@ export function Textarea({ className = "", value, ...props }: TextareaHTMLAttrib
 
 export function Select({ className = "", children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={`${inputBase} appearance-none pr-8 bg-no-repeat bg-[right_0.6rem_center] bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2378716c%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')] ${className}`} {...props}>
+    <select className={`${inputBase} appearance-none pr-8 bg-no-repeat bg-[right_0.6rem_center] bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239aa0b8%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')] ${className}`} {...props}>
       {children}
     </select>
   );
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-md border border-stone-200 bg-white shadow-sm ${className}`}>{children}</div>;
+  return <div className={`rounded-md border border-stone-200 bg-stone-50 shadow-sm ${className}`}>{children}</div>;
 }
 
 export function IconBtn({ children, title, onClick, danger }: { children: ReactNode; title: string; onClick?: () => void; danger?: boolean }) {
@@ -78,7 +78,7 @@ export function AddButton({ label, onClick }: { label: string; onClick: () => vo
     <button
       type="button"
       onClick={onClick}
-      className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-600 shadow-[inset_0_0_0_1px_transparent] transition-[border-color,background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-stone-900 hover:text-stone-900 hover:bg-stone-50 active:scale-[0.99]"
+      className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-600 shadow-[inset_0_0_0_1px_transparent] transition-[border-color,background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-stone-900 hover:text-stone-900 hover:bg-stone-100 active:scale-[0.99]"
     >
       <Plus size={15} /> {label}
     </button>
@@ -100,7 +100,7 @@ export function PresentToggle({ on, onChange, hint }: { on: boolean; onChange: (
 export function Collapse({ title, subtitle, count, defaultOpen = true, children }: { title: string; subtitle?: string; count?: number; defaultOpen?: boolean; children: ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="desk-card bg-white">
+    <section className="desk-card bg-stone-50">
       <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between px-4 py-3 text-left">
         <span className="flex min-w-0 items-center gap-2.5">
           <span className="text-sm font-semibold text-stone-900">{title}</span>

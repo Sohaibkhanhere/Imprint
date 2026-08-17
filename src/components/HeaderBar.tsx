@@ -9,14 +9,18 @@ import type { ResumeTypeKey } from "../lib/types";
 import { ImportDialog } from "./ImportDialog";
 import { TemplateGallery } from "./TemplateGallery";
 import { TemplateStepper } from "./TemplateStepper";
+import { AtsScoreRing } from "./AtsScoreRing";
+import { computeAtsScore, improveAts } from "../lib/atsScore";
 
 export function HeaderBar({
   onReset,
   onOpenTailor,
+  onOpenNotes,
   startInGallery = false,
 }: {
   onReset: () => void;
   onOpenTailor: () => void;
+  onOpenNotes?: () => void;
   startInGallery?: boolean;
 }) {
   const { resume, dispatch } = useResume();
@@ -25,10 +29,12 @@ export function HeaderBar({
   const [showChecklist, setShowChecklist] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [exportingWord, setExportingWord] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
-  const issueName = (resume.contact?.fullName || "").trim() || "Untitled issue";
+  const issueName = (resume.contact?.fullName || "").trim() || "Untitled resume";
+  const atsScore = computeAtsScore(resume);
 
   useEffect(() => {
     if (!moreOpen) return;
@@ -59,15 +65,33 @@ export function HeaderBar({
     }
   };
 
+  const exportPdfFile = async () => {
+    if (exportingPdf) return;
+    setExportingPdf(true);
+    try {
+      await exportPdf(resume);
+    } catch (e) {
+      window.alert((e as Error).message || "Could not export PDF.");
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
+  const applyImprove = () => {
+    const result = improveAts(resume);
+    dispatch({ type: "LOAD", resume: result.resume });
+    onOpenNotes?.();
+  };
+
   return (
-    <header id="app-chrome" className="no-print border-b border-stone-300 bg-white">
+    <header id="app-chrome" className="no-print border-b border-stone-300 bg-stone-50">
       <div className="masthead-rule" />
       <div className="flex min-w-0 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5 lg:px-6">
         <button type="button" onClick={() => setPanel(panel === "template" ? null : "template")} className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
           <BrandMark size={32} />
-          <span className="flex min-w-0 flex-col items-start leading-tight">
-            <span className="font-serif text-[15px] font-bold tracking-tight text-stone-900">Imprint</span>
-            <span className="folio hidden text-stone-500 sm:block">The resume press</span>
+            <span className="flex min-w-0 flex-col items-start leading-tight">
+            <span className="qd-wordmark">Resume by QD</span>
+            <span className="folio hidden text-stone-500 sm:block">Quantum Digitizing</span>
           </span>
         </button>
 
@@ -117,7 +141,7 @@ export function HeaderBar({
               setMoreOpen(false);
               setShowImport(true);
             }}
-            className="inline-flex min-h-10 min-w-10 items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-stone-50 hover:text-stone-900 sm:hidden"
+            className="inline-flex min-h-10 min-w-10 items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-stone-200 hover:text-stone-900 sm:hidden"
             title="Import CV"
           >
             <Upload size={16} />
@@ -126,49 +150,66 @@ export function HeaderBar({
             value={t.pageSize ?? "a4"}
             onChange={(e) => dispatch({ type: "SET_THEME", theme: { pageSize: e.target.value as "a4" | "letter" } })}
             title="Page size"
-            className="hidden rounded-sm border border-stone-300 bg-white px-2 py-1.5 text-xs font-medium text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500 2xl:block"
+            className="hidden rounded-sm border border-stone-300 bg-stone-50 px-2 py-1.5 text-xs font-medium text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500 2xl:block"
           >
             <option value="a4">A4</option>
             <option value="letter">Letter</option>
           </select>
           <button
             type="button"
-            title={t.atsSafe ? "ATS-safe mode on" : "Toggle ATS-safe mode"}
-            onClick={() => dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } })}
-            className={`hidden items-center gap-1.5 rounded-sm border px-2 py-1.5 text-xs font-medium transition sm:inline-flex ${
-              t.atsSafe ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-stone-300 text-stone-500 hover:bg-stone-50"
-            }`}
+            onClick={() => onOpenNotes?.()}
+            title={`ATS Compatibility Score ${atsScore}%. Not a guarantee.`}
+            className="inline-flex items-center rounded-full p-0.5"
           >
-            <ShieldCheck size={14} /> <span className="hidden md:inline">ATS Safe</span>
+            <AtsScoreRing value={atsScore} size={36} />
           </button>
           <button
             type="button"
-            title="Start fresh — clear all fields"
+            title={t.atsSafe ? "ATS Safe on: parser layout, standard headings, system fonts. Click to restore the designed look." : "ATS Safe off. Click to flatten this layout and auto-improve wording."}
+            onClick={() => {
+              if (t.atsSafe) {
+                dispatch({ type: "SET_THEME", theme: { atsSafe: false } });
+                return;
+              }
+              applyImprove();
+            }}
+            className={`ats-safe-toggle${t.atsSafe ? " is-on" : ""}`}
+            aria-pressed={t.atsSafe}
+          >
+            <ShieldCheck size={14} /> ATS Safe
+          </button>
+          <button
+            type="button"
+            title="Rewrite weak wording and apply ATS layout. Does not invent jobs, metrics, or keywords."
+            onClick={applyImprove}
+            className="hidden items-center gap-1.5 rounded-sm border border-amber-500 px-2 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 sm:inline-flex"
+          >
+            <Sparkles size={14} /> <span className="hidden lg:inline">Improve ATS</span>
+          </button>
+          <button
+            type="button"
+            title="Start fresh: clear all fields"
             onClick={onReset}
-            className="hidden min-h-9 items-center gap-1.5 rounded-sm border border-stone-300 px-2 py-1.5 text-xs font-medium text-stone-500 transition hover:bg-stone-50 sm:inline-flex"
+            className="hidden min-h-9 items-center gap-1.5 rounded-sm border border-stone-300 px-2 py-1.5 text-xs font-medium text-stone-500 transition hover:bg-stone-200 sm:inline-flex"
           >
             <RotateCcw size={14} />
           </button>
           <button
             type="button"
-            onClick={() => {
-              try {
-                exportPdf(resume);
-              } catch (e) {
-                window.alert((e as Error).message || "Could not export PDF.");
-              }
-            }}
-            title="Download a PDF that matches this template exactly (print to PDF from the dialog)"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-sm bg-stone-900 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 active:scale-[0.98]"
+            onClick={() => void exportPdfFile()}
+            disabled={exportingPdf}
+            title="Download a PDF of this resume"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-sm bg-amber-500 px-2.5 py-1.5 text-sm font-semibold text-stone-100 shadow-sm transition hover:bg-amber-400 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
           >
-            <FileDown size={15} /> <span className="hidden sm:inline">PDF</span>
+            {exportingPdf ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
+            <span className="hidden sm:inline">{exportingPdf ? "Saving" : "PDF"}</span>
           </button>
           <button
             type="button"
             onClick={() => void exportWord()}
             disabled={exportingWord}
-            title="Download a Word file that matches this template, same look as PDF"
-            className="hidden min-h-9 items-center gap-1.5 rounded-sm border border-stone-300 px-2.5 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:cursor-wait disabled:opacity-60 sm:inline-flex"
+            title="Download an editable Word file"
+            className="hidden min-h-9 items-center gap-1.5 rounded-sm border border-stone-300 px-2.5 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-200 disabled:cursor-wait disabled:opacity-60 sm:inline-flex"
           >
             {exportingWord ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} />}
             <span className="hidden md:inline">{exportingWord ? "Exporting" : "Word"}</span>
@@ -177,14 +218,14 @@ export function HeaderBar({
             <button
               type="button"
               onClick={() => setMoreOpen((o) => !o)}
-              className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm border border-stone-300 text-stone-600 transition hover:bg-stone-50"
+              className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm border border-stone-300 text-stone-600 transition hover:bg-stone-200"
               aria-expanded={moreOpen}
               aria-label="More actions"
             >
               <MoreHorizontal size={16} />
             </button>
             {moreOpen ? (
-              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 overflow-hidden rounded-sm border border-stone-200 bg-white py-1 shadow-lg">
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 overflow-hidden rounded-sm border border-stone-200 bg-stone-50 py-1 shadow-lg">
                 {(
                   [
                     { label: "Template", run: () => setPanel(panel === "template" ? null : "template") },
@@ -193,9 +234,14 @@ export function HeaderBar({
                     { label: "Tailor to a job", run: onOpenTailor },
                     { label: "Import CV", run: () => setShowImport(true) },
                     { label: exportingWord ? "Exporting Word…" : "Export Word", run: () => void exportWord() },
-                    { label: t.atsSafe ? "ATS Safe on" : "ATS Safe off", run: () => dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } }) },
+                    { label: "ATS Compatibility Score", run: () => onOpenNotes?.() },
+                    { label: "Improve ATS", run: applyImprove },
+                    { label: t.atsSafe ? "ATS Safe on" : "ATS Safe off", run: () => {
+                      if (t.atsSafe) dispatch({ type: "SET_THEME", theme: { atsSafe: false } });
+                      else applyImprove();
+                    } },
                     { label: "Start fresh", run: onReset },
-                  ] as const
+                  ] as { label: string; run: () => void }[]
                 ).map((item) => (
                   <button
                     key={item.label}
@@ -204,7 +250,7 @@ export function HeaderBar({
                       setMoreOpen(false);
                       item.run();
                     }}
-                    className="block w-full px-3 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-50"
+                    className="block w-full px-3 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-200"
                   >
                     {item.label}
                   </button>
@@ -216,7 +262,7 @@ export function HeaderBar({
       </div>
 
       <div className="flex min-w-0 items-center gap-2 border-t border-stone-200 px-3 py-1.5 sm:gap-3 sm:px-4 lg:px-6">
-        <span className="folio hidden text-stone-500 sm:inline">Issue</span>
+        <span className="folio hidden text-stone-500 sm:inline">Resume</span>
         <span className="folio truncate text-stone-600">{issueName}</span>
         <span className="ml-auto flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <TemplateStepper keyboard />
@@ -227,10 +273,10 @@ export function HeaderBar({
       {panel === "template" ? <TemplateGallery onClose={() => setPanel(null)} /> : null}
 
       {panel === "customize" ? (
-        <div className="max-h-[min(58dvh,32rem)] overflow-y-auto border-t border-stone-200 bg-white px-4 py-4 sm:px-6">
+        <div className="max-h-[min(58dvh,32rem)] overflow-y-auto border-t border-stone-200 bg-stone-50 px-4 py-4 sm:px-6">
           <div className="mb-5">
             <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-              <ListOrdered size={12} className="text-stone-500" /> Issue format
+              <ListOrdered size={12} className="text-stone-500" /> Resume format
             </p>
             <div className="flex flex-wrap gap-1.5">
               {RESUME_TYPES.map((fmt) => {
@@ -242,7 +288,7 @@ export function HeaderBar({
                     title={fmt.bestFor}
                     onClick={() => dispatch({ type: "SET_TYPE", value: fmt.key })}
                     className={`rounded-sm border px-2.5 py-1.5 text-left text-xs font-medium transition ${
-                      on ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                      on ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"
                     }`}
                   >
                     {FORMAT_CHIP[fmt.key]}
@@ -256,7 +302,7 @@ export function HeaderBar({
             <button
               type="button"
               onClick={() => setColorsOpen((o) => !o)}
-              className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-stone-50"
+              className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-stone-200"
             >
               <Palette size={12} className="text-stone-500" />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">Accent color</span>
@@ -287,7 +333,7 @@ export function HeaderBar({
                       >
                         <span
                           className={`h-7 w-7 rounded-full transition ${
-                            on ? "ring-2 ring-amber-600 ring-offset-2" : "hover:scale-105"
+                            on ? "ring-2 ring-amber-600 ring-offset-2 ring-offset-stone-50" : "hover:scale-105"
                           }`}
                           style={{ background: c.value }}
                         />
@@ -309,7 +355,7 @@ export function HeaderBar({
                     key={f.key}
                     type="button"
                     onClick={() => dispatch({ type: "SET_THEME", theme: { fontPair: f.key } })}
-                    className={`flex items-center justify-between rounded-sm border px-3 py-1.5 text-left text-xs transition ${t.fontPair === f.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"}`}
+                    className={`flex items-center justify-between rounded-sm border px-3 py-1.5 text-left text-xs transition ${t.fontPair === f.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"}`}
                   >
                     <span style={{ fontFamily: f.display }}>{f.label}</span>
                     <span className="text-[10px] text-stone-500">{f.desc}</span>
@@ -327,7 +373,7 @@ export function HeaderBar({
                     key={d}
                     type="button"
                     onClick={() => dispatch({ type: "SET_THEME", theme: { density: d } })}
-                    className={`rounded-sm border px-3 py-1.5 text-left text-xs capitalize transition ${t.density === d ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"}`}
+                    className={`rounded-sm border px-3 py-1.5 text-left text-xs capitalize transition ${t.density === d ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"}`}
                   >
                     {d}
                   </button>
@@ -338,7 +384,7 @@ export function HeaderBar({
                 <select
                   value={t.citationFormat ?? "apa"}
                   onChange={(e) => dispatch({ type: "SET_THEME", theme: { citationFormat: e.target.value as "apa" | "mla" | "chicago" } })}
-                  className="w-full rounded-sm border border-stone-300 px-2 py-1.5 text-xs text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full rounded-sm border border-stone-300 bg-stone-100 px-2 py-1.5 text-xs text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 >
                   <option value="apa">APA</option>
                   <option value="mla">MLA</option>
@@ -371,16 +417,16 @@ function WritingTips({ onClose }: { onClose: () => void }) {
     <div className="max-h-[min(50dvh,22rem)] overflow-y-auto border-t border-stone-200 bg-stone-50 px-4 py-3 sm:px-6">
       <div className="flex items-start justify-between">
         <div>
-          <p className="folio mb-2 text-stone-500">Copy desk — bullet formula &amp; writing rules</p>
+          <p className="folio mb-2 text-stone-500">Writing rules</p>
           <div className="grid grid-cols-1 gap-x-8 gap-y-1 text-xs leading-relaxed text-stone-700 sm:grid-cols-2">
             <p>• Formula: <strong>Action verb + task + method + quantified result</strong>.</p>
-            <p>• No first-person pronouns (I, my, me) — implied first person only.</p>
+            <p>• No first-person pronouns (I, my, me). Implied first person only.</p>
             <p>• Quantify at least half your bullets (%, $, team size, time saved).</p>
             <p>• Keep bullets to 1–2 lines (~12–22 words).</p>
             <p>• Past tense for past roles, present tense for your current role. Never mix.</p>
             <p>• Avoid vague filler: hardworking, team player, detail-oriented.</p>
             <p>• Skip “Responsible for” / “Duties included” openers.</p>
-            <p>• Never fabricate numbers — ask for a real figure.</p>
+            <p>• Never fabricate numbers. Ask for a real figure.</p>
           </div>
         </div>
         <button type="button" onClick={onClose} className="rounded-md p-1.5 text-stone-500 hover:bg-stone-100">

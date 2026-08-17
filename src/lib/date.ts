@@ -15,22 +15,21 @@ export function formatYear(year: string): string {
   return t(year);
 }
 
-export function slugify(name: string): string {
-  return t(name)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+export function filePart(value: string): string {
+  return t(value)
+    .replace(/[<>:"/\\|?*]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/ /g, "-");
 }
 
-export function exportStem(contact: { fullName?: string }): string {
-  const parts = t(contact?.fullName).split(/\s+/);
-  const first = slugify(parts[0] ?? "Resume");
-  const last = slugify(parts[parts.length - 1] ?? "");
-  const name = parts.length > 1 ? `${first}-${last}` : first || "resume";
-  return `${name || "resume"}-Resume`;
+export function exportStem(contact: { fullName?: string; title?: string }): string {
+  const name = filePart(contact?.fullName || "") || "Resume";
+  const title = filePart(contact?.title || "");
+  return title ? `${name}-${title}` : name;
 }
 
-export function exportFilename(contact: { fullName?: string }): string {
+export function exportFilename(contact: { fullName?: string; title?: string }): string {
   return exportStem(contact);
 }
 
