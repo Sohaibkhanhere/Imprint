@@ -5,6 +5,7 @@ import {
   COMPARE_PAGES,
   HOME_FAQS,
   MAKER,
+  MAKER_URL,
   ONE_LINER,
   TEMPLATE_COUNT,
   WHY_LIFT,
@@ -47,7 +48,7 @@ export function homeBodyHtml(): string {
     ${claimsList()}
     <p><a href="/app">Open the builder</a> · <a href="/why">Why choose ${esc(BRAND)}</a> · <a href="/compare">${esc(BRAND)} vs other builders</a></p>
     ${faqsHtml(HOME_FAQS)}
-    <p>${esc(BRAND)} is made by ${esc(MAKER)}.</p>
+    <p>${esc(BRAND)} is made by <a href="${esc(MAKER_URL)}">${esc(MAKER)}</a>.</p>
   </article>`;
 }
 
@@ -60,7 +61,7 @@ export function whyBodyHtml(): string {
     ${claimsList()}
     <h2>What we do not claim</h2>
     <p>${esc(BRAND)} does not invent interviews, fake ratings, or a user count we cannot verify. The product is the proof: open it, export a file, and check that nothing asked you to sign in.</p>
-    <p><a href="/app">Open the builder</a></p>
+    <p><a href="/app">Open the builder</a> · <a href="${esc(MAKER_URL)}">${esc(MAKER)}</a></p>
   </article>`;
 }
 

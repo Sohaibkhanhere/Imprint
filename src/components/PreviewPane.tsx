@@ -2,7 +2,6 @@ import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { useResume } from "../store/resumeStore";
 import { getTemplate } from "../templates/registry";
 import { PAGE_DIMS } from "../templates/shared";
-import { AtsSafeTemplate } from "../templates/ats-safe";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { TemplateStepper } from "./TemplateStepper";
 import { applyPageStyle } from "../lib/pdf";
@@ -18,7 +17,7 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
   const liveTheme = resume.theme;
   const previewResume = { ...deferred, theme: liveTheme };
   const template = getTemplate(liveTheme.template);
-  const Template = liveTheme.atsSafe ? AtsSafeTemplate : template.component;
+  const Template = template.component;
   const page = PAGE_DIMS[liveTheme.pageSize] ?? PAGE_DIMS.a4;
   const visualW = page.width * scale;
   const visualH = page.height * scale;

@@ -29,7 +29,7 @@ function BulletList({
               onChange={(e) => onSet(items.map((x, j) => (j === i ? e.target.value : x)))}
               rows={Math.max(2, Math.min(4, (b || "").split("\n").length))}
               placeholder="Redesigned the onboarding flow, lifting 30-day retention by 22%…"
-              className="min-w-0 flex-1 resize-y rounded-md border border-stone-300 bg-stone-50 px-3 py-2 text-sm leading-relaxed text-stone-900 placeholder:text-stone-400 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25"
+              className="min-w-0 flex-1 resize-y rounded-md border border-stone-300 bg-stone-50 px-3 py-2 text-sm leading-relaxed text-stone-950 placeholder:text-stone-500 transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25"
             />
             <div className="flex shrink-0 flex-col pt-0.5 opacity-70 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
               <button

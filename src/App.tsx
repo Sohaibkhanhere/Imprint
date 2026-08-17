@@ -36,6 +36,12 @@ function ShellInner() {
     if (tpl) dispatch({ type: "SET_THEME", theme: themePatchForTemplate(tpl) });
   }, [dispatch]);
 
+  useEffect(() => {
+    if (resume.theme.template !== "tech-dark") return;
+    if ((resume.theme.accent || "").toLowerCase() !== "#262a43") return;
+    dispatch({ type: "SET_THEME", theme: { accent: "#e50914" } });
+  }, [dispatch, resume.theme.template, resume.theme.accent]);
+
   const reset = () => {
     if (window.confirm("Clear the current resume and start with blank fields?")) {
       dispatch({ type: "RESET_BLANK" });

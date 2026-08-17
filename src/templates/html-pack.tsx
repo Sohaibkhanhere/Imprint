@@ -34,6 +34,24 @@ function restOf(resume: Resume, exclude: SectionKey[]) {
   return (effectiveSections(resume) as SectionKey[]).filter((k) => !exclude.includes(k));
 }
 
+function studioMark(...parts: (string | undefined)[]) {
+  const source = parts.map((p) => t(p)).find(Boolean) || "JOB";
+  const words = source
+    .replace(/[&/+,|]+/g, " ")
+    .split(/\s+/)
+    .filter((w) => w && !/^(and|of|the|for|a|an)$/i.test(w));
+  if (!words.length) return "JOB";
+  if (words.length === 1) {
+    const w = words[0];
+    return (w.length <= 5 ? w : w.slice(0, 3)).toUpperCase();
+  }
+  return words
+    .slice(0, 3)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
 function TagHead({ children }: { children: ReactNode }) {
   return (
     <div className="hp-tag">
@@ -613,11 +631,11 @@ export function ReelTemplate({ resume }: { resume: Resume }) {
         {jobs.map((j, i) => (
           <div key={j.id} className="hp-reel-job">
             <span>{i + 1}</span>
-            <div className="hp-reel-logo">{(j.company || j.role || "JOB").toUpperCase()}</div>
+            <div className="hp-reel-logo">{studioMark(j.company, j.role)}</div>
             <div>
               <p>
-                <b>{j.company}</b>
-                {j.role ? <span> | {j.role}</span> : null}
+                {j.company ? <b>{j.company}</b> : <b>{j.role}</b>}
+                {j.company && j.role && j.role.toLowerCase() !== j.company.toLowerCase() ? <span> | {j.role}</span> : null}
               </p>
               <Bullets items={j.bullets} />
             </div>
@@ -632,7 +650,7 @@ export function ReelTemplate({ resume }: { resume: Resume }) {
             <div className="hp-reel-acts">
               {vol.map((v) => (
                 <div key={v.id} className="hp-reel-act">
-                  <div>{(v.org || v.title || "ORG").toUpperCase()}</div>
+                  <div>{studioMark(v.org, v.title)}</div>
                   <p>{v.title}</p>
                   <p>{v.org}</p>
                   <Bullets items={v.bullets} />
@@ -845,31 +863,25 @@ export function StreamTemplate({ resume }: { resume: Resume }) {
             <Bullets items={j.bullets} />
           </div>
         ))}
-        {projects.length || awards.length ? (
-          <div className="hp-str-2">
-            {projects.length ? (
-              <div className="hp-str-tile">
-                <p>Projects</p>
-                <ul>
-                  {projects.map((p) => (
-                    <li key={p.id}>
-                      {p.name}
-                      {p.description ? ` — ${p.description}` : ""}
-                    </li>
-                  ))}
-                </ul>
+        {projects.length ? (
+          <div className="hp-str-projects">
+            <h2>Projects</h2>
+            {projects.map((p) => (
+              <div key={p.id} className="hp-str-project">
+                <b>{p.name || "Project"}</b>
+                {p.description ? <p>{p.description}</p> : null}
               </div>
-            ) : null}
-            {awards.length ? (
-              <div className="hp-str-tile">
-                <p>Achievements</p>
-                <ul>
-                  {awards.map((a) => (
-                    <li key={a.id}>{[a.title, a.org, a.year].filter(Boolean).join(" · ")}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
+            ))}
+          </div>
+        ) : null}
+        {awards.length ? (
+          <div className="hp-str-tile">
+            <p>Achievements</p>
+            <ul>
+              {awards.map((a) => (
+                <li key={a.id}>{[a.title, a.org, a.year].filter(Boolean).join(" · ")}</li>
+              ))}
+            </ul>
           </div>
         ) : null}
         {rest.map((k) => (

@@ -3,6 +3,7 @@ export const SITE_URL = "https://imprint-nine-ebon.vercel.app";
 
 export const BRAND = "Resume by QD";
 export const MAKER = "Quantum Digitizing";
+export const MAKER_URL = "https://www.quantumdigitizing.com/";
 
 /** Must match TEMPLATES.length in src/templates/registry.tsx. */
 export const TEMPLATE_COUNT = 40;
@@ -368,7 +369,7 @@ export function softwareJsonLd() {
     publisher: {
       "@type": "Organization",
       name: MAKER,
-      url: SITE_URL,
+      url: MAKER_URL,
     },
   };
 }

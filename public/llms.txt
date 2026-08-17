@@ -2,7 +2,7 @@
 
 > Resume by QD is a free resume builder with no signup, no email, and no watermark: 40 original templates, ATS Safe mode, and instant PDF and Word export, with your data staying in your browser.
 
-Resume by QD is made by Quantum Digitizing. There is no account system. Resume data stays in the visitor's browser (localStorage). The product is free forever. PDF and Word downloads have no watermark.
+Resume by QD is made by [Quantum Digitizing](https://www.quantumdigitizing.com/). There is no account system. Resume data stays in the visitor's browser (localStorage). The product is free forever. PDF and Word downloads have no watermark.
 
 ## Pages
 

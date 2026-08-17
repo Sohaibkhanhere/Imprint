@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { PAGE_DIMS } from "../../templates/shared";
 import { AtsSafeTemplate } from "../../templates/ats-safe";
-import { GiltTemplate } from "../../templates/html-pack";
+import { GiltTemplate, StreamTemplate } from "../../templates/html-pack";
+import { DEFAULT_PORTRAIT } from "../../templates/graphical";
 import { createDemoResume } from "../../lib/sampleData";
 import { templateDefaultAccent } from "../../templates/registry";
 
@@ -25,11 +26,30 @@ export function LivePreview() {
           }}
         />
       </SheetCard>
+      <SheetCard className="sm:col-span-2" label="Netflix layout" note="Black page, red marks, poster photo. Same sample person.">
+        <StreamTemplate
+          resume={{
+            ...resume,
+            contact: { ...resume.contact, photoUrl: resume.contact.photoUrl || DEFAULT_PORTRAIT },
+            theme: { ...resume.theme, template: "stream", accent: templateDefaultAccent("stream"), atsSafe: false },
+          }}
+        />
+      </SheetCard>
     </div>
   );
 }
 
-function SheetCard({ label, note, children }: { label: string; note: string; children: ReactNode }) {
+function SheetCard({
+  label,
+  note,
+  children,
+  className = "",
+}: {
+  label: string;
+  note: string;
+  children: ReactNode;
+  className?: string;
+}) {
   const page = PAGE_DIMS.a4;
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
@@ -44,7 +64,7 @@ function SheetCard({ label, note, children }: { label: string; note: string; chi
   }, [page.width]);
 
   return (
-    <figure className="min-w-0">
+    <figure className={`min-w-0 ${className}`.trim()}>
       <div
         ref={box}
         className="relative overflow-hidden rounded-sm border border-stone-300 bg-white"

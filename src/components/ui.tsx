@@ -18,11 +18,11 @@ export function Button({ children, variant = "primary", className = "", ...props
 }
 
 const inputBase =
-  "w-full min-w-0 rounded-md border border-stone-300 bg-stone-100 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25 transition-[border-color,box-shadow] duration-150 ease";
+  "w-full min-w-0 rounded-md border border-stone-300 bg-stone-100 px-3 py-2 text-sm text-stone-950 placeholder:text-stone-500 focus:outline-none focus:border-amber-600/55 focus:ring-2 focus:ring-amber-500/25 transition-[border-color,box-shadow] duration-150 ease";
 
 export function Label({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1 block text-[11px] font-medium tracking-wide text-stone-600">
+    <label htmlFor={htmlFor} className="mb-1 block text-[11px] font-medium tracking-wide text-stone-700">
       {children}
     </label>
   );

@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PAGE_DIMS } from "../../templates/shared";
-import { TEMPLATES, templateDefaultAccent } from "../../templates/registry";
+import { TEMPLATES, getTemplate, templateDefaultAccent } from "../../templates/registry";
 import { TEMPLATE_COUNT } from "../../seo/brand";
 import { createDemoResume } from "../../lib/sampleData";
+import type { TemplateKey } from "../../lib/types";
 
-const SHOW = TEMPLATES.filter((t) => ["classic", "executive", "gilt", "ribbon-navy", "grove", "boardroom"].includes(t.key));
+const SHOW_KEYS: TemplateKey[] = ["stream", "gilt", "classic", "executive", "ribbon-navy", "grove"];
+const SHOW = SHOW_KEYS.map((key) => getTemplate(key));
 
 export function LandingGallery() {
   const resume = useMemo(() => createDemoResume(), []);

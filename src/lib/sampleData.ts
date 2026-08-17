@@ -6,6 +6,7 @@ export const ACCENT_PALETTE = [
   { name: "Quantum Gold", value: "#f4a850" },
   { name: "Ink", value: "#1d2130" },
   { name: "Editorial Red", value: "#b0302a" },
+  { name: "Netflix Red", value: "#e50914" },
   { name: "Slate", value: "#334155" },
   { name: "Deep Blue", value: "#1e3a5f" },
   { name: "Forest", value: "#2f5d50" },

@@ -50,6 +50,12 @@ export function LandingPage() {
                 See layouts
               </a>
             </div>
+            <p className="mt-6 max-w-[46ch] text-sm leading-relaxed text-stone-500">
+              Includes a Netflix template for creative and tech roles.{" "}
+              <a className="font-semibold text-amber-600 hover:text-amber-500" href="#netflix">
+                See how it is built
+              </a>
+            </p>
           </div>
           <Suspense fallback={<div className="min-h-[28rem] rounded-sm border border-stone-300 bg-stone-50" />}>
             <LivePreview />
@@ -70,10 +76,29 @@ export function LandingPage() {
           </div>
         </section>
 
+        <section id="netflix" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <p className="folio text-amber-500">Featured layout</p>
+          <h2 className="mt-3 font-serif text-3xl font-semibold text-stone-900">We also make a Netflix template</h2>
+          <p className="mt-4 max-w-[62ch] text-stone-600">
+            Most resume builders only ship a white office page. Resume by QD also includes a Netflix layout: black page, red marks, and a poster-style photo, built like a streaming profile rather than a Word document.
+          </p>
+          <p className="mt-3 max-w-[62ch] text-stone-600">
+            Use it when the role is creative, tech, or portfolio-led and a recruiter will actually open the file. Name, title, and photo sit in a hero like a show card. Experience reads as a watch-list of roles. Education and skills sit in tiles. For job sites that parse resumes, keep the same content and turn on ATS Safe before you export.
+          </p>
+          <p className="mt-6">
+            <Link
+              to="/app?template=stream"
+              className="inline-flex min-h-11 items-center rounded-sm bg-amber-500 px-4 text-sm font-semibold text-stone-100 transition hover:bg-amber-400"
+            >
+              Open the Netflix template
+            </Link>
+          </p>
+        </section>
+
         <section id="layouts" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-serif text-3xl font-semibold text-stone-900">Live layouts, not mockups</h2>
           <p className="mt-3 max-w-[60ch] text-stone-600">
-            These are the real template components, lazy-loaded as you scroll. Click one to open it in the builder.
+            These are the real template components, lazy-loaded as you scroll. Netflix is first. Click one to open it in the builder.
           </p>
           <div className="mt-8">
             <Suspense fallback={<div className="min-h-[24rem] bg-stone-50" />}>

@@ -589,7 +589,7 @@ const DEFAULT_ACCENTS: Record<TemplateKey, string> = {
   "photo-sidebar": "#1e3a5f",
   "dark-modern": "#7a1f2b",
   "bold-diagonal": "#b0302a",
-  "tech-dark": "#262a43",
+  "tech-dark": "#e50914",
   compact: "#1d2130",
   "photo-header": "#6d2a33",
   "classic-serif": "#1d2130",

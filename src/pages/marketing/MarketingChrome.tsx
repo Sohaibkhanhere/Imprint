@@ -1,7 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import type { ReactNode } from "react";
 import { BrandMark } from "../../components/BrandMark";
-import { BRAND } from "../../seo/brand";
+import { BRAND, MAKER, MAKER_URL } from "../../seo/brand";
 
 export function MarketingChrome({ children }: { children: ReactNode }) {
   return (
@@ -12,8 +12,8 @@ export function MarketingChrome({ children }: { children: ReactNode }) {
           <Link to="/" className="group flex min-w-0 items-center gap-2.5">
             <BrandMark size={36} />
             <span className="qd-lockup">
-              <span className="qd-lockup-name">Resume</span>
-              <span className="qd-lockup-by">BY QD</span>
+              <span className="qd-lockup-name">Resume Maker</span>
+              <span className="qd-lockup-by">by QD</span>
             </span>
           </Link>
           <nav className="ml-auto flex items-center gap-1 sm:gap-2" aria-label="Site">
@@ -33,9 +33,20 @@ export function MarketingChrome({ children }: { children: ReactNode }) {
       <footer className="border-t border-stone-300 bg-stone-50">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-stone-500 sm:flex-row sm:items-end sm:justify-between sm:px-6">
           <p>
-            {BRAND} by Quantum Digitizing. Free forever. No account.
+            Resume Maker by{" "}
+            <a
+              className="font-semibold text-stone-800 underline decoration-amber-500/60 underline-offset-2 hover:text-amber-600"
+              href={MAKER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {MAKER}
+            </a>
           </p>
           <p className="flex flex-wrap gap-x-4 gap-y-1">
+            <a className="text-stone-700 hover:text-amber-600" href={MAKER_URL} target="_blank" rel="noopener noreferrer">
+              {MAKER}
+            </a>
             <Link className="text-stone-700 hover:text-amber-600" to="/">
               Home
             </Link>

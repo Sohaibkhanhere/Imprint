@@ -12,6 +12,7 @@ export const PAGE_DIMS: Record<PageSize, { width: number; height: number; cssWid
 };
 
 export const SHEET_PADDING = "48px 53px";
+export const LETTER_PADDING = "40px 50px";
 
 export function Sheet({
   resume,
@@ -40,6 +41,7 @@ export function Sheet({
   } as CSSProperties;
   const density = theme?.density ?? "comfortable";
   const ats = theme?.atsSafe ? "true" : "false";
+  const pagePad = theme?.pageSize === "letter" ? LETTER_PADDING : SHEET_PADDING;
 
   useLayoutEffect(() => {
     const outer = outerRef.current;
@@ -62,7 +64,8 @@ export function Sheet({
       inner.style.height = prevHeight;
       inner.style.minHeight = prevMinHeight;
       if (!need) return;
-      const next = need > avail + 2 ? avail / need : 1;
+      const raw = need > avail + 2 ? avail / need : 1;
+      const next = raw < 0.55 ? 1 : raw;
       setFit((prev) => (Math.abs(prev - next) < 0.003 ? prev : next));
     };
     measure();
@@ -96,7 +99,7 @@ export function Sheet({
         data-density={density}
         data-ats={ats}
         style={{
-          padding: SHEET_PADDING,
+          padding: pagePad,
           width: fit < 0.999 ? `${100 / fit}%` : "100%",
           height: fit < 0.999 ? `${100 / fit}%` : "100%",
           minHeight: fit < 0.999 ? 0 : "100%",

@@ -88,11 +88,11 @@ export function HeaderBar({
     <header id="app-chrome" className="no-print border-b border-stone-300 bg-stone-50">
       <div className="masthead-rule" />
       <div className="flex min-w-0 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5 lg:px-6">
-          <Link to="/" className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5" aria-label="Resume by QD home">
+          <Link to="/" className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5" aria-label="Resume Maker by QD home">
           <BrandMark size={36} />
           <span className="qd-lockup">
-            <span className="qd-lockup-name">Resume</span>
-            <span className="qd-lockup-by">BY QD</span>
+            <span className="qd-lockup-name">Resume Maker</span>
+            <span className="qd-lockup-by">by QD</span>
           </span>
         </Link>
 
@@ -164,7 +164,7 @@ export function HeaderBar({
           </div>
           <button
             type="button"
-            title={t.atsSafe ? "ATS Safe on: parser layout, standard headings, system fonts. Click to restore the designed look." : "ATS Safe off. Click to flatten this layout for parsers."}
+            title={t.atsSafe ? "ATS Safe on: this layout is flattened for parsers (single column, no graphics). Each template still keeps its own look. Click to restore the designed page." : "ATS Safe off. Click to flatten this layout for parsers."}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
