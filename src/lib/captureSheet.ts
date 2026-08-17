@@ -1,4 +1,5 @@
 import { PAGE_DIMS } from "../templates/shared";
+import { isSafeCaptureImageSrc } from "./sanitize";
 
 function waitForImages(root: HTMLElement): Promise<void> {
   const imgs = Array.from(root.querySelectorAll("img"));
@@ -64,7 +65,11 @@ async function captureCanvas(sheet: HTMLElement, pageW: number, pageH: number): 
         canvasWidth: Math.round(pageW * 2),
         canvasHeight: Math.round(pageH * 2),
         style: { transform: "none", width: `${pageW}px`, height: `${pageH}px`, overflow: "hidden" },
-        filter: (node) => !node.classList?.contains("no-print"),
+        filter: (node) => {
+          if (node.classList?.contains("no-print")) return false;
+          if (node instanceof HTMLImageElement && !isSafeCaptureImageSrc(node.src)) return false;
+          return true;
+        },
         onImageErrorHandler: () => undefined,
       }),
       20000,

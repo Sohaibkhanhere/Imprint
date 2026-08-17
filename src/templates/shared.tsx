@@ -4,6 +4,7 @@ import { FONT_PAIRS } from "../lib/sampleData";
 import { formatRange, cleanUrl } from "../lib/date";
 import { getResumeType } from "../lib/resumeTypes";
 import { t } from "../lib/safe";
+import { sanitizeAccent } from "../lib/sanitize";
 
 export const PAGE_DIMS: Record<PageSize, { width: number; height: number; cssWidth: string; cssHeight: string; label: string }> = {
   a4: { width: 793.7, height: 1122.5, cssWidth: "210mm", cssHeight: "297mm", label: "A4" },
@@ -30,7 +31,7 @@ export function Sheet({
   const innerRef = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(1);
   const vars = {
-    "--accent": theme?.accent ?? "#1d2130",
+    "--accent": sanitizeAccent(theme?.accent, "#1d2130"),
     "--font-display": theme?.atsSafe ? pair.ats : pair.display,
     "--font-body": theme?.atsSafe ? pair.ats : pair.body,
     "--ink": "#1d2130",

@@ -1,5 +1,6 @@
 import { useResume } from "../../store/resumeStore";
 import { DEFAULT_PORTRAIT } from "../../templates/graphical";
+import { sanitizePhotoUrl } from "../../lib/sanitize";
 import { Field, Input } from "../ui";
 
 function readPhoto(file: File, onDone: (url: string) => void) {
@@ -27,7 +28,7 @@ export function ContactForm() {
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div className="sm:col-span-2 flex items-center gap-3 rounded-md border border-stone-200 bg-stone-50/80 p-2.5">
         <span className="flex h-14 w-14 shrink-0 overflow-hidden rounded-full border border-stone-300 bg-stone-100">
-          <img src={c.photoUrl || DEFAULT_PORTRAIT} alt="" className="h-full w-full object-cover" />
+          <img src={sanitizePhotoUrl(c.photoUrl) || DEFAULT_PORTRAIT} alt="" className="h-full w-full object-cover" />
         </span>
         <div className="min-w-0">
           <p className="text-xs font-medium text-stone-800">Portrait</p>

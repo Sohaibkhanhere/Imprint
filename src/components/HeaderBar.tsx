@@ -1,6 +1,7 @@
 import { BrandMark } from "./BrandMark";
 import { FileDown, FileText, Palette, Type, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2, ListOrdered, ChevronDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useResume } from "../store/resumeStore";
 import { exportPdf } from "../lib/pdf";
 import { ACCENT_PALETTE, FONT_PAIRS } from "../lib/sampleData";
@@ -87,13 +88,13 @@ export function HeaderBar({
     <header id="app-chrome" className="no-print border-b border-stone-300 bg-stone-50">
       <div className="masthead-rule" />
       <div className="flex min-w-0 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5 lg:px-6">
-        <button type="button" onClick={() => setPanel(panel === "template" ? null : "template")} className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
-          <BrandMark size={32} />
-            <span className="flex min-w-0 flex-col items-start leading-tight">
-            <span className="qd-wordmark">Resume by QD</span>
-            <span className="folio hidden text-stone-500 sm:block">Quantum Digitizing</span>
+          <Link to="/" className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5" aria-label="Resume by QD home">
+          <BrandMark size={36} />
+          <span className="qd-lockup">
+            <span className="qd-lockup-name">Resume</span>
+            <span className="qd-lockup-by">BY QD</span>
           </span>
-        </button>
+        </Link>
 
         <nav className="ml-1 hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto sm:flex xl:gap-1">
           <button
@@ -155,18 +156,18 @@ export function HeaderBar({
             <option value="a4">A4</option>
             <option value="letter">Letter</option>
           </select>
-          <button
-            type="button"
-            onClick={() => onOpenNotes?.()}
+          <div
             title={`ATS Compatibility Score ${atsScore}%. Not a guarantee.`}
             className="inline-flex items-center rounded-full p-0.5"
           >
             <AtsScoreRing value={atsScore} size={36} />
-          </button>
+          </div>
           <button
             type="button"
             title={t.atsSafe ? "ATS Safe on: parser layout, standard headings, system fonts. Click to restore the designed look." : "ATS Safe off. Click to flatten this layout for parsers."}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } });
             }}
             className={`ats-safe-toggle${t.atsSafe ? " is-on" : ""}`}

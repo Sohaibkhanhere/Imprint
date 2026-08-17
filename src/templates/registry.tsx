@@ -68,7 +68,7 @@ export const FINISH_FILTERS: { id: FinishFilter; label: string }[] = [
 ];
 
 export const ROLE_FILTERS: { id: RoleFilter; label: string }[] = [
-  { id: "all", label: "Any role" },
+  { id: "all", label: "All" },
   { id: "Executive", label: "Executive" },
   { id: "Creative", label: "Creative" },
   { id: "Tech", label: "Tech" },
@@ -555,6 +555,12 @@ export const TEMPLATES: TemplateDef[] = (() => {
   return ordered;
 })();
 
+export const TEMPLATE_COUNT = TEMPLATES.length;
+
+export function isKnownTemplateKey(key: string): key is TemplateKey {
+  return TEMPLATES.some((t) => t.key === key);
+}
+
 export function getTemplate(key: TemplateKey): TemplateDef {
   return TEMPLATES.find((t) => t.key === key) ?? TEMPLATES[0];
 }
@@ -620,7 +626,6 @@ export function themePatchForTemplate(key: TemplateKey): Partial<ThemeConfig> {
   return {
     template: key,
     accent: templateDefaultAccent(key),
-    atsSafe: false,
   };
 }
 

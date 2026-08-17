@@ -16,6 +16,8 @@ import type {
 import { uid, todayISO } from "./date";
 import { defaultVisibility } from "./resumeTypes";
 import { createBlankResume } from "./sampleData";
+import { sanitizeImportedText } from "./sanitize";
+import { hydrateResume } from "./storage";
 
 /* ============================================================
    Text extraction: .txt / .docx / .pdf → plain text
@@ -175,13 +177,13 @@ export function layoutPdfPage(items: PdfGlyph[], pageWidth: number, pageHeight =
 export async function extractCvText(file: File): Promise<string> {
   const name = (file.name || "").toLowerCase();
   if (name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".rtf")) {
-    return await file.text();
+    return sanitizeImportedText(await file.text());
   }
   if (name.endsWith(".docx")) {
     const { default: mammoth } = await import("mammoth");
     const buf = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer: buf });
-    return result.value;
+    return sanitizeImportedText(result.value);
   }
   if (name.endsWith(".pdf")) {
     const pdfjs = await import("pdfjs-dist");
@@ -262,7 +264,7 @@ export async function extractCvText(file: File): Promise<string> {
     if (guessed && !textHasPersonName(text) && !new RegExp(guessed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(text)) {
       text = `${guessed}\n\n${text}`;
     }
-    return text;
+    return sanitizeImportedText(text);
   }
   if (name.endsWith(".doc")) {
     throw new Error("Old .doc files aren't supported — please save the file as .docx or .pdf first.");
@@ -896,7 +898,7 @@ function stitchWrappedLines(lines: string[]): string[] {
 }
 
 export function parseCvText(text: string): CvDraft {
-  const rawLines = text
+  const rawLines = sanitizeImportedText(text)
     .replace(/\r\n/g, "\n")
     .split("\n")
     .map((l) =>
@@ -3135,19 +3137,7 @@ export function resumeFromDraft(draft: CvDraft, theme?: Partial<ThemeConfig>): R
     visibility,
     theme: { ...base.theme, ...theme },
   };
-  return deepSanitize(resume) as Resume;
-}
-
-function deepSanitize(value: unknown): unknown {
-  if (value === undefined || value === null) return "";
-  if (typeof value === "string" || typeof value === "boolean" || typeof value === "number") return value;
-  if (Array.isArray(value)) return value.map(deepSanitize);
-  if (typeof value === "object") {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = deepSanitize(v);
-    return out;
-  }
-  return "";
+  return hydrateResume(resume);
 }
 
 export function hasMeaningfulContent(draft: CvDraft): boolean {

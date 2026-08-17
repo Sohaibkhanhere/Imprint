@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode, type Dispatch } from "react";
 import type { Contact, ListSectionKey, Resume, ResumeTypeKey, SectionKey, ThemeConfig, ID, VisibilityKey } from "../lib/types";
 import { defaultSectionOrder, defaultVisibility, INDUSTRY_SECTIONS, type IndustryKey } from "../lib/resumeTypes";
-import { saveResume, loadResume, hydrateResume } from "../lib/storage";
+import { saveResume, loadResume, hydrateResume, sanitizeThemeConfig, sanitizeSectionOrder } from "../lib/storage";
 import { createBlankResume } from "../lib/sampleData";
 import { uid } from "../lib/date";
+import { sanitizePhotoUrl } from "../lib/sanitize";
 
 type Patch = Partial<Resume>;
 
@@ -74,7 +75,7 @@ function reducer(state: Resume, action: StoreAction): Resume {
     case "PATCH":
       return { ...state, ...action.patch };
     case "SET_CONTACT":
-      return { ...state, contact: action.contact };
+      return { ...state, contact: { ...action.contact, photoUrl: sanitizePhotoUrl(action.contact.photoUrl) } };
     case "SET_SECTION":
       return { ...state, [action.key]: action.items } as Resume;
     case "SET_SKILLS":
@@ -82,9 +83,9 @@ function reducer(state: Resume, action: StoreAction): Resume {
     case "SET_VISIBILITY":
       return { ...state, visibility: { ...state.visibility, [action.key]: action.visible } };
     case "SET_ORDER":
-      return { ...state, sectionOrder: action.order };
+      return { ...state, sectionOrder: sanitizeSectionOrder(action.order, state.sectionOrder) };
     case "SET_THEME":
-      return { ...state, theme: { ...state.theme, ...action.theme } };
+      return { ...state, theme: sanitizeThemeConfig(action.theme, state.theme) };
     case "SET_TYPE":
       return applyType(state, action.value);
     case "APPLY_INDUSTRY": {

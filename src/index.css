@@ -41,11 +41,34 @@
 html,
 body,
 #root {
+  min-height: 100%;
+}
+
+html.qd-app,
+html.qd-app body,
+html.qd-app #root {
   height: 100%;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+html.qd-marketing,
+html.qd-marketing body,
+html.qd-marketing #root {
+  height: auto;
+  max-height: none;
+  overflow: auto;
+  overscroll-behavior: auto;
+}
+
+#geo-static {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 html {
@@ -180,6 +203,32 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-stone-900);
+}
+
+.qd-lockup {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.qd-lockup-name {
+  font-family: "Playfair Display", "Source Serif 4", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-stone-900);
+}
+
+.qd-lockup-by {
+  margin-top: 3px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-amber-500);
 }
 
 .qd-cta {

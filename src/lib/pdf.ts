@@ -1,7 +1,7 @@
 import type { Resume } from "../lib/types";
 import { exportStem } from "./date";
 import { captureSheetJpeg, sheetPageSize } from "./captureSheet";
-import { coerceResume } from "./coerceResume";
+import { hydrateResume } from "./storage";
 
 const PRINT_STYLE_ID = "rs-print-style";
 
@@ -81,7 +81,7 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 export async function exportPdf(resume: Resume): Promise<void> {
-  resume = coerceResume(resume);
+  resume = hydrateResume(resume);
   applyPageStyle(resume.theme.pageSize);
   const sheet = document.querySelector(".resume-sheet") as HTMLElement | null;
   if (!sheet) {

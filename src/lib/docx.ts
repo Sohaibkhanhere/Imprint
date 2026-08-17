@@ -9,7 +9,7 @@ import {
 import type { Resume } from "./types";
 import { formatRange, exportStem, cleanUrl } from "./date";
 import { effectiveSections, headingFor, citePublication } from "../templates/shared";
-import { coerceResume } from "./coerceResume";
+import { hydrateResume } from "./storage";
 import { t } from "./safe";
 
 export { Packer };
@@ -24,7 +24,10 @@ const PAGE_TWIPS: Record<Resume["theme"]["pageSize"], { width: number; height: n
 const MARGIN = 1080;
 
 function hex(c: string): string {
-  return c.replace(/^#/, "").toUpperCase();
+  const m = c.replace(/^#/, "").toUpperCase();
+  if (/^[0-9A-F]{6}$/.test(m)) return m;
+  if (/^[0-9A-F]{3}$/.test(m)) return `${m[0]}${m[0]}${m[1]}${m[1]}${m[2]}${m[2]}`;
+  return "1D2130";
 }
 
 function tabRun(right: number, children: TextRun[]): Paragraph {
@@ -265,7 +268,7 @@ function buildSections(resume: Resume, accent: string, right: number): (Paragrap
 }
 
 export function buildResumeDocx(resume: Resume): Document {
-  resume = coerceResume(resume);
+  resume = hydrateResume(resume);
   const theme = resume.theme;
   const page = PAGE_TWIPS[theme?.pageSize] ?? PAGE_TWIPS.a4;
   const right = page.width - MARGIN * 2;
@@ -318,6 +321,7 @@ export function buildResumeDocx(resume: Resume): Document {
 }
 
 export async function exportDocx(resume: Resume): Promise<void> {
+  resume = hydrateResume(resume);
   const doc = buildResumeDocx(resume);
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);

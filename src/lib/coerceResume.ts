@@ -1,23 +1,33 @@
-import type { Resume } from "./types";
+import type { FluencyLevel, Resume } from "./types";
+import { sanitizePhotoUrl, sanitizePlainText } from "./sanitize";
+
+const FLUENCY: FluencyLevel[] = ["Native", "Fluent", "Professional", "Conversational"];
 
 function str(v: unknown): string {
-  if (typeof v === "string") return v.trim();
-  if (typeof v === "number") return String(v);
-  return "";
+  return sanitizePlainText(v).trim();
 }
 
 function arr<T>(v: unknown): T[] {
-  return Array.isArray(v) ? (v as T[]).filter((x) => x != null) : [];
+  return Array.isArray(v) ? (v as T[]).filter((x) => x != null && typeof x !== "function") : [];
 }
 
 function obj<T extends object>(v: T | null | undefined): T {
-  return v && typeof v === "object" ? v : ({} as T);
+  return v && typeof v === "object" && !Array.isArray(v) ? v : ({} as T);
+}
+
+function fluency(v: unknown): FluencyLevel {
+  return FLUENCY.includes(v as FluencyLevel) ? (v as FluencyLevel) : "Native";
+}
+
+function idOf(v: unknown): string {
+  return typeof v === "string" ? str(v) : "";
 }
 
 export function coerceResume(resume: Resume): Resume {
   const c = obj(resume?.contact);
   return {
-    ...resume,
+    meta: obj(resume?.meta),
+    target: obj(resume?.target),
     contact: {
       fullName: str(c.fullName),
       title: str(c.title),
@@ -29,20 +39,24 @@ export function coerceResume(resume: Resume): Resume {
       website: str(c.website),
       github: str(c.github),
       portfolioUrl: str(c.portfolioUrl),
-      photoUrl: str(c.photoUrl),
+      photoUrl: sanitizePhotoUrl(c.photoUrl),
     },
     summary: str(resume?.summary),
     objective: str(resume?.objective),
+    useObjective: Boolean(resume?.useObjective),
     visibility: obj(resume?.visibility),
+    sectionOrder: Array.isArray(resume?.sectionOrder) ? resume.sectionOrder : [],
+    theme: obj(resume?.theme),
     experience: arr<Resume["experience"][number]>(resume?.experience).map((raw) => {
       const j = obj(raw);
       return {
-        ...j,
+        id: idOf(j.id),
         company: str(j.company),
         role: str(j.role),
         location: str(j.location),
         startDate: str(j.startDate),
         endDate: str(j.endDate),
+        present: Boolean(j.present),
         descriptor: str(j.descriptor),
         bullets: arr<string>(j.bullets).map(str),
       };
@@ -50,7 +64,7 @@ export function coerceResume(resume: Resume): Resume {
     education: arr<Resume["education"][number]>(resume?.education).map((raw) => {
       const e = obj(raw);
       return {
-        ...e,
+        id: idOf(e.id),
         institution: str(e.institution),
         degree: str(e.degree),
         field: str(e.field),
@@ -66,7 +80,7 @@ export function coerceResume(resume: Resume): Resume {
     skills: arr<Resume["skills"][number]>(resume?.skills).map((raw) => {
       const g = obj(raw);
       return {
-        ...g,
+        id: idOf(g.id),
         name: str(g.name),
         skills: arr<string>(g.skills).map(str),
       };
@@ -74,7 +88,7 @@ export function coerceResume(resume: Resume): Resume {
     projects: arr<Resume["projects"][number]>(resume?.projects).map((raw) => {
       const p = obj(raw);
       return {
-        ...p,
+        id: idOf(p.id),
         name: str(p.name),
         description: str(p.description),
         tech: str(p.tech),
@@ -84,7 +98,7 @@ export function coerceResume(resume: Resume): Resume {
     certifications: arr<Resume["certifications"][number]>(resume?.certifications).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         name: str(x.name),
         issuer: str(x.issuer),
         year: str(x.year),
@@ -94,27 +108,28 @@ export function coerceResume(resume: Resume): Resume {
     languages: arr<Resume["languages"][number]>(resume?.languages).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         name: str(x.name),
-        level: x.level || "Native",
+        level: fluency(x.level),
       };
     }),
     volunteer: arr<Resume["volunteer"][number]>(resume?.volunteer).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         title: str(x.title),
         org: str(x.org),
         location: str(x.location),
         startDate: str(x.startDate),
         endDate: str(x.endDate),
+        present: Boolean(x.present),
         bullets: arr<string>(x.bullets).map(str),
       };
     }),
     publications: arr<Resume["publications"][number]>(resume?.publications).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         title: str(x.title),
         venue: str(x.venue),
         year: str(x.year),
@@ -125,7 +140,7 @@ export function coerceResume(resume: Resume): Resume {
     awards: arr<Resume["awards"][number]>(resume?.awards).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         title: str(x.title),
         org: str(x.org),
         year: str(x.year),
@@ -134,7 +149,7 @@ export function coerceResume(resume: Resume): Resume {
     teaching: arr<Resume["teaching"][number]>(resume?.teaching).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         role: str(x.role),
         institution: str(x.institution),
         course: str(x.course),
@@ -147,7 +162,7 @@ export function coerceResume(resume: Resume): Resume {
     grants: arr<Resume["grants"][number]>(resume?.grants).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         name: str(x.name),
         funder: str(x.funder),
         amount: str(x.amount),
@@ -158,7 +173,7 @@ export function coerceResume(resume: Resume): Resume {
     presentations: arr<Resume["presentations"][number]>(resume?.presentations).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         title: str(x.title),
         event: str(x.event),
         year: str(x.year),
@@ -168,7 +183,7 @@ export function coerceResume(resume: Resume): Resume {
     affiliations: arr<Resume["affiliations"][number]>(resume?.affiliations).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         name: str(x.name),
         role: str(x.role),
         years: str(x.years),
@@ -177,7 +192,7 @@ export function coerceResume(resume: Resume): Resume {
     references: arr<Resume["references"][number]>(resume?.references).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         name: str(x.name),
         title: str(x.title),
         org: str(x.org),
@@ -188,7 +203,7 @@ export function coerceResume(resume: Resume): Resume {
     extras: arr<Resume["extras"][number]>(resume?.extras).map((raw) => {
       const x = obj(raw);
       return {
-        ...x,
+        id: idOf(x.id),
         label: str(x.label),
         value: str(x.value),
       };
