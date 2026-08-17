@@ -21,7 +21,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
     setDraft(null);
     try {
       const text = await extractCvText(file);
-      if (!text.trim()) throw new Error("This file has no selectable text. Scanned or image-only PDFs cannot be imported. Export a text PDF from Word or Google Docs, or type the details in Contents.");
+      if (!text.trim()) throw new Error("This file has no readable text. Try a Word export, or type the details in Contents.");
       const parsed = parseCvText(text);
       if (!hasMeaningfulContent(parsed)) {
         const blob = text.replace(/\s+/g, " ").trim();
@@ -93,8 +93,8 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
               }}
             >
               {busy ? <Loader2 size={28} className="animate-spin text-amber-700" /> : <UploadCloud size={28} className="text-stone-400" />}
-              <span className="text-sm font-semibold text-stone-800">{busy ? "Reading and rebuilding…" : "Choose your old resume file"}</span>
-              <span className="text-xs text-stone-500">PDF, DOCX, or TXT · we extract the text and rebuild it into our layouts</span>
+              <span className="text-sm font-semibold text-stone-800">{busy ? "Reading the resume…" : "Choose your old resume file"}</span>
+              <span className="text-xs text-stone-500">PDF, DOCX, or TXT · designed or scanned PDFs can take a few seconds</span>
             </button>
           ) : (
             <div>

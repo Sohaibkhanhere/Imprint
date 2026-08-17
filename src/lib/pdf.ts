@@ -91,5 +91,7 @@ export async function exportPdf(resume: Resume): Promise<void> {
   const jpeg = await captureSheetJpeg(sheet, dims.width, dims.height);
   const page = PAGE_PT[resume.theme.pageSize === "letter" ? "letter" : "a4"];
   const bytes = jpegPdf(jpeg.data, jpeg.width, jpeg.height, page.w, page.h);
-  downloadBlob(new Blob([bytes], { type: "application/pdf" }), `${exportStem(resume.contact)}.pdf`);
+  const { attachResumePayload } = await import("./resumePayload");
+  const packed = attachResumePayload(bytes, resume);
+  downloadBlob(new Blob([packed], { type: "application/pdf" }), `${exportStem(resume.contact)}.pdf`);
 }

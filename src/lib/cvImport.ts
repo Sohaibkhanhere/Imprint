@@ -28,6 +28,8 @@ type PdfGlyph = { str: string; x: number; y: number; w: number; h: number };
 const JUNK_PDF_NAMES =
   /^(windows\s+user|user|admin|administrator|owner|pc|desktop|document|microsoft|resume|cv|author|unknown)$/i;
 
+const OCR_IMPORT_MARK = "[[qd-ocr]]";
+
 function nameFromFilename(filename: string): string {
   const stem = filename.replace(/\.[^.]+$/g, "").replace(/\.pdf$/i, "");
   let t = stem.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
@@ -198,8 +200,16 @@ export async function extractCvText(file: File): Promise<string> {
       ).href;
     }
     const buf = await file.arrayBuffer();
+    const pdfBytes = new Uint8Array(buf);
+    try {
+      const { readResumePayload, resumeToLabeledText } = await import("./resumePayload");
+      const embedded = readResumePayload(pdfBytes);
+      if (embedded) return resumeToLabeledText(embedded);
+    } catch {
+      /* payload is optional */
+    }
     const standardFontDataUrl = await resolvePdfjsStandardFontUrl();
-    const doc = await pdfjs.getDocument({ data: buf, ...(standardFontDataUrl ? { standardFontDataUrl } : {}) }).promise;
+    const doc = await pdfjs.getDocument({ data: buf.slice(0), ...(standardFontDataUrl ? { standardFontDataUrl } : {}) }).promise;
     const pages: string[] = [];
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
@@ -224,17 +234,32 @@ export async function extractCvText(file: File): Promise<string> {
     }
     let text = pages.join("\n\n");
     const bodyLen = text.replace(/\s/g, "").length;
-    if (bodyLen < 8) {
-      throw new Error("This PDF has no selectable text. It is probably a scan or a designed image. Export a text PDF from Word or Google Docs, or fill Contents by hand.");
-    }
-    try {
-      const { ocrPdfHeaderImages, pdfTextMissingContact } = await import("./pdfHeaderOcr");
-      if (pdfTextMissingContact(text)) {
-        const ocr = await ocrPdfHeaderImages(new Uint8Array(buf));
-        if (ocr) text = `${ocr}\n\n${text}`;
+    let viaOcr = false;
+    if (bodyLen < 40) {
+      try {
+        const { ocrPdfPages } = await import("./pdfPageOcr");
+        const ocr = await ocrPdfPages(doc, pdfBytes);
+        if (ocr.replace(/\s/g, "").length >= 40) {
+          text = ocr;
+          viaOcr = true;
+        }
+      } catch {
+        /* full-page OCR is best-effort */
       }
-    } catch {
-      /* header OCR is best-effort */
+      if (text.replace(/\s/g, "").length < 40) {
+        throw new Error("This PDF has no selectable text, and the page image could not be read. Try the Word export, or fill Contents by hand.");
+      }
+    }
+    if (!viaOcr) {
+      try {
+        const { ocrPdfHeaderImages, pdfTextMissingContact } = await import("./pdfHeaderOcr");
+        if (pdfTextMissingContact(text)) {
+          const ocr = await ocrPdfHeaderImages(pdfBytes);
+          if (ocr) text = `${ocr}\n\n${text}`;
+        }
+      } catch {
+        /* header OCR is best-effort */
+      }
     }
     const textHasPersonName = (raw: string) =>
       raw
@@ -264,7 +289,8 @@ export async function extractCvText(file: File): Promise<string> {
     if (guessed && !textHasPersonName(text) && !new RegExp(guessed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(text)) {
       text = `${guessed}\n\n${text}`;
     }
-    return sanitizeImportedText(text);
+    const cleaned = sanitizeImportedText(text);
+    return viaOcr ? `${OCR_IMPORT_MARK}\n${cleaned}` : cleaned;
   }
   if (name.endsWith(".doc")) {
     throw new Error("Old .doc files aren't supported — please save the file as .docx or .pdf first.");
@@ -282,7 +308,7 @@ const HEADER_RULES: { key: SectionKey | "skip"; test: RegExp; minLen?: number }[
   { key: "experience", test: /^(professional|work|employment|relevant|career)?\s*(experience|expierence|experiance|history|background)\b|experience\s+history\b|employment\s+(history|record)\b|career\s+history\b|work\s+history\b|work\s+exp(?:erience)?\b|^internships?\b|industrial\s+(training|experience)\b|^experience\s*$/i },
   { key: "education", test: /^(education|academic|training|qualifications?)\b|education\s+and\s+training\b|academic\s+(background|history|qualifications?)\b|educational\s+qualifications?|professional\s+qualifications?\b/i },
   { key: "skills", test: /^(tech(?:nical)?\s+skills?|professional\s+skills?|relevant\s+skills?|key\s+skills?|core\s+skills?|computer\s+skills?|it\s+skills?|digital\s+skills?|skills?|core\s+competencies|competencies|expertise|technologies?|tech\s+stack|tools|skill\s*highlights?|highlights?|areas?\s+of\s+expertise|technical\s+proficiency)\b/i },
-  { key: "projects", test: /^(selected\s+|key\s+|academic\s+|personal\s+)?projects?\s*$/i },
+  { key: "projects", test: /^(selected\s+|key\s+|academic\s+|personal\s+)?projects?\b/i },
   { key: "certifications", test: /^(certifications?|licenses?\s*(&|and)?\s*(certifications?)?|credentials|professional\s+development)\b/i },
   { key: "languages", test: /^languages?\b/i },
   { key: "volunteer", test: /^(volunteer|community|leadership)\b/i },
@@ -898,7 +924,7 @@ function stitchWrappedLines(lines: string[]): string[] {
 }
 
 export function parseCvText(text: string): CvDraft {
-  const rawLines = sanitizeImportedText(text)
+  const rawLines = sanitizeImportedText(text.split(OCR_IMPORT_MARK).join(""))
     .replace(/\r\n/g, "\n")
     .split("\n")
     .map((l) =>
@@ -943,6 +969,10 @@ export function parseCvText(text: string): CvDraft {
   const full = lines.join("\n");
   const emails = full.match(EMAIL_RE) ?? [];
   if (emails.length) draft.contact.email = emails[0];
+  if (!draft.contact.email) {
+    const loose = full.match(/[\w.+-]+(?:\s*)@(?:\s*)[\w.-]+(?:\s*)\.(?:\s*)[A-Za-z]{2,}/);
+    if (loose) draft.contact.email = loose[0].replace(/\s+/g, "").toLowerCase();
+  }
   const linkedin = full.match(LINKEDIN_RE);
   if (linkedin?.length) draft.contact.linkedin = cleanUrl(linkedin[0]);
   const github = full.match(GITHUB_RE);
@@ -976,6 +1006,9 @@ export function parseCvText(text: string): CvDraft {
         break;
       }
     }
+  }
+  if (!phones.length) {
+    phones.push(...capturePhones(full.replace(/\n/g, " ")));
   }
   if (phones.length) draft.contact.phone = phones.filter((p, i, a) => a.indexOf(p) === i).join(", ");
 
