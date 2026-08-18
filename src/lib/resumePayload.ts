@@ -65,6 +65,7 @@ export function resumeToLabeledText(resume: Resume): string {
   push(c.fullName, c.title, c.phone, c.email);
   push([c.city, c.country].filter(Boolean).join(", "));
   push(c.linkedin, c.website, c.github, c.portfolioUrl);
+  for (const s of c.socials ?? []) push(s.label, s.url);
 
   const blurb = resume.useObjective ? resume.objective : resume.summary;
   if (blurb.trim()) {

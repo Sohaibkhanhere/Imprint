@@ -12,7 +12,7 @@
   background: #fff;
   color: #23211c;
   font-family: var(--font-body);
-  line-height: 1.45;
+  line-height: var(--lead, 1.42);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
   break-inside: avoid;
@@ -159,12 +159,36 @@
   color: var(--accent);
 }
 
+/* Type size and leading */
+.resume-sheet[data-type-size="small"] {
+  --type-mult: 0.9;
+  --name-mult: 0.88;
+}
+.resume-sheet[data-type-size="medium"] {
+  --type-mult: 1;
+  --name-mult: 1;
+}
+.resume-sheet[data-type-size="large"] {
+  --type-mult: 1.15;
+  --name-mult: 1.16;
+}
+.resume-sheet[data-lead="tight"] {
+  --lead: 1.28;
+}
+.resume-sheet[data-lead="normal"] {
+  --lead: 1.42;
+}
+.resume-sheet[data-lead="relaxed"] {
+  --lead: 1.58;
+}
+
 .resume-sheet .sheet-name {
   font-family: var(--font-display);
   color: var(--ink, #23211c);
   line-height: 1.1;
   overflow-wrap: anywhere;
   word-break: break-word;
+  font-size: calc(26px * var(--name-mult, 1));
 }
 
 .resume-sheet .sheet-accent {
@@ -206,7 +230,7 @@
   padding-left: 14px;
   margin-bottom: var(--s0, 4px);
   font-size: var(--body-size, 11px);
-  line-height: 1.45;
+  line-height: var(--lead, 1.42);
 }
 
 .resume-sheet .sheet-bullets li::before {
@@ -237,14 +261,14 @@
 }
 
 .tpl-classic .c-name {
-  font-size: 27px;
+  font-size: calc(27px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .tpl-classic .c-title {
   margin-top: var(--s0, 6px);
-  font-size: 12px;
+  font-size: calc(12px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -253,7 +277,7 @@
 
 .tpl-classic .c-contact {
   margin-top: var(--s1, 8px);
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 
@@ -548,17 +572,17 @@
   padding: var(--s2, 10px) var(--s2, 10px);
 }
 
-/* Density: compact vs comfortable */
+/* Density + type size */
 .resume-sheet[data-density="compact"] {
   --s0: 3px;
   --s1: 5px;
   --s2: 8px;
   --s3: 12px;
   --s4: 18px;
-  --body-size: 10.5px;
-  --meta-size: 10px;
-  --role-size: 11.5px;
-  --h-size: 12px;
+  --body-size: calc(10.5px * var(--type-mult, 1));
+  --meta-size: calc(10px * var(--type-mult, 1));
+  --role-size: calc(11.5px * var(--type-mult, 1));
+  --h-size: calc(12px * var(--type-mult, 1));
 }
 
 .resume-sheet[data-density="comfortable"] {
@@ -567,10 +591,30 @@
   --s2: 11px;
   --s3: 16px;
   --s4: 24px;
-  --body-size: 11px;
-  --meta-size: 10.5px;
-  --role-size: 12px;
-  --h-size: 13.5px;
+  --body-size: calc(11px * var(--type-mult, 1));
+  --meta-size: calc(10.5px * var(--type-mult, 1));
+  --role-size: calc(12px * var(--type-mult, 1));
+  --h-size: calc(13.5px * var(--type-mult, 1));
+}
+
+.resume-sheet[data-density="roomy"] {
+  --s0: 6px;
+  --s1: 10px;
+  --s2: 14px;
+  --s3: 20px;
+  --s4: 30px;
+  --body-size: calc(12px * var(--type-mult, 1));
+  --meta-size: calc(11px * var(--type-mult, 1));
+  --role-size: calc(13px * var(--type-mult, 1));
+  --h-size: calc(14.5px * var(--type-mult, 1));
+}
+
+.resume-sheet p,
+.resume-sheet .c-summary,
+.resume-sheet .t-summary,
+.resume-sheet .t-desc,
+.resume-sheet .t-meta {
+  line-height: var(--lead, 1.42);
 }
 
 /* ===== Shared t-* section classes (skinned per template) ===== */
@@ -582,13 +626,13 @@
   padding-bottom: var(--s2, 10px);
 }
 .tpl-modern-minimal .mm-name {
-  font-size: 26px;
+  font-size: calc(26px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .tpl-modern-minimal .mm-title {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -596,7 +640,7 @@
 }
 .tpl-modern-minimal .mm-contact {
   margin-top: 6px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-modern-minimal .t-head {
@@ -620,13 +664,13 @@
   margin-bottom: var(--s3, 16px);
 }
 .tpl-two-column .tc-name {
-  font-size: 26px;
+  font-size: calc(26px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.01em;
 }
 .tpl-two-column .tc-title {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -634,7 +678,7 @@
 }
 .tpl-two-column .tc-contact {
   margin-top: 6px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-two-column .t-side .t-head {
@@ -658,13 +702,13 @@
   margin-bottom: var(--s4, 24px);
 }
 .tpl-executive .ex-name {
-  font-size: 30px;
+  font-size: calc(30px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 .tpl-executive .ex-title {
   margin-top: 8px;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -672,7 +716,7 @@
 }
 .tpl-executive .ex-contact {
   margin-top: 10px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-executive .ex-rule {
@@ -709,17 +753,17 @@
   border-radius: 999px;
   background: color-mix(in srgb, #fff 18%, transparent);
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: calc(26px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-creative .cr-name {
   color: #fff;
-  font-size: 26px;
+  font-size: calc(26px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-creative .cr-title {
   margin-top: 3px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -727,7 +771,7 @@
 }
 .tpl-creative .cr-contact {
   margin-top: 10px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: color-mix(in srgb, #fff 86%, transparent);
 }
 .tpl-creative .t-head {
@@ -772,12 +816,12 @@
   margin-bottom: var(--s3, 16px);
 }
 .tpl-academic-cv .ac-name {
-  font-size: 22px;
+  font-size: calc(22px * var(--type-mult, 1));
   font-weight: 600;
 }
 .tpl-academic-cv .ac-title {
   margin-top: 3px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -785,7 +829,7 @@
 }
 .tpl-academic-cv .ac-contact {
   margin-top: 5px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-academic-cv .t-head {
@@ -807,13 +851,13 @@
   margin-bottom: var(--s4, 24px);
 }
 .tpl-skills-based .sb-name {
-  font-size: 27px;
+  font-size: calc(27px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 .tpl-skills-based .sb-title {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -821,7 +865,7 @@
 }
 .tpl-skills-based .sb-contact {
   margin-top: 6px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-skills-based .t-skillgroup {
@@ -845,13 +889,13 @@
   margin-bottom: var(--s3, 16px);
 }
 .tpl-entry-level .el-name {
-  font-size: 25px;
+  font-size: calc(25px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .tpl-entry-level .el-title {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -859,7 +903,7 @@
 }
 .tpl-entry-level .el-contact {
   margin-top: 6px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-entry-level .t-chip {
@@ -875,14 +919,14 @@
   margin-bottom: var(--s3, 16px);
 }
 .tpl-tech .tk-name {
-  font-size: 25px;
+  font-size: calc(25px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .tpl-tech .tk-title {
   margin-top: 3px;
   font-family: var(--font-display);
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -892,7 +936,7 @@
 .tpl-tech .tk-github {
   margin-top: 4px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-tech .tk-github {
@@ -911,7 +955,7 @@
 }
 .tpl-tech .t-chip {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   border-radius: 4px;
   background: #f5f5f4;
   border-color: #e4e4e0;
@@ -930,13 +974,13 @@
 }
 .tpl-portfolio .pf-name {
   color: #fff;
-  font-size: 28px;
+  font-size: calc(28px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.01em;
 }
 .tpl-portfolio .pf-title {
   margin-top: 5px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -944,7 +988,7 @@
 }
 .tpl-portfolio .pf-contact {
   margin-top: 10px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: color-mix(in srgb, #fff 88%, transparent);
 }
 .tpl-portfolio .t-chip {
@@ -998,7 +1042,7 @@
 }
 .tpl-photo-sidebar .ps-h,
 .tpl-photo-sidebar .ps-side .t-head {
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.6px;
   color: rgba(255, 255, 255, 0.82);
@@ -1027,7 +1071,7 @@
 .tpl-photo-sidebar .ps-side .t-bullets li,
 .tpl-photo-sidebar .ps-side .sheet-bullets li,
 .tpl-photo-sidebar .ps-side a {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   color: #f3f5f7;
   margin-bottom: 4px;
 }
@@ -1052,7 +1096,7 @@
   border-color: transparent var(--accent) transparent transparent;
 }
 .tpl-photo-sidebar .ps-name {
-  font-size: 25px;
+  font-size: calc(25px * var(--type-mult, 1));
   font-weight: 800;
   color: #23282d;
   margin: 4px 0 2px;
@@ -1061,7 +1105,7 @@
   display: inline-block;
   background: var(--accent);
   color: #fff;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 1px;
   padding: 4px 12px;
@@ -1069,7 +1113,7 @@
   margin-bottom: 14px;
 }
 .tpl-photo-sidebar .ps-main .t-head {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.8px;
   color: #fff;
@@ -1081,29 +1125,29 @@
   border: none;
 }
 .tpl-photo-sidebar .ps-main .t-summary {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   color: #444;
   line-height: 1.5;
 }
 .tpl-photo-sidebar .ps-main .t-role {
   font-weight: 700;
   color: #23282d;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
 }
 .tpl-photo-sidebar .ps-main .t-org,
 .tpl-photo-sidebar .ps-main .t-meta {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   color: #4a4f55;
 }
 .tpl-photo-sidebar .ps-main .t-dates {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #5c6168;
 }
 .tpl-photo-sidebar .ps-main .t-entry {
   margin-bottom: 9px;
 }
 .tpl-photo-sidebar .ps-main .t-bullets li {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   margin-bottom: 3px;
 }
 
@@ -1132,13 +1176,13 @@
   overflow: hidden;
 }
 .tpl-dark-modern .dm-hello {
-  font-size: 12px;
+  font-size: calc(12px * var(--type-mult, 1));
   font-weight: 400;
   color: var(--accent);
   margin: 0 0 2px;
 }
 .tpl-dark-modern .dm-name {
-  font-size: 20px;
+  font-size: calc(20px * var(--type-mult, 1));
   font-weight: 800;
   display: block;
   color: #fff;
@@ -1147,7 +1191,7 @@
   display: inline-block;
   background: var(--accent);
   color: #fff;
-  font-size: 9px;
+  font-size: calc(9px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 1.5px;
   padding: 2px 8px;
@@ -1168,7 +1212,7 @@
 }
 .tpl-dark-modern .dm-h,
 .tpl-dark-modern .dm-side .t-head {
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--accent);
@@ -1182,7 +1226,7 @@
 .tpl-dark-modern .dm-side .t-skills,
 .tpl-dark-modern .dm-side .t-langs .t-lang,
 .tpl-dark-modern .dm-side .t-meta {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #444;
   margin-bottom: 4px;
 }
@@ -1191,11 +1235,11 @@
 }
 .tpl-dark-modern .dm-main {
   padding: 14px 26px;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   line-height: 1.5;
 }
 .tpl-dark-modern .dm-main .t-head {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.8px;
   color: var(--accent);
@@ -1210,24 +1254,24 @@
 }
 .tpl-dark-modern .dm-main .t-role {
   color: #1c1c1e;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-dark-modern .dm-main .t-org,
 .tpl-dark-modern .dm-main .t-meta {
   color: #888;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
 }
 .tpl-dark-modern .dm-main .t-desc,
 .tpl-dark-modern .dm-main .t-summary {
   color: #444;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
 }
 .tpl-dark-modern .dm-main .t-entry {
   margin-bottom: 6px;
 }
 .tpl-dark-modern .dm-main .t-bullets li {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   margin-bottom: 2px;
 }
 
@@ -1244,7 +1288,7 @@
   padding: 28px 28px 26px;
 }
 .tpl-bold-diagonal .bd-name {
-  font-size: 26px;
+  font-size: calc(26px * var(--type-mult, 1));
   font-weight: 800;
   letter-spacing: -0.5px;
   color: #23282d;
@@ -1252,14 +1296,14 @@
 }
 .tpl-bold-diagonal .bd-tagline {
   color: var(--accent);
-  font-size: 12px;
+  font-size: calc(12px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin: 4px 0 14px;
 }
 .tpl-bold-diagonal .bd-main .t-head {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.8px;
   color: #23282d;
@@ -1272,22 +1316,22 @@
   margin-top: 0;
 }
 .tpl-bold-diagonal .bd-main .t-summary {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   color: #444;
   line-height: 1.5;
 }
 .tpl-bold-diagonal .bd-main .t-role {
   font-weight: 700;
   color: #23282d;
-  font-size: 12px;
+  font-size: calc(12px * var(--type-mult, 1));
 }
 .tpl-bold-diagonal .bd-main .t-org,
 .tpl-bold-diagonal .bd-main .t-meta {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   color: #888;
 }
 .tpl-bold-diagonal .bd-main .t-dates {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #888;
 }
 .tpl-bold-diagonal .bd-main .t-entry {
@@ -1295,7 +1339,7 @@
 }
 .tpl-bold-diagonal .bd-main .t-bullets li {
   color: #444;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   margin-bottom: 3px;
 }
 .tpl-bold-diagonal .bd-side {
@@ -1330,7 +1374,7 @@
 }
 .tpl-bold-diagonal .bd-h,
 .tpl-bold-diagonal .bd-side .t-head {
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--accent);
@@ -1344,19 +1388,19 @@
 .tpl-bold-diagonal .bd-side .t-skills,
 .tpl-bold-diagonal .bd-side .t-langs .t-lang,
 .tpl-bold-diagonal .bd-side .t-meta {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   color: #cfcfcf;
   margin-bottom: 5px;
 }
 .tpl-bold-diagonal .bd-side .t-role {
   color: #fff;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-bold-diagonal .bd-side .t-org,
 .tpl-bold-diagonal .bd-side .t-dates {
   color: #a8a8a8;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
 }
 
 /* ===== Tech Dark ===== */
@@ -1378,21 +1422,21 @@
   border-bottom: 1px solid #2a2a2e;
   padding-bottom: 6px;
   margin-bottom: 8px;
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   color: #a8a8ac;
 }
 .tpl-tech-dark .td-headline {
   margin-bottom: 8px;
 }
 .tpl-tech-dark .td-name {
-  font-size: 19px;
+  font-size: calc(19px * var(--type-mult, 1));
   font-weight: 800;
   letter-spacing: 0.5px;
   color: var(--accent);
   margin: 0;
 }
 .tpl-tech-dark .td-summary {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #cfcfd2;
   max-width: 520px;
   line-height: 1.35;
@@ -1420,32 +1464,32 @@
 }
 .tpl-tech-dark .td-card .t-head {
   color: var(--accent);
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   letter-spacing: 1.5px;
   font-weight: 800;
   margin: 0 0 4px;
 }
 .tpl-tech-dark .td-card .t-role {
   color: #fff;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-tech-dark .td-card .t-org,
 .tpl-tech-dark .td-card .t-meta {
   color: #a8a8ac;
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
 }
 .tpl-tech-dark .td-card .t-dates {
   color: var(--accent);
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-tech-dark .td-card .t-skills {
   color: #cfcfd2;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
 }
 .tpl-tech-dark .td-rest .t-head {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--accent);
@@ -1460,27 +1504,27 @@
 }
 .tpl-tech-dark .td-rest .t-role {
   color: #fff;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-tech-dark .td-rest .t-org,
 .tpl-tech-dark .td-rest .t-meta {
   color: #a8a8ac;
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
 }
 .tpl-tech-dark .td-rest .t-dates {
   color: var(--accent);
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-tech-dark .td-rest .t-desc,
 .tpl-tech-dark .td-rest .t-summary {
   color: #c6c6ca;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
 }
 .tpl-tech-dark .td-rest .t-bullets li {
   color: #c6c6ca;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   margin-bottom: 2px;
 }
 .tpl-tech-dark .t-chip {
@@ -1488,15 +1532,15 @@
   color: #cfcfd2;
   border-color: transparent;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
 }
 .tpl-tech-dark .t-skillgroup-name {
   color: #cfcfd2;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
 }
 .tpl-tech-dark .t-langs .t-lang {
   color: #cfcfd2;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
 }
 .tpl-tech-dark .t-lang-level {
   color: #a8a8ac;
@@ -1509,14 +1553,14 @@
   margin-bottom: var(--s3, 16px);
 }
 .tpl-compact .ct-name {
-  font-size: 23px;
+  font-size: calc(23px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: -0.01em;
   display: inline;
   margin-right: 10px;
 }
 .tpl-compact .ct-title {
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1524,14 +1568,14 @@
 }
 .tpl-compact .ct-contact {
   margin-top: 6px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-compact .t-section {
   margin-top: var(--s2, 10px);
 }
 .tpl-compact .t-head {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   letter-spacing: 0.14em;
   border-bottom: 1px solid #e4dfd3;
   padding-bottom: 3px;
@@ -1580,14 +1624,14 @@
   min-width: 0;
 }
 .tpl-photo-header .ph-name {
-  font-size: 27px;
+  font-size: calc(27px * var(--type-mult, 1));
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.01em;
 }
 .tpl-photo-header .ph-title {
   margin-top: 3px;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1595,7 +1639,7 @@
 }
 .tpl-photo-header .ph-contact {
   margin-top: 7px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: rgba(255, 255, 255, 0.85);
 }
 .tpl-photo-header .ph-layout {
@@ -1625,11 +1669,11 @@
 }
 .tpl-photo-header .ph-side .t-head {
   color: var(--accent);
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   margin-bottom: var(--s1, 6px);
 }
 .tpl-photo-header .ph-side .t-chip {
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   padding: 2px 6px;
 }
 
@@ -1642,14 +1686,14 @@
   margin-bottom: var(--s3, 14px);
 }
 .tpl-classic-serif .cs-name {
-  font-size: 26px;
+  font-size: calc(26px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.03em;
   font-family: Georgia, "Source Serif 4", "Times New Roman", serif;
 }
 .tpl-classic-serif .cs-title {
   margin-top: 5px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -1658,7 +1702,7 @@
 }
 .tpl-classic-serif .cs-contact {
   margin-top: 7px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-classic-serif .cs-rule {
@@ -1728,18 +1772,18 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: calc(19px * var(--type-mult, 1));
   font-weight: 700;
 }
 .tpl-creative-border .cb-name {
-  font-size: 24px;
+  font-size: calc(24px * var(--type-mult, 1));
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
 .tpl-creative-border .cb-title {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -1747,7 +1791,7 @@
 }
 .tpl-creative-border .cb-contact {
   margin-top: 4px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 .tpl-creative-border .cb-layout {
@@ -1777,11 +1821,11 @@
 }
 .tpl-creative-border .cb-side .t-head {
   color: var(--accent);
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   margin-bottom: var(--s1, 6px);
 }
 .tpl-creative-border .cb-side .t-chip {
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   padding: 2px 6px;
 }
 .tpl-creative-border .cb-main .t-section {
@@ -1816,14 +1860,14 @@
   margin-bottom: 14px;
 }
 .tpl-colored-sidebar .cl-name {
-  font-size: 20px;
+  font-size: calc(20px * var(--type-mult, 1));
   font-weight: 800;
   color: #fff;
   line-height: 1.15;
 }
 .tpl-colored-sidebar .cl-title {
   margin-top: 4px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1836,7 +1880,7 @@
 }
 .tpl-colored-sidebar .cl-h,
 .tpl-colored-sidebar .cl-side .t-head {
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 700;
@@ -1853,7 +1897,7 @@
 .tpl-colored-sidebar .cl-side .t-desc,
 .tpl-colored-sidebar .cl-side .t-extra-k,
 .tpl-colored-sidebar .cl-side .t-extra-v {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 4px;
 }
@@ -1867,12 +1911,12 @@
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.35);
   color: #fff;
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   padding: 2px 6px;
 }
 .tpl-colored-sidebar .cl-side .t-role {
   color: #fff;
-  font-size: 11px;
+  font-size: calc(11px * var(--type-mult, 1));
 }
 .tpl-colored-sidebar .cl-main {
   padding: 26px 28px;
@@ -1919,7 +1963,7 @@
 }
 
 .tpl-manifest .mn-kicker {
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1928,7 +1972,7 @@
 }
 
 .tpl-manifest .mn-name {
-  font-size: 30px;
+  font-size: calc(30px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.05;
@@ -1936,7 +1980,7 @@
 
 .tpl-manifest .mn-contact {
   margin-top: 8px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 
@@ -1954,7 +1998,7 @@
 
 .tpl-manifest .t-head::before {
   content: "0" counter(manifest-sec);
-  font-size: 10px;
+  font-size: calc(10px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--accent);
@@ -1993,14 +2037,14 @@
 
 .tpl-blueprint .bp-kicker {
   font-family: "Roboto Mono", ui-monospace, "Courier New", monospace;
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   letter-spacing: 0.05em;
   color: var(--accent);
   margin-bottom: 5px;
 }
 
 .tpl-blueprint .bp-name {
-  font-size: 27px;
+  font-size: calc(27px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -2008,7 +2052,7 @@
 
 .tpl-blueprint .bp-contact {
   margin-top: 7px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 
@@ -2062,7 +2106,7 @@
 
 .tpl-broadside .bd-kicker {
   font-family: var(--font-display);
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -2073,14 +2117,14 @@
 }
 
 .tpl-broadside .bd-name {
-  font-size: 30px;
+  font-size: calc(30px * var(--type-mult, 1));
   font-weight: 700;
   letter-spacing: 0.01em;
 }
 
 .tpl-broadside .bd-contact {
   margin-top: 6px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--type-mult, 1));
   color: #4a463e;
 }
 
@@ -2120,7 +2164,7 @@
   margin-bottom: 13px;
 }
 .tpl-executive .ex-name {
-  font-size: 27px;
+  font-size: calc(27px * var(--type-mult, 1));
 }
 .tpl-executive .ex-title {
   margin-top: 5px;
@@ -2207,7 +2251,7 @@
   margin-bottom: 10px;
 }
 .tpl-blueprint .bp-name {
-  font-size: 24px;
+  font-size: calc(24px * var(--type-mult, 1));
 }
 .tpl-blueprint .t-section {
   margin-top: 16px;

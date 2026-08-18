@@ -1,7 +1,7 @@
 import type { Contact, FluencyLevel, Resume, ResumeTypeKey, SectionKey, TemplateKey, ThemeConfig, VisibilityKey } from "./types";
 import { sanitizeMargins } from "./pageLayout";
 import { createBlankResume, FONT_PAIRS } from "./sampleData";
-import { coerceResume } from "./coerceResume";
+import { coerceResume, sanitizeSocials } from "./coerceResume";
 import { uid } from "./date";
 import { INDUSTRY_PRESETS, RESUME_TYPES } from "./resumeTypes";
 import { isKnownTemplateKey } from "../templates/registry";
@@ -75,7 +75,9 @@ export function sanitizeThemeConfig(partial: Partial<ThemeConfig>, fallback: The
     template,
     accent: sanitizeAccent(merged.accent, fallback.accent),
     fontPair,
-    density: merged.density === "compact" ? "compact" : "comfortable",
+    density: merged.density === "compact" ? "compact" : merged.density === "roomy" ? "roomy" : "comfortable",
+    typeSize: merged.typeSize === "small" || merged.typeSize === "large" ? merged.typeSize : "medium",
+    lineHeight: merged.lineHeight === "tight" || merged.lineHeight === "relaxed" ? merged.lineHeight : "normal",
     atsSafe: Boolean(merged.atsSafe),
     pageSize: merged.pageSize === "letter" ? "letter" : "a4",
     maxPages: merged.maxPages === 2 ? 2 : 1,
@@ -156,6 +158,7 @@ export function hydrateResume(rawInput: unknown): Resume {
       github: str(c.github),
       portfolioUrl: str(c.portfolioUrl),
       photoUrl: sanitizePhotoUrl(c.photoUrl),
+      socials: sanitizeSocials(c.socials),
     },
     summary: str(raw.summary),
     objective: str(raw.objective),

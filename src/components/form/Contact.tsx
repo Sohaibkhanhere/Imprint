@@ -1,7 +1,25 @@
 import { useResume } from "../../store/resumeStore";
 import { DEFAULT_PORTRAIT } from "../../templates/graphical";
 import { sanitizePhotoUrl } from "../../lib/sanitize";
-import { Field, Input } from "../ui";
+import { Field, Input, AddButton } from "../ui";
+import { uid } from "../../lib/date";
+import type { SocialLink } from "../../lib/types";
+import { Plus, Trash2 } from "lucide-react";
+
+const SOCIAL_PRESETS: { label: string; placeholder: string }[] = [
+  { label: "Instagram", placeholder: "instagram.com/name" },
+  { label: "X", placeholder: "x.com/name" },
+  { label: "Facebook", placeholder: "facebook.com/name" },
+  { label: "YouTube", placeholder: "youtube.com/@name" },
+  { label: "Behance", placeholder: "behance.net/name" },
+  { label: "Dribbble", placeholder: "dribbble.com/name" },
+  { label: "TikTok", placeholder: "tiktok.com/@name" },
+  { label: "Medium", placeholder: "medium.com/@name" },
+];
+
+function emptySocial(label = "", url = ""): SocialLink {
+  return { id: uid(), label, url };
+}
 
 function readPhoto(file: File, onDone: (url: string) => void) {
   const img = new Image();
@@ -61,8 +79,8 @@ export function ContactForm() {
       <Field wide label="Target job title / tagline">
         <Input value={c.title ?? ""} onChange={(e) => set({ title: e.target.value })} placeholder="Senior Marketing Manager" />
       </Field>
-      <Field label="Phone">
-        <Input value={c.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+1 555-014-2233" />
+      <Field label="Phone" hint="Opens WhatsApp. Include country code, like +92 300 1234567.">
+        <Input value={c.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+92 300 1234567" />
       </Field>
       <Field label="Email">
         <Input type="email" value={c.email} onChange={(e) => set({ email: e.target.value })} placeholder="ayesha@example.com" />
@@ -82,6 +100,70 @@ export function ContactForm() {
       <Field label="GitHub (optional)">
         <Input value={c.github} onChange={(e) => set({ github: e.target.value })} placeholder="github.com/name" />
       </Field>
+      <SocialLinksField socials={c.socials ?? []} onChange={(socials) => set({ socials })} />
+    </div>
+  );
+}
+
+function SocialLinksField({
+  socials,
+  onChange,
+}: {
+  socials: SocialLink[];
+  onChange: (socials: SocialLink[]) => void;
+}) {
+  const used = new Set(socials.map((s) => s.label.trim().toLowerCase()).filter(Boolean));
+  const add = (item: SocialLink) => onChange([...socials, item]);
+  const update = (id: string, patch: Partial<SocialLink>) =>
+    onChange(socials.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  const remove = (id: string) => onChange(socials.filter((s) => s.id !== id));
+
+  return (
+    <div className="sm:col-span-2 space-y-3 border-t border-stone-200 pt-3">
+      <div>
+        <p className="text-xs font-medium text-stone-800">More links</p>
+        <p className="mt-0.5 text-[11px] leading-snug text-stone-500">Optional. Add Instagram, Behance, or any profile you want on the sheet.</p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {SOCIAL_PRESETS.map((p) => {
+          const taken = used.has(p.label.toLowerCase());
+          return (
+            <button
+              key={p.label}
+              type="button"
+              disabled={taken}
+              onClick={() => add(emptySocial(p.label, ""))}
+              className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-900 hover:text-stone-900 disabled:cursor-default disabled:opacity-40"
+            >
+              <span className="inline-flex items-center gap-1">
+                <Plus size={11} /> {p.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {socials.map((s) => {
+        const preset = SOCIAL_PRESETS.find((p) => p.label.toLowerCase() === s.label.trim().toLowerCase());
+        return (
+          <div key={s.id} className="grid grid-cols-1 gap-2 rounded-md border border-stone-200 bg-stone-50/70 p-2.5 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)_auto] sm:items-end">
+            <Field label="Label">
+              <Input value={s.label} onChange={(e) => update(s.id, { label: e.target.value })} placeholder="Instagram" />
+            </Field>
+            <Field label="URL">
+              <Input value={s.url} onChange={(e) => update(s.id, { url: e.target.value })} placeholder={preset?.placeholder || "profile.site/name"} />
+            </Field>
+            <button
+              type="button"
+              onClick={() => remove(s.id)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-stone-400 hover:bg-stone-100 hover:text-stone-800"
+              title="Remove"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        );
+      })}
+      <AddButton label="Add a link" onClick={() => add(emptySocial())} />
     </div>
   );
 }

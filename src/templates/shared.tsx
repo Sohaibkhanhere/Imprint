@@ -54,13 +54,24 @@ function FitSheet({
   const innerRef = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(1);
 
+  const typeSize = resume.theme?.typeSize;
+  const lineHeight = resume.theme?.lineHeight;
+  const fontPair = resume.theme?.fontPair;
+
   useLayoutEffect(() => {
     const outer = outerRef.current;
     const inner = innerRef.current;
     if (!outer || !inner) return;
+    let raf = 0;
+    let measuring = false;
     const measure = () => {
+      if (measuring) return;
+      measuring = true;
       const avail = outer.clientHeight;
-      if (!avail) return;
+      if (!avail) {
+        measuring = false;
+        return;
+      }
       const prevTransform = inner.style.transform;
       const prevWidth = inner.style.width;
       const prevHeight = inner.style.height;
@@ -74,17 +85,27 @@ function FitSheet({
       inner.style.width = prevWidth;
       inner.style.height = prevHeight;
       inner.style.minHeight = prevMinHeight;
+      measuring = false;
       if (!need) return;
       const raw = need > avail + 2 ? avail / need : 1;
       const next = raw < 0.55 ? 1 : raw;
       setFit((prev) => (Math.abs(prev - next) < 0.003 ? prev : next));
     };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
     measure();
-    const ro = new ResizeObserver(measure);
+    const ro = new ResizeObserver(schedule);
     ro.observe(outer);
-    ro.observe(inner);
-    return () => ro.disconnect();
-  }, [resume, className, page.cssHeight, pagePad]);
+    const mo = new MutationObserver(schedule);
+    mo.observe(inner, { childList: true, subtree: true, characterData: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      mo.disconnect();
+    };
+  }, [className, page.cssHeight, pagePad, density, typeSize, lineHeight, fontPair, ats]);
 
   return (
     <div
@@ -93,6 +114,8 @@ function FitSheet({
       data-density={density}
       data-ats={ats}
       data-page={resume.theme?.pageSize ?? "a4"}
+      data-type-size={resume.theme?.typeSize ?? "medium"}
+      data-lead={resume.theme?.lineHeight ?? "normal"}
       style={{
         ...vars,
         width: page.cssWidth,
@@ -114,7 +137,7 @@ function FitSheet({
           width: fit < 0.999 ? `${100 / fit}%` : "100%",
           height: fit < 0.999 ? `${100 / fit}%` : "100%",
           minHeight: fit < 0.999 ? 0 : "100%",
-          transform: fit < 0.999 ? `scale(${fit})` : undefined,
+          transform: fit < 0.999 ? `translateZ(0) scale(${fit})` : undefined,
           transformOrigin: "top left",
           ...style,
         }}
@@ -151,11 +174,15 @@ function PagedSheet({
   const [offsets, setOffsets] = useState<number[]>([0]);
   const [avail, setAvail] = useState(0);
   const maxPages = resume.theme?.maxPages ?? 1;
+  const typeSize = resume.theme?.typeSize;
+  const lineHeight = resume.theme?.lineHeight;
+  const fontPair = resume.theme?.fontPair;
 
   useLayoutEffect(() => {
     const content = measureRef.current;
     const probe = probeRef.current;
     if (!content || !probe) return;
+    let raf = 0;
     const measure = () => {
       const cs = getComputedStyle(probe);
       const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
@@ -165,13 +192,23 @@ function PagedSheet({
       const next = computePageOffsets(content, nextAvail);
       setOffsets((prev) => (offsetsEqual(prev, next) ? prev : next));
     };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
     measure();
     void document.fonts.ready.then(measure);
-    const ro = new ResizeObserver(measure);
+    const ro = new ResizeObserver(schedule);
     ro.observe(content);
     ro.observe(probe);
-    return () => ro.disconnect();
-  }, [resume, className, page.cssHeight, pagePad]);
+    const mo = new MutationObserver(schedule);
+    mo.observe(content, { childList: true, subtree: true, characterData: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      mo.disconnect();
+    };
+  }, [className, page.cssHeight, pagePad, density, typeSize, lineHeight, fontPair, ats]);
 
   const pageStyle: CSSProperties = {
     ...vars,
@@ -197,6 +234,8 @@ function PagedSheet({
         data-density={density}
         data-ats={ats}
         data-page={resume.theme?.pageSize ?? "a4"}
+        data-type-size={resume.theme?.typeSize ?? "medium"}
+        data-lead={resume.theme?.lineHeight ?? "normal"}
         aria-hidden="true"
         style={{
           ...pageStyle,
@@ -226,11 +265,13 @@ function PagedSheet({
 
       {offsets.map((offset, i) => (
         <div
-          key={`page-${i}-${offset}`}
+          key={`page-${i}`}
           className="resume-sheet resume-sheet-paged"
           data-density={density}
           data-ats={ats}
           data-page={resume.theme?.pageSize ?? "a4"}
+          data-type-size={resume.theme?.typeSize ?? "medium"}
+          data-lead={resume.theme?.lineHeight ?? "normal"}
           data-page-index={i + 1}
           style={pageStyle}
         >
@@ -333,6 +374,7 @@ export function safeContact(resume: Resume): Resume["contact"] {
     github: t(c?.github),
     portfolioUrl: t(c?.portfolioUrl),
     photoUrl: t(c?.photoUrl),
+    socials: (c?.socials ?? []).map((s) => ({ id: t(s?.id), label: t(s?.label), url: t(s?.url) })),
   };
 }
 

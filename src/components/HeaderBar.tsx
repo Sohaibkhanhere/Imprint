@@ -15,6 +15,7 @@ import { computeAtsScore, improveAts } from "../lib/atsScore";
 import { themePatchForAtsSafe } from "../templates/registry";
 import { patchPageSize } from "../lib/pageLayout";
 import { PageLayoutPanel } from "./PageLayoutPanel";
+import { TypePanel } from "./TypePanel";
 
 export function HeaderBar({
   onReset,
@@ -298,6 +299,7 @@ export function HeaderBar({
             <p className="folio mt-2.5 text-stone-500">{getResumeType(resume.meta.type).structure.join(" · ")}</p>
           </div>
           <PageLayoutPanel />
+          <TypePanel />
           <div className="mb-5 border border-stone-200">
             <button
               type="button"
@@ -344,54 +346,35 @@ export function HeaderBar({
               </div>
             ) : null}
           </div>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-                <Type size={12} className="text-stone-500" /> Font pairing
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {FONT_PAIRS.map((f) => (
-                  <button
-                    key={f.key}
-                    type="button"
-                    onClick={() => dispatch({ type: "SET_THEME", theme: { fontPair: f.key } })}
-                    className={`flex items-center justify-between rounded-sm border px-3 py-1.5 text-left text-xs transition ${t.fontPair === f.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"}`}
-                  >
-                    <span style={{ fontFamily: f.display }}>{f.label}</span>
-                    <span className="text-[10px] text-stone-500">{f.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-                <LayoutGrid size={12} className="text-stone-500" /> Density
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {(["comfortable", "compact"] as const).map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => dispatch({ type: "SET_THEME", theme: { density: d } })}
-                    className={`rounded-sm border px-3 py-1.5 text-left text-xs capitalize transition ${t.density === d ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"}`}
-                  >
-                    {d}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-3">
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">Citation style</p>
-                <select
-                  value={t.citationFormat ?? "apa"}
-                  onChange={(e) => dispatch({ type: "SET_THEME", theme: { citationFormat: e.target.value as "apa" | "mla" | "chicago" } })}
-                  className="w-full rounded-sm border border-stone-300 bg-stone-100 px-2 py-1.5 text-xs text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+              <Type size={12} className="text-stone-500" /> Font pairing
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {FONT_PAIRS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => dispatch({ type: "SET_THEME", theme: { fontPair: f.key } })}
+                  className={`flex items-center justify-between rounded-sm border px-3 py-1.5 text-left text-xs transition ${t.fontPair === f.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"}`}
                 >
-                  <option value="apa">APA</option>
-                  <option value="mla">MLA</option>
-                  <option value="chicago">Chicago</option>
-                </select>
-              </div>
+                  <span style={{ fontFamily: f.display }}>{f.label}</span>
+                  <span className="text-[10px] text-stone-500">{f.desc}</span>
+                </button>
+              ))}
             </div>
+          </div>
+          <div className="mt-5">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">Citation style</p>
+            <select
+              value={t.citationFormat ?? "apa"}
+              onChange={(e) => dispatch({ type: "SET_THEME", theme: { citationFormat: e.target.value as "apa" | "mla" | "chicago" } })}
+              className="w-full max-w-xs rounded-sm border border-stone-300 bg-stone-100 px-2 py-1.5 text-xs text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            >
+              <option value="apa">APA</option>
+              <option value="mla">MLA</option>
+              <option value="chicago">Chicago</option>
+            </select>
           </div>
         </div>
       ) : null}

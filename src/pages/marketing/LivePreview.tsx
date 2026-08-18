@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { PAGE_DIMS } from "../../templates/shared";
 import { AtsSafeTemplate } from "../../templates/ats-safe";
 import { GiltTemplate, StreamTemplate } from "../../templates/html-pack";
@@ -59,10 +59,13 @@ function SheetCard({
   const page = PAGE_DIMS.a4;
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = box.current;
     if (!el) return;
-    const sync = () => setScale(el.clientWidth / page.width);
+    const sync = () => {
+      const next = el.clientWidth / page.width;
+      setScale((prev) => (Math.abs(prev - next) < 0.004 ? prev : next));
+    };
     const ro = new ResizeObserver(sync);
     ro.observe(el);
     sync();
@@ -74,7 +77,7 @@ function SheetCard({
       <div
         ref={box}
         className="relative overflow-hidden rounded-sm border border-stone-300 bg-white"
-        style={{ aspectRatio: `${page.width} / ${page.height}` }}
+        style={{ aspectRatio: `${page.width} / ${page.height}`, contain: "layout paint" }}
       >
         {scale ? (
           <div
@@ -82,7 +85,7 @@ function SheetCard({
             style={{
               width: page.cssWidth,
               minHeight: page.cssHeight,
-              transform: `scale(${scale})`,
+              transform: `translateZ(0) scale(${scale})`,
             }}
           >
             {children}

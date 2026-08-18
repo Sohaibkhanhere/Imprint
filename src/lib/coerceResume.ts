@@ -1,5 +1,6 @@
-import type { FluencyLevel, Resume } from "./types";
+import type { FluencyLevel, Resume, SocialLink } from "./types";
 import { sanitizePhotoUrl, sanitizePlainText } from "./sanitize";
+import { uid } from "./date";
 
 const FLUENCY: FluencyLevel[] = ["Native", "Fluent", "Professional", "Conversational"];
 
@@ -23,6 +24,18 @@ function idOf(v: unknown): string {
   return typeof v === "string" ? str(v) : "";
 }
 
+export function sanitizeSocials(raw: unknown): SocialLink[] {
+  return arr(raw)
+    .map((item) => {
+      const x = obj(item as object);
+      return {
+        id: idOf((x as { id?: unknown }).id) || uid(),
+        label: str((x as { label?: unknown }).label),
+        url: str((x as { url?: unknown }).url),
+      };
+    });
+}
+
 export function coerceResume(resume: Resume): Resume {
   const c = obj(resume?.contact);
   return {
@@ -40,6 +53,7 @@ export function coerceResume(resume: Resume): Resume {
       github: str(c.github),
       portfolioUrl: str(c.portfolioUrl),
       photoUrl: sanitizePhotoUrl(c.photoUrl),
+      socials: sanitizeSocials((c as { socials?: unknown }).socials),
     },
     summary: str(resume?.summary),
     objective: str(resume?.objective),

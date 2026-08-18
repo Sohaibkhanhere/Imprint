@@ -2,7 +2,7 @@ import type { Resume } from "../lib/types";
 import { exportStem, cleanUrl } from "./date";
 import { captureSheetJpeg, sheetPageSize } from "./captureSheet";
 import { hydrateResume } from "./storage";
-import { contactItems, safeHref } from "./href";
+import { contactItems, pdfHref } from "./href";
 import { t } from "./safe";
 
 const PRINT_STYLE_ID = "rs-print-style";
@@ -126,28 +126,33 @@ function resumeNeedles(resume: Resume): { needle: string; href: string }[] {
     out.push({ needle: text, href });
   };
   const c = resume.contact;
-  for (const item of contactItems(c)) add(item.text, item.href ?? null);
-  add(c.email, safeHref(c.email, "email"));
-  add(c.phone, safeHref(c.phone, "phone"));
-  add(c.linkedin, safeHref(c.linkedin, "url"));
-  add(cleanUrl(c.linkedin), safeHref(c.linkedin, "url"));
-  add(c.github, safeHref(c.github, "url"));
-  add(cleanUrl(c.github), safeHref(c.github, "url"));
-  add(c.website, safeHref(c.website, "url"));
-  add(cleanUrl(c.website), safeHref(c.website, "url"));
-  add(c.portfolioUrl, safeHref(c.portfolioUrl, "url"));
-  add(cleanUrl(c.portfolioUrl), safeHref(c.portfolioUrl, "url"));
+  for (const item of contactItems(c)) add(item.text, item.href ? pdfHref(item.href) : null);
+  add(c.email, pdfHref(c.email, "email"));
+  add(c.phone, pdfHref(c.phone, "phone"));
+  add(c.linkedin, pdfHref(c.linkedin, "url"));
+  add(cleanUrl(c.linkedin), pdfHref(c.linkedin, "url"));
+  add(c.github, pdfHref(c.github, "url"));
+  add(cleanUrl(c.github), pdfHref(c.github, "url"));
+  add(c.website, pdfHref(c.website, "url"));
+  add(cleanUrl(c.website), pdfHref(c.website, "url"));
+  add(c.portfolioUrl, pdfHref(c.portfolioUrl, "url"));
+  add(cleanUrl(c.portfolioUrl), pdfHref(c.portfolioUrl, "url"));
+  for (const s of c.socials ?? []) {
+    add(s.label, pdfHref(s.url, "url"));
+    add(s.url, pdfHref(s.url, "url"));
+    add(cleanUrl(s.url), pdfHref(s.url, "url"));
+  }
   for (const p of resume.projects ?? []) {
-    add(p.link, safeHref(p.link, "url"));
-    add(cleanUrl(p.link), safeHref(p.link, "url"));
+    add(p.link, pdfHref(p.link, "url"));
+    add(cleanUrl(p.link), pdfHref(p.link, "url"));
   }
   for (const p of resume.publications ?? []) {
-    add(p.url, safeHref(p.url, "url"));
-    add(cleanUrl(p.url), safeHref(p.url, "url"));
+    add(p.url, pdfHref(p.url, "url"));
+    add(cleanUrl(p.url), pdfHref(p.url, "url"));
   }
   for (const r of resume.references ?? []) {
-    add(r.email, safeHref(r.email, "email"));
-    add(r.phone, safeHref(r.phone, "phone"));
+    add(r.email, pdfHref(r.email, "email"));
+    add(r.phone, pdfHref(r.phone, "phone"));
   }
   out.sort((a, b) => b.needle.length - a.needle.length);
   return out;
@@ -177,7 +182,7 @@ function collectSheetLinks(sheet: HTMLElement, resume: Resume, pageW: number, pa
   };
 
   for (const a of sheet.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-    const uri = safeHref(a.getAttribute("href") || "");
+    const uri = pdfHref(a.getAttribute("href") || "");
     if (!uri) continue;
     for (const rect of [...a.getClientRects()]) push(rect, uri);
   }

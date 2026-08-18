@@ -61,7 +61,10 @@ function Thumb({
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-    const sync = () => setScale(el.clientWidth / page.width);
+    const sync = () => {
+      const next = el.clientWidth / page.width;
+      setScale((prev) => (Math.abs(prev - next) < 0.004 ? prev : next));
+    };
     const ro = new ResizeObserver(sync);
     ro.observe(el);
     sync();
@@ -85,7 +88,7 @@ function Thumb({
               style={{
                 width: page.cssWidth,
                 minHeight: page.cssHeight,
-                transform: `scale(${scale})`,
+                transform: `translateZ(0) scale(${scale})`,
               }}
             >
               <Template

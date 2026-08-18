@@ -47,6 +47,9 @@ function contactLine(resume: Resume): string {
   if (t(c.linkedin)) parts.push(cleanUrl(c.linkedin));
   if (t(c.github)) parts.push(cleanUrl(c.github));
   if (t(c.website)) parts.push(cleanUrl(c.website));
+  for (const s of c.socials ?? []) {
+    if (t(s.url)) parts.push(t(s.label) || cleanUrl(s.url));
+  }
   return parts.join(" | ");
 }
 

@@ -259,20 +259,29 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
   useLayoutEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    const measure = () => setHits(collectHits(host));
+    let timer = 0;
+    let raf = 0;
+    const measure = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => setHits(collectHits(host)));
+      }, 32);
+    };
     measure();
     const ro = new ResizeObserver(measure);
     const mo = new MutationObserver(measure);
-    ro.observe(host);
     for (const sheet of host.querySelectorAll(".resume-sheet")) {
       ro.observe(sheet);
       mo.observe(sheet, { childList: true, subtree: true, characterData: true });
     }
     return () => {
+      window.clearTimeout(timer);
+      cancelAnimationFrame(raf);
       ro.disconnect();
       mo.disconnect();
     };
-  }, [hostRef, resume]);
+  }, [hostRef, resume.theme.template, resume.theme.pageSize, resume.theme.maxPages]);
 
   const hostEl = hostRef.current;
   const barHost = hostEl?.getBoundingClientRect();

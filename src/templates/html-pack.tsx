@@ -457,6 +457,16 @@ export function CarmineTemplate({ resume }: { resume: Resume }) {
               </span>
             </div>
           ) : null}
+          {(c.socials ?? [])
+            .filter((s) => s.url)
+            .map((s) => (
+              <div key={s.id} className="hp-car-item">
+                <p>{s.label || "Link"}</p>
+                <span>
+                  <SheetHref href={s.url}>{cleanUrl(s.url)}</SheetHref>
+                </span>
+              </div>
+            ))}
           {loc(resume) ? (
             <div className="hp-car-item">
               <p>Address</p>

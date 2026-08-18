@@ -614,6 +614,10 @@ export function improveAts(resume: Resume): AtsImproveResult {
   next.contact.website = cleanContactLink(next.contact.website);
   next.contact.github = cleanContactLink(next.contact.github);
   next.contact.portfolioUrl = cleanContactLink(next.contact.portfolioUrl);
+  next.contact.socials = (next.contact.socials ?? []).map((s) => ({
+    ...s,
+    url: cleanContactLink(s.url),
+  }));
 
   const title = unshout(next.contact.title);
   if (title !== t(next.contact.title)) {

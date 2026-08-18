@@ -51,7 +51,9 @@ export type TemplateKey =
   | "grove"
   | "boardroom";
 
-export type Density = "compact" | "comfortable";
+export type Density = "compact" | "comfortable" | "roomy";
+export type TypeSize = "small" | "medium" | "large";
+export type LineHeight = "tight" | "normal" | "relaxed";
 export type PageSize = "a4" | "letter";
 export type CitationFormat = "apa" | "mla" | "chicago";
 
@@ -62,6 +64,12 @@ export interface PageMargins {
   left: number;
 }
 export type FluencyLevel = "Native" | "Fluent" | "Professional" | "Conversational";
+
+export interface SocialLink {
+  id: ID;
+  label: string;
+  url: string;
+}
 
 export interface Contact {
   fullName: string;
@@ -75,6 +83,7 @@ export interface Contact {
   github: string;
   portfolioUrl: string;
   photoUrl: string;
+  socials: SocialLink[];
 }
 
 export interface ExperienceEntry {
@@ -238,6 +247,8 @@ export interface ThemeConfig {
   accent: string;
   fontPair: string;
   density: Density;
+  typeSize: TypeSize;
+  lineHeight: LineHeight;
   atsSafe: boolean;
   pageSize: PageSize;
   maxPages: 1 | 2;
