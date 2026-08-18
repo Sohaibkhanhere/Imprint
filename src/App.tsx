@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ResumeProvider, useResume } from "./store/resumeStore";
 import { HeaderBar } from "./components/HeaderBar";
 import { FormPanel } from "./components/form/FormPanel";
@@ -6,9 +6,8 @@ import { PreviewPane } from "./components/PreviewPane";
 import { HealthPanel } from "./components/HealthPanel";
 import { TailorPanel } from "./components/TailorPanel";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import type { TemplateKey } from "./lib/types";
 import { STORAGE_KEY } from "./lib/storage";
-import { themePatchForTemplate } from "./templates/registry";
+import { isKnownTemplateKey, themePatchForAtsSafe, themePatchForTemplate } from "./templates/registry";
 
 export function App() {
   return (
@@ -26,14 +25,19 @@ function ShellInner() {
   const [notesOpen, setNotesOpen] = useState(false);
   const [firstIssue] = useState(() => !window.localStorage.getItem(STORAGE_KEY));
 
-  const sections = useMemo(
-    () => resume.sectionOrder.filter((k) => k === "contact" || resume.visibility?.[k as keyof typeof resume.visibility]),
-    [resume.sectionOrder, resume.visibility],
-  );
-
   useEffect(() => {
-    const tpl = new URLSearchParams(window.location.search).get("template") as TemplateKey | null;
-    if (tpl) dispatch({ type: "SET_THEME", theme: themePatchForTemplate(tpl) });
+    const params = new URLSearchParams(window.location.search);
+    const tpl = params.get("template");
+    const atsOn = params.get("atsSafe") === "1" || params.get("atsSafe") === "true";
+    if (tpl && isKnownTemplateKey(tpl)) {
+      const base = themePatchForTemplate(tpl);
+      dispatch({
+        type: "SET_THEME",
+        theme: atsOn ? { ...base, ...themePatchForAtsSafe(tpl, true) } : { ...base, atsSafe: false },
+      });
+      return;
+    }
+    if (atsOn) dispatch({ type: "SET_THEME", theme: themePatchForAtsSafe("classic", true) });
   }, [dispatch]);
 
   useEffect(() => {
@@ -83,18 +87,8 @@ function ShellInner() {
             mobileTab === "copy" ? "flex flex-1" : "hidden"
           }`}
         >
-          <div className="sticky top-0 z-10 border-b border-stone-200 bg-stone-50/95 px-4 py-3.5 backdrop-blur-[6px]">
-            <div className="masthead-rule mb-2.5 w-10" />
-            <div className="flex items-end justify-between gap-3">
-              <h2 className="qd-wordmark text-[26px] leading-none">Contents</h2>
-              <p className="folio text-stone-500">{String(sections.length).padStart(2, "0")} sections</p>
-            </div>
-            <p className="mt-1.5 text-[12px] leading-snug text-stone-500">Every field updates the preview live.</p>
-          </div>
           {showTailor ? <div className="border-b border-stone-200 px-4 py-3"><TailorPanel onClose={() => setShowTailor(false)} /></div> : null}
-          <div className="px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-3">
-            <FormPanel />
-          </div>
+          <FormPanel />
         </aside>
 
         <main className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex ${mobileTab === "proof" ? "flex" : "hidden"}`}>

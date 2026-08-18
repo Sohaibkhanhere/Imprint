@@ -5,6 +5,7 @@ import { cleanUrl } from "./date";
 import { tailorResume } from "./jdTailor";
 import { improveBullet } from "./improveBullet";
 import { getTemplate, themePatchForAtsSafe } from "../templates/registry";
+import { flattenSkillLabels, groupsLookLikeItemList, hasRenderableSkills } from "./skillsDisplay";
 
 export interface AtsCheck {
   id: string;
@@ -61,7 +62,7 @@ export function atsChecks(r: Resume): AtsCheck[] {
   const email = t(c.email);
   const jobs = (r.experience ?? []).filter((j) => t(j.role) || t(j.company));
   const bullets = jobBullets(r);
-  const skillCount = (r.skills ?? []).reduce((n, g) => n + (g.skills ?? []).filter((s) => t(s) && !RATING_FIND.test(s)).length, 0);
+  const skillCount = flattenSkillLabels(r.skills).filter((s) => !RATING_FIND.test(s)).length;
   const hasEdu = (r.education ?? []).some((e) => t(e.institution) || t(e.degree));
   const hasCert = (r.certifications ?? []).some((x) => t(x.name));
   const summary = t(r.useObjective ? r.objective : r.summary);
@@ -675,6 +676,11 @@ export function improveAts(resume: Resume): AtsImproveResult {
   }
 
   let skillChanged = false;
+  if (groupsLookLikeItemList(next.skills)) {
+    const labels = flattenSkillLabels(next.skills);
+    next.skills = [{ id: next.skills[0]?.id || "skills", name: "", skills: labels }];
+    changes.push("Converted skills into a compact name list.");
+  }
   next.skills = (next.skills ?? []).map((g) => ({
     ...g,
     skills: (g.skills ?? []).map((s) => {
@@ -694,7 +700,7 @@ export function improveAts(resume: Resume): AtsImproveResult {
   };
   show("experience", (next.experience ?? []).some((j) => t(j.role) || t(j.company)), "Work Experience");
   show("education", (next.education ?? []).some((e) => t(e.institution) || t(e.degree)), "Education");
-  show("skills", (next.skills ?? []).some((g) => (g.skills ?? []).length > 0), "Skills");
+  show("skills", hasRenderableSkills(next.skills), "Skills");
   show("summary", t(next.summary).length > 0, "Summary");
   const piiRows = (next.extras ?? []).filter((e) => isPiiLabel(e.label) && t(e.value));
   if (piiRows.length && vis.extras !== false) {

@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import { useResume } from "../../store/resumeStore";
 import { Field, Textarea, Input } from "../ui";
+import { uid } from "../../lib/date";
+import { flattenSkillLabels, groupsLookLikeItemList } from "../../lib/skillsDisplay";
+import type { SkillGroup } from "../../lib/types";
 
 export function SummaryForm() {
   const { resume, dispatch } = useResume();
@@ -54,76 +57,140 @@ export function PortfolioForm() {
   );
 }
 
-export function SkillsForm() {
-  const { resume, dispatch } = useResume();
-  const set = (groups: typeof resume.skills) => dispatch({ type: "SET_SKILLS", groups });
-  const draftRef = useRef({ id: "draft-skill-group", name: "", skills: [] as string[] });
-  const isEmpty = (resume.skills ?? []).length === 0;
-  const groups = isEmpty ? [draftRef.current] : resume.skills;
-  const updateGroup = (id: string, patch: Partial<(typeof resume.skills)[number]>) =>
-    set(groups.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+function splitSkillTokens(raw: string): string[] {
+  return raw
+    .split(/[,;\n|]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function mergeSkills(existing: string[], incoming: string[]): string[] {
+  const seen = new Set(existing.map((s) => s.toLowerCase()));
+  const next = [...existing];
+  for (const s of incoming) {
+    const key = s.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    next.push(s);
+  }
+  return next;
+}
+
+function SkillChipInput({
+  skills,
+  onChange,
+  placeholder,
+}: {
+  skills: string[];
+  onChange: (skills: string[]) => void;
+  placeholder: string;
+}) {
+  const add = (raw: string) => {
+    const tokens = splitSkillTokens(raw);
+    if (!tokens.length) return false;
+    onChange(mergeSkills(skills, tokens));
+    return true;
+  };
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      {groups.map((g) => (
-        <div key={g.id} className="desk-card desk-enter p-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
-            <Field label="Group name">
-              <Input value={g.name} onChange={(e) => updateGroup(g.id, { name: e.target.value })} placeholder="Technical Skills" />
-            </Field>
-            <div className="flex items-end gap-1">
-              {!isEmpty ? (
-                <button type="button" onClick={() => set(groups.filter((x) => x.id !== g.id))} className="mb-0.5 rounded-md p-2 text-stone-400 transition hover:bg-amber-50 hover:text-amber-700" title="Remove group">
-                  ✕
-                </button>
-              ) : null}
-            </div>
-          </div>
-          <div className="mt-1.5">
-            <Label>Skills (comma-separated)</Label>
-            <div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-md border border-stone-300 bg-stone-50 px-2 py-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-amber-600/55 focus-within:ring-2 focus-within:ring-amber-500/25">
-              {(g.skills ?? []).map((s, i) => (
-                <span key={i} className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700">
-                  {s}
-                  <button
-                    type="button"
-                    onClick={() => updateGroup(g.id, { skills: (g.skills ?? []).filter((_, j) => j !== i) })}
-                    className="text-stone-400 transition-colors duration-150 hover:text-amber-700"
-                    aria-label="Remove skill"
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
-              <input
-                className="min-w-[100px] flex-1 bg-transparent px-1 py-0.5 text-sm outline-none placeholder:text-stone-500"
-                placeholder={(g.skills ?? []).length ? "Add skill…" : "Type a skill and press Enter"}
-                onKeyDown={(e) => {
-                  const el = e.currentTarget;
-                  if (e.key === "Enter" && el.value.trim()) {
-                    e.preventDefault();
-                    updateGroup(g.id, { skills: [...(g.skills ?? []), el.value.trim()] });
-                    el.value = "";
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
+    <div className="skill-chip-box">
+      {skills.map((s, i) => (
+        <span key={`${s}-${i}`} className="skill-chip">
+          {s}
+          <button type="button" aria-label={`Remove ${s}`} onClick={() => onChange(skills.filter((_, j) => j !== i))}>
+            ✕
+          </button>
+        </span>
       ))}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => set([...groups, { id: `g${Date.now()}`, name: "", skills: [] }])}
-          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.99]"
-        >
-          + Add group
-        </button>
-      </div>
+      <input
+        className="skill-chip-input"
+        placeholder={skills.length ? "Add another" : placeholder}
+        onKeyDown={(e) => {
+          const el = e.currentTarget;
+          if ((e.key === "Enter" || e.key === ",") && el.value.trim()) {
+            e.preventDefault();
+            if (add(el.value)) el.value = "";
+          } else if (e.key === "Backspace" && !el.value && skills.length) {
+            onChange(skills.slice(0, -1));
+          }
+        }}
+        onPaste={(e) => {
+          const text = e.clipboardData.getData("text");
+          if (/[,;\n|]/.test(text)) {
+            e.preventDefault();
+            add(text);
+          }
+        }}
+        onBlur={(e) => {
+          if (e.currentTarget.value.trim() && add(e.currentTarget.value)) e.currentTarget.value = "";
+        }}
+      />
     </div>
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <span className="mb-1.5 block text-xs font-medium text-stone-600">{children}</span>;
+export function SkillsForm() {
+  const { resume, dispatch } = useResume();
+  const set = (groups: SkillGroup[]) => dispatch({ type: "SET_SKILLS", groups });
+  const stored = resume.skills ?? [];
+  const flatList = groupsLookLikeItemList(stored);
+  const draftRef = useRef<SkillGroup>({ id: "draft-skill-group", name: "", skills: [] });
+  const groups: SkillGroup[] = stored.length === 0
+    ? [draftRef.current]
+    : flatList
+      ? [{ id: stored[0]?.id || "skills", name: "", skills: flattenSkillLabels(stored) }]
+      : stored;
+
+  const commit = (next: SkillGroup[]) => {
+    set(next.filter((g) => (g.name || "").trim() || (g.skills ?? []).some((s) => (s || "").trim())));
+  };
+
+  const updateGroup = (id: string, patch: Partial<SkillGroup>) =>
+    commit(groups.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+
+  const grouped = groups.length > 1 || groups.some((g) => (g.name || "").trim() && !/^skills?$/i.test(g.name));
+
+  return (
+    <div className="grid grid-cols-1 gap-3">
+      <p className="contents-hint" style={{ marginBottom: 0 }}>
+        Add skill names only, like attachments. Type a name and press Enter or comma. No Expert or Strong.
+      </p>
+      {groups.map((g) => (
+        <div key={g.id} className={grouped ? "desk-card desk-enter contents-skills" : "desk-card desk-enter p-2.5"}>
+          {grouped ? (
+            <Input
+              value={g.name}
+              onChange={(e) => updateGroup(g.id, { name: e.target.value })}
+              placeholder="Category, optional"
+              aria-label="Skill category"
+            />
+          ) : null}
+          <SkillChipInput
+            skills={g.skills ?? []}
+            onChange={(skills) => updateGroup(g.id, { skills })}
+            placeholder="Project Management, Excel, Power BI"
+          />
+          {grouped && stored.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => commit(groups.filter((x) => x.id !== g.id))}
+              className="rounded-md p-2 text-stone-400 transition hover:bg-amber-50 hover:text-amber-700"
+              title="Remove category"
+            >
+              ✕
+            </button>
+          ) : null}
+        </div>
+      ))}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => commit([...groups, { id: uid(), name: grouped ? "" : "Tools", skills: [] }])}
+          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-600 transition-[border-color,color,transform] duration-150 hover:border-stone-900 hover:text-stone-900 active:scale-[0.99]"
+        >
+          {grouped ? "+ Add category" : "+ Group into categories"}
+        </button>
+      </div>
+    </div>
+  );
 }

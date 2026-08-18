@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link2, Link2Off, Ruler } from "lucide-react";
+import { Link2, Link2Off } from "lucide-react";
 import { useResume } from "../store/resumeStore";
 import type { PageMargins, PageSize } from "../lib/types";
 import {
@@ -23,52 +23,20 @@ const PRESETS = [
   { key: "wide" as const, label: "Wide" },
 ];
 
-function Chip({
-  on,
-  children,
-  onClick,
-  title,
-}: {
-  on: boolean;
-  children: string;
-  onClick: () => void;
-  title?: string;
-}) {
+function Chip({ on, children, onClick, title }: { on: boolean; children: string; onClick: () => void; title?: string }) {
   return (
-    <button
-      type="button"
-      title={title}
-      onClick={onClick}
-      className={`rounded-sm border px-2.5 py-1.5 text-left text-xs font-medium transition ${
-        on ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"
-      }`}
-    >
+    <button type="button" title={title} onClick={onClick} className={`desk-chip${on ? " is-on" : ""}`}>
       {children}
     </button>
   );
 }
 
-function MmField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (n: number) => void;
-}) {
+function MmField({ label, title, value, onChange }: { label: string; title: string; value: number; onChange: (n: number) => void }) {
   return (
-    <label className="page-margin-field">
+    <label className="page-margin-field" title={title}>
       <span>{label}</span>
       <span className="page-margin-input">
-        <input
-          type="number"
-          min={MARGIN_MIN}
-          max={MARGIN_MAX}
-          step={1}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-        />
+        <input type="number" min={MARGIN_MIN} max={MARGIN_MAX} step={1} value={value} aria-label={`${title} margin in millimetres`} onChange={(e) => onChange(Number(e.target.value))} />
         <abbr title="millimetres">mm</abbr>
       </span>
     </label>
@@ -97,30 +65,15 @@ export function PageLayoutPanel() {
   };
 
   return (
-    <div className="mb-5">
-      <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-        <Ruler size={12} className="text-stone-500" /> Page layout
-      </p>
-
-      <div className="mb-3">
-        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Paper</p>
-        <div className="flex flex-wrap gap-1.5">
+    <div className="customize-stack">
+      <div className="customize-line">
+        <p className="customize-label">Paper</p>
+        <div className="customize-line-body">
           {SIZES.map((s) => (
-            <Chip
-              key={s.key}
-              on={pageSize === s.key}
-              title={s.hint}
-              onClick={() => dispatch({ type: "SET_THEME", theme: patchPageSize(t, s.key) })}
-            >
-              {`${s.label} · ${s.hint}`}
+            <Chip key={s.key} on={pageSize === s.key} title={s.hint} onClick={() => dispatch({ type: "SET_THEME", theme: patchPageSize(t, s.key) })}>
+              {s.label}
             </Chip>
           ))}
-        </div>
-      </div>
-
-      <div className="mb-3">
-        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Page limit</p>
-        <div className="flex flex-wrap gap-1.5">
           {([1, 2] as const).map((n) => (
             <Chip
               key={n}
@@ -133,10 +86,9 @@ export function PageLayoutPanel() {
           ))}
         </div>
       </div>
-
-      <div>
-        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Margins</p>
-        <div className="mb-3 flex flex-wrap gap-1.5">
+      <div className="customize-line">
+        <p className="customize-label">Margins</p>
+        <div className="customize-line-body">
           {PRESETS.map((p) => (
             <Chip
               key={p.key}
@@ -150,23 +102,10 @@ export function PageLayoutPanel() {
               {p.label}
             </Chip>
           ))}
-          {preset === "custom" ? (
-            <span className="rounded-sm border border-amber-600/40 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-900">Custom</span>
-          ) : null}
-        </div>
-
-        <div className="page-layout-map">
-          <MmField label="Top" value={margins.top} onChange={(n) => setSide("top", n)} />
-          <div className="page-layout-mid">
-            <MmField label="Left" value={margins.left} onChange={(n) => setSide("left", n)} />
-            <div className={`page-layout-sheet${pageSize === "letter" ? " is-letter" : ""}`} aria-hidden>
-              <span />
-              <span />
-              <span />
-            </div>
-            <MmField label="Right" value={margins.right} onChange={(n) => setSide("right", n)} />
-          </div>
-          <MmField label="Bottom" value={margins.bottom} onChange={(n) => setSide("bottom", n)} />
+          <MmField label="T" title="Top" value={margins.top} onChange={(n) => setSide("top", n)} />
+          <MmField label="L" title="Left" value={margins.left} onChange={(n) => setSide("left", n)} />
+          <MmField label="R" title="Right" value={margins.right} onChange={(n) => setSide("right", n)} />
+          <MmField label="B" title="Bottom" value={margins.bottom} onChange={(n) => setSide("bottom", n)} />
           <button
             type="button"
             className={`page-layout-link${linked ? " is-on" : ""}`}
@@ -178,12 +117,9 @@ export function PageLayoutPanel() {
             title={linked ? "All sides use the same margin" : "Set each side separately"}
           >
             {linked ? <Link2 size={13} /> : <Link2Off size={13} />}
-            {linked ? "Same on all sides" : "Sides unlocked"}
+            <span>{linked ? "Linked" : "Unlock"}</span>
           </button>
         </div>
-        <p className="mt-2 text-[11px] leading-snug text-stone-500">
-          Live on Classic, ATS Safe, and other text layouts. Full-bleed designed templates keep their own edge.
-        </p>
       </div>
     </div>
   );

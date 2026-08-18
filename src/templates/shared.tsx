@@ -5,6 +5,7 @@ import { formatRange } from "../lib/date";
 import { getResumeType } from "../lib/resumeTypes";
 import { t } from "../lib/safe";
 import { sanitizeAccent } from "../lib/sanitize";
+import { hasRenderableSkills } from "../lib/skillsDisplay";
 import { contactItems, safeHref, type ContactItem } from "../lib/href";
 import { marginsForTheme, sheetPaddingCss, sheetPadVars, sheetPaddingX } from "../lib/pageLayout";
 import { computePageOffsets, offsetsEqual, paginateClassName, PAGE_STACK_GAP } from "./paginate";
@@ -540,7 +541,7 @@ export function shouldRender(section: string, resume: Resume): boolean {
     case "education":
       return (resume.education ?? []).length > 0;
     case "skills":
-      return (resume.skills ?? []).some((g) => Array.isArray(g?.skills) && g.skills.length > 0);
+      return hasRenderableSkills(resume.skills);
     case "projects":
       return (resume.projects ?? []).length > 0;
     case "certifications":

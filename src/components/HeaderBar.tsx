@@ -1,21 +1,19 @@
 import { BrandMark } from "./BrandMark";
-import { FileDown, FileText, Palette, Type, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2, ListOrdered, ChevronDown, MoreHorizontal } from "lucide-react";
+import { FileDown, FileText, Palette, LayoutGrid, ShieldCheck, RotateCcw, EyeOff, Sparkles, Upload, Loader2, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useResume } from "../store/resumeStore";
 import { exportPdf } from "../lib/pdf";
-import { ACCENT_PALETTE, FONT_PAIRS } from "../lib/sampleData";
-import { RESUME_TYPES, getResumeType } from "../lib/resumeTypes";
-import type { ResumeTypeKey } from "../lib/types";
 import { ImportDialog } from "./ImportDialog";
 import { TemplateGallery } from "./TemplateGallery";
-import { TemplateStepper } from "./TemplateStepper";
+import { TemplateStepper, OPEN_TEMPLATES_EVENT } from "./TemplateStepper";
 import { AtsScoreRing } from "./AtsScoreRing";
 import { computeAtsScore, improveAts } from "../lib/atsScore";
 import { themePatchForAtsSafe } from "../templates/registry";
 import { patchPageSize } from "../lib/pageLayout";
-import { PageLayoutPanel } from "./PageLayoutPanel";
-import { TypePanel } from "./TypePanel";
+import { CustomizeDesk } from "./CustomizeDesk";
+
+type HeaderPanel = "template" | "customize" | "tips";
 
 export function HeaderBar({
   onReset,
@@ -30,16 +28,38 @@ export function HeaderBar({
 }) {
   const { resume, dispatch } = useResume();
   const t = resume.theme;
-  const [panel, setPanel] = useState<null | "template" | "customize">(startInGallery ? "template" : null);
-  const [showChecklist, setShowChecklist] = useState(false);
+  const [panel, setPanel] = useState<HeaderPanel | null>(startInGallery ? "template" : null);
   const [showImport, setShowImport] = useState(false);
   const [exportingWord, setExportingWord] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
-  const [colorsOpen, setColorsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
   const issueName = (resume.contact?.fullName || "").trim() || "Untitled resume";
   const atsScore = computeAtsScore(resume);
+
+  const togglePanel = (next: HeaderPanel) => {
+    setShowImport(false);
+    setPanel((p) => (p === next ? null : next));
+  };
+
+  const openImport = () => {
+    setPanel(null);
+    setShowImport(true);
+  };
+
+  const openTailor = () => {
+    setPanel(null);
+    onOpenTailor();
+  };
+
+  useEffect(() => {
+    const onOpen = () => {
+      setShowImport(false);
+      setPanel("template");
+    };
+    window.addEventListener(OPEN_TEMPLATES_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_TEMPLATES_EVENT, onOpen);
+  }, []);
 
   useEffect(() => {
     if (!moreOpen) return;
@@ -103,7 +123,8 @@ export function HeaderBar({
         <nav className="ml-1 hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto sm:flex xl:gap-1">
           <button
             type="button"
-            onClick={() => setPanel(panel === "template" ? null : "template")}
+            onClick={() => togglePanel("template")}
+            aria-expanded={panel === "template"}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium transition ${
               panel === "template" ? "bg-amber-50 text-amber-700" : "text-stone-500 hover:text-stone-900"
             }`}
@@ -112,19 +133,27 @@ export function HeaderBar({
           </button>
           <button
             type="button"
-            onClick={() => setPanel(panel === "customize" ? null : "customize")}
+            onClick={() => togglePanel("customize")}
+            aria-expanded={panel === "customize"}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium transition ${
               panel === "customize" ? "bg-amber-50 text-amber-700" : "text-stone-500 hover:text-stone-900"
             }`}
           >
             <Palette size={15} /> <span className="hidden sm:inline">Customize</span>
           </button>
-          <button type="button" onClick={() => setShowChecklist((s) => !s)} className={`inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium transition ${showChecklist ? "bg-amber-50 text-amber-700" : "text-stone-500 hover:text-stone-900"}`}>
+          <button
+            type="button"
+            onClick={() => togglePanel("tips")}
+            aria-expanded={panel === "tips"}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium transition ${
+              panel === "tips" ? "bg-amber-50 text-amber-700" : "text-stone-500 hover:text-stone-900"
+            }`}
+          >
             <Sparkles size={15} /> <span className="hidden lg:inline">Writing tips</span>
           </button>
           <button
             type="button"
-            onClick={onOpenTailor}
+            onClick={openTailor}
             title="Tailor to a job"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium text-stone-500 transition hover:text-stone-900"
           >
@@ -132,7 +161,7 @@ export function HeaderBar({
           </button>
           <button
             type="button"
-            onClick={() => setShowImport(true)}
+            onClick={openImport}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-medium text-stone-500 transition hover:text-stone-900"
           >
             <Upload size={15} /> <span className="hidden lg:inline">Import CV</span>
@@ -144,7 +173,7 @@ export function HeaderBar({
             type="button"
             onClick={() => {
               setMoreOpen(false);
-              setShowImport(true);
+              openImport();
             }}
             className="inline-flex min-h-10 min-w-10 items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-stone-200 hover:text-stone-900 sm:hidden"
             title="Import CV"
@@ -229,11 +258,11 @@ export function HeaderBar({
               <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 overflow-hidden rounded-sm border border-stone-200 bg-stone-50 py-1 shadow-lg">
                 {(
                   [
-                    { label: "Template", run: () => setPanel(panel === "template" ? null : "template") },
-                    { label: "Customize", run: () => setPanel(panel === "customize" ? null : "customize") },
-                    { label: "Writing tips", run: () => setShowChecklist((s) => !s) },
-                    { label: "Tailor to a job", run: onOpenTailor },
-                    { label: "Import CV", run: () => setShowImport(true) },
+                    { label: "Template", run: () => togglePanel("template") },
+                    { label: "Customize", run: () => togglePanel("customize") },
+                    { label: "Writing tips", run: () => togglePanel("tips") },
+                    { label: "Tailor to a job", run: openTailor },
+                    { label: "Import CV", run: openImport },
                     { label: exportingWord ? "Exporting Word…" : "Export Word", run: () => void exportWord() },
                     { label: "ATS Compatibility Score", run: () => onOpenNotes?.() },
                     { label: "Improve ATS", run: applyImprove },
@@ -272,128 +301,13 @@ export function HeaderBar({
 
       {panel === "template" ? <TemplateGallery onClose={() => setPanel(null)} /> : null}
 
-      {panel === "customize" ? (
-        <div className="max-h-[min(58dvh,32rem)] overflow-y-auto border-t border-stone-200 bg-stone-50 px-4 py-4 sm:px-6">
-          <div className="mb-5">
-            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-              <ListOrdered size={12} className="text-stone-500" /> Resume format
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {RESUME_TYPES.map((fmt) => {
-                const on = resume.meta.type === fmt.key;
-                return (
-                  <button
-                    key={fmt.key}
-                    type="button"
-                    title={fmt.bestFor}
-                    onClick={() => dispatch({ type: "SET_TYPE", value: fmt.key })}
-                    className={`rounded-sm border px-2.5 py-1.5 text-left text-xs font-medium transition ${
-                      on ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"
-                    }`}
-                  >
-                    {FORMAT_CHIP[fmt.key]}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="folio mt-2.5 text-stone-500">{getResumeType(resume.meta.type).structure.join(" · ")}</p>
-          </div>
-          <PageLayoutPanel />
-          <TypePanel />
-          <div className="mb-5 border border-stone-200">
-            <button
-              type="button"
-              onClick={() => setColorsOpen((o) => !o)}
-              className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-stone-200"
-            >
-              <Palette size={12} className="text-stone-500" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">Accent color</span>
-              <span className="ml-auto flex items-center gap-2">
-                <span
-                  className="h-4 w-4 rounded-full border border-stone-300"
-                  style={{ background: t.accent }}
-                  aria-hidden
-                />
-                <span className="folio hidden text-stone-500 sm:inline">
-                  {ACCENT_PALETTE.find((c) => c.value === t.accent)?.name ?? "Custom"}
-                </span>
-                <ChevronDown size={14} className={`text-stone-400 transition ${colorsOpen ? "rotate-180" : ""}`} />
-              </span>
-            </button>
-            {colorsOpen ? (
-              <div className="border-t border-stone-200 px-3 py-3">
-                <div className="grid grid-cols-6 gap-2.5 sm:grid-cols-9">
-                  {ACCENT_PALETTE.map((c) => {
-                    const on = t.accent === c.value;
-                    return (
-                      <button
-                        key={c.value}
-                        type="button"
-                        title={c.name}
-                        onClick={() => dispatch({ type: "SET_THEME", theme: { accent: c.value } })}
-                        className="flex items-center justify-center"
-                      >
-                        <span
-                          className={`h-7 w-7 rounded-full transition ${
-                            on ? "ring-2 ring-amber-600 ring-offset-2 ring-offset-stone-50" : "hover:scale-105"
-                          }`}
-                          style={{ background: c.value }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div>
-            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-              <Type size={12} className="text-stone-500" /> Font pairing
-            </p>
-            <div className="flex flex-col gap-1.5">
-              {FONT_PAIRS.map((f) => (
-                <button
-                  key={f.key}
-                  type="button"
-                  onClick={() => dispatch({ type: "SET_THEME", theme: { fontPair: f.key } })}
-                  className={`flex items-center justify-between rounded-sm border px-3 py-1.5 text-left text-xs transition ${t.fontPair === f.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-200"}`}
-                >
-                  <span style={{ fontFamily: f.display }}>{f.label}</span>
-                  <span className="text-[10px] text-stone-500">{f.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="mt-5">
-            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-500">Citation style</p>
-            <select
-              value={t.citationFormat ?? "apa"}
-              onChange={(e) => dispatch({ type: "SET_THEME", theme: { citationFormat: e.target.value as "apa" | "mla" | "chicago" } })}
-              className="w-full max-w-xs rounded-sm border border-stone-300 bg-stone-100 px-2 py-1.5 text-xs text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
-            >
-              <option value="apa">APA</option>
-              <option value="mla">MLA</option>
-              <option value="chicago">Chicago</option>
-            </select>
-          </div>
-        </div>
-      ) : null}
+      {panel === "customize" ? <CustomizeDesk /> : null}
 
-      {showChecklist ? <WritingTips onClose={() => setShowChecklist(false)} /> : null}
+      {panel === "tips" ? <WritingTips onClose={() => setPanel(null)} /> : null}
       {showImport ? <ImportDialog onClose={() => setShowImport(false)} /> : null}
     </header>
   );
 }
-
-const FORMAT_CHIP: Record<ResumeTypeKey, string> = {
-  combination: "Combination",
-  chronological: "Chronological",
-  functional: "Skills-based",
-  executive: "Executive",
-  "entry-level": "First job",
-  creative: "Creative",
-  cv: "Academic CV",
-};
 
 function WritingTips({ onClose }: { onClose: () => void }) {
   return (

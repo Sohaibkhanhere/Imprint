@@ -11,6 +11,7 @@ import { formatRange, exportStem, cleanUrl } from "./date";
 import { effectiveSections, headingFor, citePublication } from "../templates/shared";
 import { hydrateResume } from "./storage";
 import { t } from "./safe";
+import { displaySkillGroups } from "./skillsDisplay";
 import { marginsForTheme, mmToTwip } from "./pageLayout";
 
 export { Packer };
@@ -121,13 +122,11 @@ function buildSections(resume: Resume, accent: string, right: number): (Paragrap
         });
         break;
       case "skills":
-        resume.skills.forEach((g) => {
-          const list = g.skills.filter((s) => s.trim()).map((s) => s.trim());
-          if (!list.length) return;
+        displaySkillGroups(resume.skills).forEach((g) => {
           out.push(
             new Paragraph({
               spacing: { after: 40 },
-              children: [new TextRun({ text: (g.name ? g.name + ": " : "") + list.join(", "), size: 21 })],
+              children: [new TextRun({ text: (g.name ? g.name + ": " : "") + g.items.join(", "), size: 21 })],
             }),
           );
         });

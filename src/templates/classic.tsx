@@ -1,5 +1,6 @@
 import type { Resume } from "../lib/types";
 import { Sheet, SectionHead, Bullets, Dates, ExtraDetails, ContactLine, SheetHref, safeContact, headingFor, effectiveSections, citePublication } from "./shared";
+import { displaySkillGroups } from "../lib/skillsDisplay";
 import { cleanUrl } from "../lib/date";
 
 function Header({ resume }: { resume: Resume }) {
@@ -97,15 +98,17 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             return (
               <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("skills", resume)} />
-                <div style={{ display: "grid", gap: "var(--s1, 7px)" }}>
-                  {r.skills
-                    .filter((g) => g.skills.length > 0)
-                    .map((g) => (
-                      <div key={g.id} className="c-org" style={{ display: "flex", gap: 8 }}>
-                        <strong style={{ flexShrink: 0, color: "#3a362f" }}>{g.name}:</strong>
-                        <span style={{ color: "#33312b" }}>{g.skills.join(", ")}</span>
-                      </div>
-                    ))}
+                <div className="t-skillgroups">
+                  {displaySkillGroups(r.skills).map((g) => (
+                    <div key={g.id} className={g.name ? "t-skillgroup" : "t-skillgroup t-skillgroup-cloud"}>
+                      {g.name ? <span className="t-skillgroup-name">{g.name}</span> : null}
+                      <span className="t-chips">
+                        {g.items.map((item, i) => (
+                          <span key={`${g.id}-${i}`} className="t-chip">{item}</span>
+                        ))}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </section>
             );

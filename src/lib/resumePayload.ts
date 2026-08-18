@@ -1,6 +1,7 @@
 import type { Resume } from "./types";
 import { hydrateResume } from "./storage";
 import { formatRange } from "./date";
+import { displaySkillGroups, hasRenderableSkills } from "./skillsDisplay";
 
 const START = "%QD-RESUME-1";
 const END = "%QD-RESUME-END";
@@ -94,12 +95,10 @@ export function resumeToLabeledText(resume: Resume): string {
     }
   }
 
-  if (resume.skills.some((g) => (g.skills ?? []).length)) {
+  if (hasRenderableSkills(resume.skills)) {
     push("Skills");
-    for (const g of resume.skills) {
-      const items = (g.skills ?? []).filter(Boolean);
-      if (!items.length) continue;
-      push(g.name ? `${g.name}: ${items.join(", ")}` : items.join(", "));
+    for (const g of displaySkillGroups(resume.skills)) {
+      push(g.name ? `${g.name}: ${g.items.join(", ")}` : g.items.join(", "));
     }
   }
 

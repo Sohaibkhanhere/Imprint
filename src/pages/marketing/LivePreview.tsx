@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { PAGE_DIMS } from "../../templates/shared";
 import { AtsSafeTemplate } from "../../templates/ats-safe";
 import { GiltTemplate, StreamTemplate } from "../../templates/html-pack";
@@ -10,7 +11,11 @@ export function LivePreview() {
   const resume = useMemo(() => createDemoResume(), []);
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <SheetCard label="ATS Safe layout" note="Parser sheet, same sample person">
+      <SheetCard
+        to="/app?template=classic&atsSafe=1"
+        label="ATS Safe layout"
+        note="Parser sheet, same sample person"
+      >
         <AtsSafeTemplate
           resume={{
             ...resume,
@@ -18,7 +23,11 @@ export function LivePreview() {
           }}
         />
       </SheetCard>
-      <SheetCard label="Designed layout" note="Gold Ring template, same content">
+      <SheetCard
+        to="/app?template=gilt"
+        label="Designed layout"
+        note="Gold Ring template, same content"
+      >
         <GiltTemplate
           resume={{
             ...resume,
@@ -33,7 +42,11 @@ export function LivePreview() {
 export function NetflixFeatured() {
   const resume = useMemo(() => createDemoResume(), []);
   return (
-    <SheetCard label="Netflix layout" note="Black page, red marks, poster photo. Same sample person.">
+    <SheetCard
+      to="/app?template=stream"
+      label="Netflix layout"
+      note="Black page, red marks, poster photo. Same sample person."
+    >
       <StreamTemplate
         resume={{
           ...resume,
@@ -49,11 +62,13 @@ function SheetCard({
   label,
   note,
   children,
+  to,
   className = "",
 }: {
   label: string;
   note: string;
   children: ReactNode;
+  to?: string;
   className?: string;
 }) {
   const page = PAGE_DIMS.a4;
@@ -72,11 +87,11 @@ function SheetCard({
     return () => ro.disconnect();
   }, [page.width]);
 
-  return (
-    <figure className={`min-w-0 ${className}`.trim()}>
+  const card = (
+    <>
       <div
         ref={box}
-        className="relative overflow-hidden rounded-sm border border-stone-300 bg-white"
+        className="relative overflow-hidden rounded-sm border border-stone-300 bg-white transition-[border-color]"
         style={{ aspectRatio: `${page.width} / ${page.height}`, contain: "layout paint" }}
       >
         {scale ? (
@@ -98,6 +113,22 @@ function SheetCard({
         <p className="text-sm font-semibold text-stone-900">{label}</p>
         <p className="text-xs text-stone-500">{note}</p>
       </figcaption>
+    </>
+  );
+
+  return (
+    <figure className={`min-w-0 ${className}`.trim()}>
+      {to ? (
+        <Link
+          to={to}
+          className="block rounded-sm outline-offset-4 hover:[&>div]:border-amber-500 focus-visible:[&>div]:border-amber-500"
+          aria-label={`Open ${label} in the builder`}
+        >
+          {card}
+        </Link>
+      ) : (
+        card
+      )}
     </figure>
   );
 }

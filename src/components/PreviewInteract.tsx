@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronUp, GripVertical, Pencil } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Pencil } from "lucide-react";
 import { useResume } from "../store/resumeStore";
-import type { ID, ListSectionKey, SectionKey } from "../lib/types";
+import type { ID, ListSectionKey, Resume, SectionKey } from "../lib/types";
+import { effectiveSections } from "../templates/shared";
 
 export const PREVIEW_FOCUS_EVENT = "rs:focus-section";
 
@@ -69,8 +70,12 @@ const FIELD_LABEL: Record<string, string> = {
   objective: "Objective",
 };
 
-const GRIP = 20;
+const GRIP_W = 18;
+const GRIP_H = 28;
+const GRIP_GAP = 8;
 const DRAG_THRESHOLD = 5;
+const HOVER_HIDE_MS = 220;
+const FLIP_MS = 200;
 
 type FieldKey = "fullName" | "title" | "summary" | "objective";
 
@@ -91,6 +96,11 @@ type DragState = {
   section: SectionKey;
   entryId?: ID;
   before: string | null;
+  y: number;
+  left: number;
+  width: number;
+  height: number;
+  grab: number;
 };
 
 function isSectionKey(v: string): v is SectionKey {
@@ -193,6 +203,19 @@ function canDrag(hit: Hit) {
   return true;
 }
 
+function gripBox(hit: Hit) {
+  return {
+    left: Math.max(2, hit.left - GRIP_W - GRIP_GAP),
+    top: hit.top + 3,
+    width: GRIP_W,
+    height: GRIP_H,
+  };
+}
+
+function visibleOrder(resume: ReturnType<typeof useResume>["resume"]): SectionKey[] {
+  return (effectiveSections(resume) as SectionKey[]).filter((k) => k !== "contact");
+}
+
 function insertBeforeSection(hits: Hit[], dragged: SectionKey, y: number): SectionKey | null {
   const others = hits
     .filter((h) => h.kind === "section" && h.section !== "contact" && h.section !== dragged)
@@ -228,8 +251,52 @@ function dropLine(hits: Hit[], drag: DragState): { left: number; top: number; wi
   return last ? { left: last.left, top: last.top + last.height, width: last.width } : null;
 }
 
-function blockLabel(hit: Hit) {
-  if (hit.kind === "entry") return ENTRY_LABEL[hit.section] ?? "Entry";
+function pickText(...parts: (string | undefined)[]) {
+  for (const p of parts) {
+    const s = (p || "").trim();
+    if (s) return s;
+  }
+  return "";
+}
+
+function entryTitle(resume: Resume, section: SectionKey, entryId?: ID): string {
+  const fallback = ENTRY_LABEL[section] ?? "Entry";
+  if (!entryId || !isListKey(section)) return fallback;
+  const list = (resume[section] as { id: ID }[] | undefined) ?? [];
+  const item = list.find((i) => i.id === entryId) as Record<string, string> | undefined;
+  if (!item) return fallback;
+  switch (section) {
+    case "experience":
+      return pickText(item.role, item.company) || fallback;
+    case "education": {
+      const deg = [item.degree, item.field].filter((x) => (x || "").trim()).join(", ");
+      return pickText(deg, item.institution) || fallback;
+    }
+    case "projects":
+    case "certifications":
+    case "languages":
+    case "affiliations":
+    case "references":
+      return pickText(item.name) || fallback;
+    case "volunteer":
+      return pickText(item.title, item.org) || fallback;
+    case "publications":
+    case "awards":
+    case "presentations":
+      return pickText(item.title) || fallback;
+    case "teaching":
+      return pickText(item.course, item.role) || fallback;
+    case "grants":
+      return pickText(item.name) || fallback;
+    case "extras":
+      return pickText(item.label) || fallback;
+    default:
+      return fallback;
+  }
+}
+
+function blockLabel(hit: Hit, resume: Resume) {
+  if (hit.kind === "entry") return entryTitle(resume, hit.section, hit.entryId);
   return SECTION_LABEL[hit.section] ?? "Section";
 }
 
@@ -242,19 +309,40 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
   const [pinBar, setPinBar] = useState(false);
   const [edit, setEdit] = useState<{ field: FieldKey; hit: Hit } | null>(null);
   const [draft, setDraft] = useState("");
-  const dragOrigin = useRef<{ x: number; y: number; hit: Hit } | null>(null);
+  const dragOrigin = useRef<{ x: number; y: number; hit: Hit; grab: number } | null>(null);
   const dragged = useRef(false);
   const dragRef = useRef<DragState | null>(null);
   const hitsRef = useRef(hits);
   const editRef = useRef(edit);
   const draftRef = useRef(draft);
   const resumeRef = useRef(resume);
+  const flipFrom = useRef<Map<string, number> | null>(null);
+  const flipKind = useRef<"section" | "entry" | null>(null);
+  const flipLock = useRef(false);
+  const hideTimer = useRef(0);
+  const pinBarRef = useRef(false);
+  const [flipTick, setFlipTick] = useState(0);
+  const [flipping, setFlipping] = useState(false);
   const listeners = useRef<{ move: (e: PointerEvent) => void; up: () => void } | null>(null);
   dragRef.current = drag;
   hitsRef.current = hits;
   editRef.current = edit;
   draftRef.current = draft;
   resumeRef.current = resume;
+  pinBarRef.current = pinBar;
+
+  const keepHover = (id: string | null) => {
+    window.clearTimeout(hideTimer.current);
+    setHover(id);
+  };
+
+  const scheduleHideHover = () => {
+    window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => {
+      if (pinBarRef.current || dragRef.current) return;
+      setHover(null);
+    }, HOVER_HIDE_MS);
+  };
 
   useLayoutEffect(() => {
     const host = hostRef.current;
@@ -262,8 +350,10 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     let timer = 0;
     let raf = 0;
     const measure = () => {
+      if (flipLock.current) return;
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
+        if (flipLock.current) return;
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => setHits(collectHits(host)));
       }, 32);
@@ -283,6 +373,64 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     };
   }, [hostRef, resume.theme.template, resume.theme.pageSize, resume.theme.maxPages]);
 
+  useLayoutEffect(() => {
+    const first = flipFrom.current;
+    const kind = flipKind.current;
+    if (!first || !kind) return;
+    flipFrom.current = null;
+    flipKind.current = null;
+    const host = hostRef.current;
+    if (!host) return;
+    const sel = kind === "entry" ? "[data-rs-entry]" : "[data-rs-section]";
+    const root = host.querySelectorAll<HTMLElement>(".resume-sheet:not(.resume-sheet-measure)");
+    const anims: Animation[] = [];
+    flipLock.current = true;
+    setFlipping(true);
+    for (const sheet of root) {
+      for (const node of sheet.querySelectorAll<HTMLElement>(sel)) {
+        const raw = kind === "entry" ? node.getAttribute("data-rs-entry") : node.getAttribute("data-rs-section");
+        if (!raw) continue;
+        const key = kind === "entry" ? `e:${raw}` : `s:${raw}`;
+        const prevTop = first.get(key);
+        if (prevTop == null) continue;
+        const dy = prevTop - node.getBoundingClientRect().top;
+        if (Math.abs(dy) < 2) continue;
+        node.getAnimations().forEach((a) => a.cancel());
+        anims.push(
+          node.animate([{ transform: `translateY(${dy}px)` }, { transform: "translateY(0px)" }], {
+            duration: FLIP_MS,
+            easing: "cubic-bezier(0.23, 1, 0.32, 1)",
+          }),
+        );
+      }
+    }
+    const unlock = () => {
+      flipLock.current = false;
+      setFlipping(false);
+      setHits(collectHits(host));
+    };
+    if (!anims.length) {
+      unlock();
+      return;
+    }
+    void Promise.all(anims.map((a) => a.finished.catch(() => undefined))).then(unlock);
+  }, [flipTick, hostRef]);
+
+  const captureFlip = (kind: "section" | "entry") => {
+    const host = hostRef.current;
+    if (!host) return;
+    const map = new Map<string, number>();
+    const sel = kind === "entry" ? "[data-rs-entry]" : "[data-rs-section]";
+    for (const sheet of host.querySelectorAll<HTMLElement>(".resume-sheet:not(.resume-sheet-measure)")) {
+      for (const node of sheet.querySelectorAll<HTMLElement>(sel)) {
+        const raw = kind === "entry" ? node.getAttribute("data-rs-entry") : node.getAttribute("data-rs-section");
+        if (!raw) continue;
+        map.set(kind === "entry" ? `e:${raw}` : `s:${raw}`, node.getBoundingClientRect().top);
+      }
+    }
+    flipFrom.current = map;
+    flipKind.current = kind;
+  };
   const hostEl = hostRef.current;
   const barHost = hostEl?.getBoundingClientRect();
   const sx = barHost && hostEl ? barHost.width / Math.max(1, hostEl.offsetWidth) : 1;
@@ -312,14 +460,17 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
 
   const applyDrop = (state: DragState) => {
     const live = resumeRef.current;
+    captureFlip(state.kind);
     if (state.kind === "section") {
       dispatch({ type: "SET_ORDER", order: moveKey(live.sectionOrder, state.section, state.before as SectionKey | null) });
+      setFlipTick((n) => n + 1);
       return;
     }
     if (!state.entryId || !isListKey(state.section)) return;
     const key = state.section;
     const list = (live[key] as { id: ID }[]) ?? [];
     dispatch({ type: "SET_SECTION", key: key as Exclude<ListSectionKey, "skills">, items: moveItem(list, state.entryId, state.before) });
+    setFlipTick((n) => n + 1);
   };
 
   const stopDragListeners = () => {
@@ -354,16 +505,24 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     const list = hitsRef.current;
     const { y } = localPoint(e);
     const hit = start.hit;
+    const base = {
+      y,
+      left: hit.left,
+      width: hit.width,
+      height: hit.height,
+      grab: start.grab,
+    };
     if (hit.kind === "entry" && hit.entryId) {
       setDrag({
         kind: "entry",
         section: hit.section,
         entryId: hit.entryId,
         before: insertBeforeEntry(list, hit.section, hit.entryId, y),
+        ...base,
       });
       return;
     }
-    setDrag({ kind: "section", section: hit.section, before: insertBeforeSection(list, hit.section, y) });
+    setDrag({ kind: "section", section: hit.section, before: insertBeforeSection(list, hit.section, y), ...base });
   };
 
   const startDrag = (e: React.PointerEvent, hit: Hit) => {
@@ -371,7 +530,7 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     e.preventDefault();
     e.stopPropagation();
     stopDragListeners();
-    dragOrigin.current = { x: e.clientX, y: e.clientY, hit };
+    dragOrigin.current = { x: e.clientX, y: e.clientY, hit, grab: localPoint(e).y - hit.top };
     dragged.current = false;
     setSelected(hit.id);
     setEdit(null);
@@ -391,7 +550,7 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
 
   const nudgeSection = (section: SectionKey, dir: -1 | 1) => {
     if (section === "contact") return;
-    const order = resume.sectionOrder.filter((k): k is Exclude<SectionKey, "contact"> => k !== "contact");
+    const order = visibleOrder(resume);
     const idx = order.indexOf(section);
     const to = idx + dir;
     if (idx < 0 || to < 0 || to >= order.length) return;
@@ -399,8 +558,10 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     const from = next.indexOf(section);
     const swap = next.indexOf(order[to]);
     if (from < 0 || swap < 0) return;
+    captureFlip("section");
     [next[from], next[swap]] = [next[swap], next[from]];
     dispatch({ type: "SET_ORDER", order: next });
+    setFlipTick((n) => n + 1);
   };
 
   const nudgeEntry = (section: SectionKey, id: ID, dir: -1 | 1) => {
@@ -409,8 +570,10 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     const idx = list.findIndex((i) => i.id === id);
     const to = idx + dir;
     if (idx < 0 || to < 0 || to >= list.length) return;
+    captureFlip("entry");
     [list[idx], list[to]] = [list[to], list[idx]];
     dispatch({ type: "SET_SECTION", key: section as Exclude<ListSectionKey, "skills">, items: list });
+    setFlipTick((n) => n + 1);
   };
 
   useEffect(() => {
@@ -428,17 +591,24 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
   }, []);
 
   useEffect(() => {
-    if (!edit) return;
     const onDown = (e: PointerEvent) => {
+      if (dragRef.current) return;
       const node = e.target as Element | null;
-      if (node?.closest?.(".preview-edit-pop")) return;
-      commitEdit();
+      if (node?.closest?.(".preview-grip, .preview-field, .preview-edit-bar, .preview-edit-pop")) return;
+      if (editRef.current) commitEdit();
+      window.clearTimeout(hideTimer.current);
+      setSelected(null);
+      setHover(null);
+      setPinBar(false);
     };
     window.addEventListener("pointerdown", onDown);
     return () => window.removeEventListener("pointerdown", onDown);
-  }, [edit]);
+  }, []);
 
-  useEffect(() => () => stopDragListeners(), []);
+  useEffect(() => () => {
+    stopDragListeners();
+    window.clearTimeout(hideTimer.current);
+  }, []);
 
   const activeId = hover || selected;
   const activeHit = hits.find((h) => h.id === activeId) ?? null;
@@ -463,10 +633,10 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
 
   const movables = hits.filter((h) => canDrag(h));
   const fields = hits.filter((h) => h.kind === "field");
-  const showToolbar = Boolean((hover || selected || pinBar) && glow && canDrag(glow) && !edit && !drag);
+  const showToolbar = Boolean((hover || selected || pinBar) && glow && canDrag(glow) && !edit && !drag && !flipping);
   const barStyle: CSSProperties | undefined =
     showToolbar && glow && barHost
-      ? { left: barHost.left + glow.left * sx, top: Math.max(8, barHost.top + glow.top * sy - 42) }
+      ? { left: barHost.left + glow.left * sx, top: Math.max(8, barHost.top + glow.top * sy - 40) }
       : undefined;
   const popStyle: CSSProperties | undefined =
     edit && barHost
@@ -482,37 +652,41 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
     if (drag) return;
     const to = e.relatedTarget as Element | null;
     if (to?.closest?.(".preview-edit-bar, .preview-edit-pop")) return;
-    setHover(null);
+    scheduleHideHover();
   };
 
+  const sections = visibleOrder(resume);
+  const sectionIdx = glow ? sections.indexOf(glow.section) : -1;
+  const entryList =
+    glow?.kind === "entry" && isListKey(glow.section) ? ((resume[glow.section] as { id: ID }[]) ?? []) : [];
+  const entryIdx = glow?.entryId ? entryList.findIndex((i) => i.id === glow.entryId) : -1;
+
   return (
-    <div className={`preview-interact no-print${drag ? " is-dragging" : ""}`} onPointerLeave={leaveOverlay}>
-      {glow ? (
+    <div className={`preview-interact no-print${drag ? " is-dragging" : ""}${flipping ? " is-flipping" : ""}`} onPointerLeave={leaveOverlay}>
+      {glow && !flipping ? (
         <div
           className={`preview-glow${drag ? " is-drag" : glow.kind === "entry" ? " is-entry" : ""}`}
           style={{ left: glow.left, top: glow.top, width: glow.width, height: glow.height }}
         />
       ) : null}
 
-      {movables.map((hit) => (
+      {movables.map((hit) => {
+        const box = gripBox(hit);
+        return (
         <button
           key={`g-${hit.id}`}
           type="button"
           className={`preview-grip${gripOn(hit) ? " is-on" : ""}${hit.kind === "entry" ? " is-entry" : ""}`}
-          style={{
-            left: Math.max(0, hit.left - (hit.kind === "entry" ? 2 : 8)),
-            top: hit.top,
-            width: GRIP,
-            height: Math.max(hit.height, 28),
-          }}
-          title={`Move ${blockLabel(hit)}`}
-          aria-label={`Move ${blockLabel(hit)}`}
-          onPointerEnter={() => setHover(hit.id)}
+          style={box}
+          title={`Move ${blockLabel(hit, resume)}`}
+          aria-label={`Move ${blockLabel(hit, resume)}`}
+          onPointerEnter={() => keepHover(hit.id)}
           onPointerDown={(e) => startDrag(e, hit)}
         >
           <GripVertical size={13} strokeWidth={2.2} />
         </button>
-      ))}
+        );
+      })}
 
       {fields.map((hit) => {
         const inset = hit.section === "contact" ? 0 : 16;
@@ -529,7 +703,7 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
             }}
             title={`Edit ${FIELD_LABEL[hit.field ?? ""] ?? "text"}`}
             aria-label={`Edit ${FIELD_LABEL[hit.field ?? ""] ?? "text"}`}
-            onPointerEnter={() => setHover(hit.id)}
+            onPointerEnter={() => keepHover(hit.id)}
             onClick={() => openField(hit)}
           />
         );
@@ -541,34 +715,50 @@ export function PreviewInteract({ hostRef }: { hostRef: React.RefObject<HTMLDivE
         </div>
       ) : null}
 
+      {drag && dragged.current ? (
+        <div
+          className="preview-ghost"
+          style={{
+            width: drag.width,
+            height: Math.min(drag.height, 96),
+            transform: `translate3d(${drag.left}px, ${Math.max(0, drag.y - drag.grab)}px, 0)`,
+          }}
+        >
+          <span>{drag.kind === "entry" ? entryTitle(resume, drag.section, drag.entryId) : SECTION_LABEL[drag.section] ?? "Section"}</span>
+        </div>
+      ) : null}
+
       {barStyle && glow && typeof document !== "undefined"
         ? createPortal(
             <div
               className="preview-edit-bar no-print"
               style={barStyle}
-              onPointerEnter={() => setPinBar(true)}
+              onPointerEnter={() => {
+                window.clearTimeout(hideTimer.current);
+                setPinBar(true);
+              }}
               onPointerLeave={() => {
                 setPinBar(false);
-                setHover(null);
+                scheduleHideHover();
               }}
             >
-              <span className="preview-edit-name">{blockLabel(glow)}</span>
+              <span className="preview-edit-name">{blockLabel(glow, resume)}</span>
               {glow.kind === "section" ? (
                 <>
-                  <button type="button" title="Move up" onClick={() => nudgeSection(glow.section, -1)}>
-                    <ChevronUp size={14} />
+                  <button type="button" className="preview-edit-nudge" title="Move up" disabled={sectionIdx <= 0} onClick={() => nudgeSection(glow.section, -1)}>
+                    <ArrowUp size={14} strokeWidth={2.4} />
                   </button>
-                  <button type="button" title="Move down" onClick={() => nudgeSection(glow.section, 1)}>
-                    <ChevronDown size={14} />
+                  <button type="button" className="preview-edit-nudge" title="Move down" disabled={sectionIdx < 0 || sectionIdx >= sections.length - 1} onClick={() => nudgeSection(glow.section, 1)}>
+                    <ArrowDown size={14} strokeWidth={2.4} />
                   </button>
                 </>
               ) : glow.entryId ? (
                 <>
-                  <button type="button" title="Move up" onClick={() => nudgeEntry(glow.section, glow.entryId!, -1)}>
-                    <ChevronUp size={14} />
+                  <button type="button" className="preview-edit-nudge" title="Move up" disabled={entryIdx <= 0} onClick={() => nudgeEntry(glow.section, glow.entryId!, -1)}>
+                    <ArrowUp size={14} strokeWidth={2.4} />
                   </button>
-                  <button type="button" title="Move down" onClick={() => nudgeEntry(glow.section, glow.entryId!, 1)}>
-                    <ChevronDown size={14} />
+                  <button type="button" className="preview-edit-nudge" title="Move down" disabled={entryIdx < 0 || entryIdx >= entryList.length - 1} onClick={() => nudgeEntry(glow.section, glow.entryId!, 1)}>
+                    <ArrowDown size={14} strokeWidth={2.4} />
                   </button>
                 </>
               ) : null}

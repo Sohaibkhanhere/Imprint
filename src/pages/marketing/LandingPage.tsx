@@ -98,9 +98,7 @@ export function LandingPage() {
               </p>
             </div>
             <Suspense fallback={<div className="min-h-[28rem] rounded-sm border border-stone-300 bg-stone-50" />}>
-              <Link to="/app?template=stream" className="block min-w-0">
-                <NetflixFeatured />
-              </Link>
+              <NetflixFeatured />
             </Suspense>
           </div>
         </section>

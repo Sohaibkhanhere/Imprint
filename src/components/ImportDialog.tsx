@@ -2,8 +2,7 @@ import { useState, useRef } from "react";
 import { UploadCloud, FileText, Check, Loader2, AlertTriangle, X } from "lucide-react";
 import { useResume } from "../store/resumeStore";
 import { extractCvText, parseCvText, resumeFromDraft, hasMeaningfulContent, summarizeDraft, draftFromResume, type CvDraft } from "../lib/cvImport";
-import { TEMPLATES } from "../templates/registry";
-import type { TemplateKey } from "../lib/types";
+import { themePatchForAtsSafe } from "../templates/registry";
 
 export function ImportDialog({ onClose }: { onClose: () => void }) {
   const { resume, dispatch } = useResume();
@@ -12,7 +11,7 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<CvDraft | null>(null);
   const [fileName, setFileName] = useState("");
-  const [template, setTemplate] = useState<TemplateKey | "">("");
+  const [template, setTemplate] = useState<"designed" | "ats">(resume.theme.atsSafe ? "ats" : "designed");
 
   const handleFile = async (file: File | null | undefined) => {
     if (!file) return;
@@ -70,9 +69,10 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
 
   const doImport = () => {
     if (!draft) return;
-    const theme = template
-      ? { ...resume.theme, template }
-      : { ...resume.theme };
+    const theme =
+      template === "ats"
+        ? { ...resume.theme, ...themePatchForAtsSafe(resume.theme.template, true) }
+        : { ...resume.theme, atsSafe: false };
     const imported = resumeFromDraft(draft, theme);
     dispatch({ type: "LOAD", resume: imported });
     onClose();
@@ -163,28 +163,27 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
               ) : null}
 
               <label className="mt-4 mb-1.5 block text-xs font-medium text-stone-600">Start with a layout</label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setTemplate("")}
-                  className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium transition ${
-                    template === "" ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-200"
+                  onClick={() => setTemplate("designed")}
+                  className={`rounded-sm border px-3 py-2.5 text-left transition ${
+                    template === "designed" ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
-                  Keep current ({resume.theme.template.replace(/-/g, " ")})
+                  <span className="block text-xs font-semibold">Designed layout</span>
+                  <span className="mt-0.5 block text-[11px] leading-snug opacity-80">Visual template, full page design</span>
                 </button>
-                {TEMPLATES.map((tp) => (
-                  <button
-                    key={tp.key}
-                    type="button"
-                    onClick={() => setTemplate(tp.key)}
-                    className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium transition ${
-                      template === tp.key ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-200"
-                    }`}
-                  >
-                    {tp.label}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => setTemplate("ats")}
+                  className={`rounded-sm border px-3 py-2.5 text-left transition ${
+                    template === "ats" ? "border-amber-600 bg-amber-50 text-amber-900" : "border-stone-300 text-stone-600 hover:bg-stone-200"
+                  }`}
+                >
+                  <span className="block text-xs font-semibold">ATS Safe layout</span>
+                  <span className="mt-0.5 block text-[11px] leading-snug opacity-80">Parser sheet, standard headings</span>
+                </button>
               </div>
             </div>
           )}

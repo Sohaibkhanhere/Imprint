@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Resume, SectionKey } from "../lib/types";
+import { displaySkillGroups } from "../lib/skillsDisplay";
 import { Bullets, Dates, ExtraDetails, headingFor, shouldRender, citePublication, effectiveSections, SheetHref } from "./shared";
 import { cleanUrl } from "../lib/date";
 
@@ -7,26 +8,23 @@ function SectionHead({ label }: { label: string }) {
   return <h2 className="t-head">{label}</h2>;
 }
 
-function SkillGroups({ resume, chips }: { resume: Resume; chips?: boolean }) {
-  const groups = (resume.skills ?? []).filter((g) => Array.isArray(g?.skills) && g.skills.some((s) => (s || "").trim()));
+function SkillGroups({ resume }: { resume: Resume; chips?: boolean }) {
+  const groups = displaySkillGroups(resume.skills);
   if (!groups.length) return null;
+  const cloud = groups.length === 1 && !groups[0].name;
   return (
-    <>
+    <div className={cloud ? "t-skillcloud" : "t-skillgroups"}>
       {groups.map((g) => (
-        <div key={g.id} className="t-skillgroup">
-          {g.name && !/^skills?$/i.test(g.name) ? <span className="t-role t-skillgroup-name">{g.name}</span> : null}
-          {chips ? (
-            <span className="t-chips">
-              {g.skills.filter((s) => (s || "").trim()).map((s, i) => (
-                <span key={i} className="t-chip">{(s || "").trim()}</span>
-              ))}
-            </span>
-          ) : (
-            <span className="t-skills">{g.skills.filter((s) => (s || "").trim()).join(", ")}</span>
-          )}
+        <div key={g.id} className={cloud ? "t-skillgroup t-skillgroup-cloud" : "t-skillgroup"}>
+          {g.name ? <span className="t-skillgroup-name">{g.name}</span> : null}
+          <span className="t-chips">
+            {g.items.map((s, i) => (
+              <span key={`${g.id}-${i}`} className="t-chip">{s}</span>
+            ))}
+          </span>
         </div>
       ))}
-    </>
+    </div>
   );
 }
 

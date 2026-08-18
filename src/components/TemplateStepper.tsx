@@ -3,6 +3,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useResume } from "../store/resumeStore";
 import { TEMPLATES, adjacentTemplate, templatesForStepper, themePatchForTemplate } from "../templates/registry";
 
+export const OPEN_TEMPLATES_EVENT = "rs:open-templates";
+
+export function openTemplateGallery() {
+  window.dispatchEvent(new CustomEvent(OPEN_TEMPLATES_EVENT));
+}
+
 export function useCycleTemplate(opts?: { keyboard?: boolean }) {
   const { resume, dispatch } = useResume();
   const atsOnly = Boolean(resume.theme.atsSafe);
@@ -36,9 +42,11 @@ export function useCycleTemplate(opts?: { keyboard?: boolean }) {
 export function TemplateStepper({
   keyboard = false,
   size = "compact",
+  openGallery = true,
 }: {
   keyboard?: boolean;
   size?: "compact" | "bar";
+  openGallery?: boolean;
 }) {
   const { current, index, total, go } = useCycleTemplate({ keyboard });
   const bar = size === "bar";
@@ -55,12 +63,27 @@ export function TemplateStepper({
         <ChevronLeft size={14} />
         <span className={bar ? "hidden sm:inline" : "hidden lg:inline"}>Previous</span>
       </button>
-      <div className={`min-w-0 px-1.5 text-center ${bar ? "min-w-[6.5rem] sm:min-w-[9.5rem]" : ""}`}>
-        <p className="truncate text-xs font-semibold text-stone-900">{current.label}</p>
-        <p className="folio text-[10px] text-stone-400">
-          {index + 1} / {total}
-        </p>
-      </div>
+      {openGallery ? (
+        <button
+          type="button"
+          onClick={openTemplateGallery}
+          title="Browse layouts"
+          aria-label="Browse layouts"
+          className={`min-w-0 rounded-sm px-1.5 py-0.5 text-center transition hover:bg-stone-100 ${bar ? "min-w-[6.5rem] sm:min-w-[9.5rem]" : ""}`}
+        >
+          <p className="truncate text-xs font-semibold text-stone-900">{current.label}</p>
+          <p className="folio text-[10px] text-stone-400">
+            {index + 1} / {total}
+          </p>
+        </button>
+      ) : (
+        <div className={`min-w-0 px-1.5 text-center ${bar ? "min-w-[6.5rem] sm:min-w-[9.5rem]" : ""}`}>
+          <p className="truncate text-xs font-semibold text-stone-900">{current.label}</p>
+          <p className="folio text-[10px] text-stone-400">
+            {index + 1} / {total}
+          </p>
+        </div>
+      )}
       <button
         type="button"
         onClick={() => go(1)}

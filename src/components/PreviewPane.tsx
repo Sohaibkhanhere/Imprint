@@ -6,7 +6,7 @@ import { PAGE_DIMS } from "../templates/shared";
 import { PAGE_STACK_GAP } from "../templates/paginate";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { TemplateStepper } from "./TemplateStepper";
-import { PreviewInteract } from "./PreviewInteract";
+import { PreviewInteract, PREVIEW_FOCUS_EVENT } from "./PreviewInteract";
 import { applyPageStyle } from "../lib/pdf";
 
 const ZOOM_MIN = 0.4;
@@ -84,6 +84,24 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
+  useEffect(() => {
+    const onFocus = (e: Event) => {
+      const key = (e as CustomEvent<string>).detail;
+      const frame = frameRef.current;
+      const host = sheetRef.current;
+      if (!key || !frame || !host) return;
+      const target =
+        host.querySelector<HTMLElement>(`.resume-sheet:not(.resume-sheet-measure) [data-rs-section="${key}"]`) ||
+        (key === "contact" ? host.querySelector<HTMLElement>(".resume-sheet:not(.resume-sheet-measure) header") : null);
+      if (!target) return;
+      const fr = frame.getBoundingClientRect();
+      const er = target.getBoundingClientRect();
+      frame.scrollTo({ top: Math.max(0, frame.scrollTop + (er.top - fr.top) - 88), behavior: "smooth" });
+    };
+    window.addEventListener(PREVIEW_FOCUS_EVENT, onFocus);
+    return () => window.removeEventListener(PREVIEW_FOCUS_EVENT, onFocus);
+  }, []);
+
   useLayoutEffect(() => {
     const host = sheetRef.current;
     if (!host) return;
@@ -155,7 +173,9 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
         <div className="preview-pagecount" data-noprint>
           {page.label} / {pages}
         </div>
-        <div className="preview-zoom no-print" data-noprint>
+      </div>
+      <div className="pointer-events-none absolute bottom-3 left-3 z-20 no-print">
+        <div className="pointer-events-auto preview-zoom" data-noprint>
           <button type="button" title="Zoom out" aria-label="Zoom out" onClick={() => bump(-1)} disabled={scale <= ZOOM_MIN + 0.001}>
             <Minus size={14} />
           </button>

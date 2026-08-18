@@ -128,7 +128,17 @@
 
 .tpl-ats-safe .t-skillgroup-name {
   display: inline;
-  margin-right: 6px;
+  margin-right: 0;
+  min-width: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: inherit;
+  font-weight: 700;
+  color: inherit;
+}
+
+.tpl-ats-safe .t-skillgroup-name::after {
+  content: ": ";
 }
 
 .tpl-ats-safe .t-skills,

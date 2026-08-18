@@ -3,6 +3,7 @@ import type { Resume, SectionKey } from "../lib/types";
 import { Sheet, Bullets, Dates, contactParts, effectiveSections, safeContact, SheetHref } from "./shared";
 import { SectionBlock } from "./Sections";
 import { Portrait } from "./graphical";
+import { displaySkillGroups, flattenSkillLabels, hasRenderableSkills } from "../lib/skillsDisplay";
 import { t } from "../lib/safe";
 import { cleanUrl } from "../lib/date";
 
@@ -27,7 +28,7 @@ function jobsOf(resume: Resume) {
 }
 
 function skillFlat(resume: Resume) {
-  return (resume.skills ?? []).flatMap((g) => (g.skills ?? []).map((s) => t(s)).filter(Boolean));
+  return flattenSkillLabels(resume.skills);
 }
 
 function restOf(resume: Resume, exclude: SectionKey[]) {
@@ -692,7 +693,6 @@ export function LagoonTemplate({ resume }: { resume: Resume }) {
   const c = safeContact(resume);
   const jobs = jobsOf(resume);
   const edu = resume.education ?? [];
-  const skills = resume.skills ?? [];
   const langs = resume.languages ?? [];
   const awards = resume.awards ?? [];
   const certs = resume.certifications ?? [];
@@ -765,13 +765,13 @@ export function LagoonTemplate({ resume }: { resume: Resume }) {
           ) : null}
         </div>
         <div>
-          {skills.length ? (
+          {hasRenderableSkills(resume.skills) ? (
             <section>
               <h3>Skills</h3>
-              {skills.map((g) => (
+              {displaySkillGroups(resume.skills).map((g) => (
                 <div key={g.id} className="hp-lag-item">
-                  <p>{g.name || "Skills"}</p>
-                  <p>{(g.skills ?? []).filter((s) => t(s)).join(", ")}</p>
+                  {g.name ? <p>{g.name}</p> : null}
+                  <p>{g.items.join(", ")}</p>
                 </div>
               ))}
             </section>
@@ -818,7 +818,6 @@ export function StreamTemplate({ resume }: { resume: Resume }) {
   const c = safeContact(resume);
   const jobs = jobsOf(resume);
   const edu = resume.education ?? [];
-  const skills = resume.skills ?? [];
   const projects = resume.projects ?? [];
   const awards = resume.awards ?? [];
   const rest = restOf(resume, ["summary", "objective", "experience", "education", "skills", "projects", "awards"]);
@@ -854,15 +853,11 @@ export function StreamTemplate({ resume }: { resume: Resume }) {
             ))}
           </div>
           <div>
-            {skills.length ? <h2>Skills</h2> : null}
-            {skills.map((g) => (
+            {hasRenderableSkills(resume.skills) ? <h2>Skills</h2> : null}
+            {displaySkillGroups(resume.skills).map((g) => (
               <div key={g.id} className="hp-str-tile">
-                <p>{g.name || "Skills"}</p>
-                <ul>
-                  {(g.skills ?? []).filter((s) => t(s)).map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ul>
+                {g.name ? <p>{g.name}</p> : null}
+                <p>{g.items.join(" · ")}</p>
               </div>
             ))}
           </div>
