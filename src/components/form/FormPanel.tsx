@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
 import { useResume } from "../../store/resumeStore";
 import { Collapse } from "../ui";
 import type { SectionKey, VisibilityKey } from "../../lib/types";
+import { PREVIEW_FOCUS_EVENT } from "../PreviewInteract";
 import { ContactForm } from "./Contact";
 import { SummaryForm, PortfolioForm, SkillsForm } from "./Basic";
 import { ExperienceForm, VolunteerForm, TeachingForm } from "./Experience";
@@ -61,6 +62,18 @@ function ContentsSection({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(true);
+  useEffect(() => {
+    const onFocus = (e: Event) => {
+      const key = (e as CustomEvent<SectionKey>).detail;
+      if (key !== sectionKey) return;
+      setOpen(true);
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>(`[data-key="${sectionKey}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+    };
+    window.addEventListener(PREVIEW_FOCUS_EVENT, onFocus);
+    return () => window.removeEventListener(PREVIEW_FOCUS_EVENT, onFocus);
+  }, [sectionKey]);
   return (
     <section data-key={sectionKey} className={`contents-entry${active ? " contents-active" : ""}`}>
       <div className="contents-head">

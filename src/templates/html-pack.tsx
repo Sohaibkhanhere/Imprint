@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Resume, SectionKey } from "../lib/types";
-import { Sheet, Bullets, Dates, contactParts, effectiveSections, safeContact } from "./shared";
+import { Sheet, Bullets, Dates, contactParts, effectiveSections, safeContact, SheetHref } from "./shared";
 import { SectionBlock } from "./Sections";
 import { Portrait } from "./graphical";
 import { t } from "../lib/safe";
@@ -420,31 +420,41 @@ export function CarmineTemplate({ resume }: { resume: Resume }) {
           {c.phone ? (
             <div className="hp-car-item">
               <p>Mobile</p>
-              <span>{c.phone}</span>
+              <span>
+                <SheetHref href={c.phone}>{c.phone}</SheetHref>
+              </span>
             </div>
           ) : null}
           {c.email ? (
             <div className="hp-car-item">
               <p>Email</p>
-              <span>{c.email}</span>
+              <span>
+                <SheetHref href={c.email}>{c.email}</SheetHref>
+              </span>
             </div>
           ) : null}
           {c.linkedin ? (
             <div className="hp-car-item">
               <p>LinkedIn</p>
-              <span>{cleanUrl(c.linkedin)}</span>
+              <span>
+                <SheetHref href={c.linkedin}>{cleanUrl(c.linkedin)}</SheetHref>
+              </span>
             </div>
           ) : null}
           {c.github ? (
             <div className="hp-car-item">
               <p>GitHub</p>
-              <span>{cleanUrl(c.github)}</span>
+              <span>
+                <SheetHref href={c.github}>{cleanUrl(c.github)}</SheetHref>
+              </span>
             </div>
           ) : null}
           {c.website || c.portfolioUrl ? (
             <div className="hp-car-item">
               <p>Website</p>
-              <span>{cleanUrl(c.website || c.portfolioUrl)}</span>
+              <span>
+                <SheetHref href={c.website || c.portfolioUrl}>{cleanUrl(c.website || c.portfolioUrl)}</SheetHref>
+              </span>
             </div>
           ) : null}
           {loc(resume) ? (

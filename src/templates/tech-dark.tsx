@@ -1,12 +1,11 @@
 import type { Resume, SectionKey } from "../lib/types";
-import { Sheet, contactParts, safeContact, effectiveSections } from "./shared";
+import { Sheet, ContactList, safeContact, effectiveSections } from "./shared";
 import { SectionBlock } from "./Sections";
 import { t } from "../lib/safe";
 
 const CARD_KEYS: SectionKey[] = ["education", "skills"];
 
 export function TechDarkTemplate({ resume }: { resume: Resume }) {
-  const parts = contactParts(resume);
   const c = safeContact(resume);
   const all = effectiveSections(resume) as SectionKey[];
   const cards = all.filter((k) => CARD_KEYS.includes(k));
@@ -15,13 +14,9 @@ export function TechDarkTemplate({ resume }: { resume: Resume }) {
   return (
     <Sheet resume={resume} className="tpl-tech-dark" style={{ padding: 0 }}>
       <div className="td-wrap">
-        {parts.length ? (
-          <div className="td-top">
-            {parts.map((p, i) => (
-              <span key={i} className="td-top-item">{p}</span>
-            ))}
-          </div>
-        ) : null}
+        <div className="td-top">
+          <ContactList resume={resume} itemClass="td-top-item" as="span" />
+        </div>
         <div className="td-headline">
           {c.fullName ? <h1 className="td-name">{c.fullName}</h1> : null}
           {t(summary) ? <p className="td-summary">{summary}</p> : null}

@@ -304,11 +304,11 @@ export async function extractCvText(file: File): Promise<string> {
 
 const HEADER_RULES: { key: SectionKey | "skip"; test: RegExp; minLen?: number }[] = [
   { key: "objective", test: /^(career\s+)?(objective|goal|aim)\b|^career\s+objective\b/i },
-  { key: "summary", test: /^(professional|career|executive)?\s*(summary|profile|overview)\b|about\s*me\b|personal\s+statement\b|^bio\b|^professional\s+profile\b/i },
-  { key: "experience", test: /^(professional|work|employment|relevant|career)?\s*(experience|expierence|experiance|history|background)\b|experience\s+history\b|employment\s+(history|record)\b|career\s+history\b|work\s+history\b|work\s+exp(?:erience)?\b|^internships?\b|industrial\s+(training|experience)\b|^experience\s*$/i },
-  { key: "education", test: /^(education|academic|training|qualifications?)\b|education\s+and\s+training\b|academic\s+(background|history|qualifications?)\b|educational\s+qualifications?|professional\s+qualifications?\b/i },
-  { key: "skills", test: /^(tech(?:nical)?\s+skills?|professional\s+skills?|relevant\s+skills?|key\s+skills?|core\s+skills?|computer\s+skills?|it\s+skills?|digital\s+skills?|skills?|core\s+competencies|competencies|expertise|technologies?|tech\s+stack|tools|skill\s*highlights?|highlights?|areas?\s+of\s+expertise|technical\s+proficiency)\b/i },
-  { key: "projects", test: /^(selected\s+|key\s+|academic\s+|personal\s+)?projects?\b/i },
+  { key: "summary", test: /^(professional|career|executive)?\s*(summary|profile|overview|profle|proflle)\b|about\s*me\b|personal\s+statement\b|^bio\b|^professional\s+profile\b/i },
+  { key: "experience", test: /^(professional|work|employment|relevant|career)?\s*(experience|expierence|experiance|experence|experince|history|background)\b|experience\s+history\b|employment\s+(history|record)\b|career\s+history\b|work\s+history\b|work\s+exp(?:erience)?\b|^internships?\b|industrial\s+(training|experience)\b|^experience\s*$/i },
+  { key: "education", test: /^(education|educaton|eduction|educatlon|academic|training|qualifications?)\b|education\s+and\s+training\b|academic\s+(background|history|qualifications?)\b|educational\s+qualifications?|professional\s+qualifications?\b/i },
+  { key: "skills", test: /^(tech(?:nical)?\s+skills?|professional\s+skills?|relevant\s+skills?|key\s+skills?|core\s+skills?|computer\s+skills?|it\s+skills?|digital\s+skills?|skills?|skils|skiils|core\s+competencies|competencies|expertise|technologies?|tech\s+stack|tools|skill\s*highlights?|highlights?|areas?\s+of\s+expertise|technical\s+proficiency)\b/i },
+  { key: "projects", test: /^(selected\s+|key\s+|academic\s+|personal\s+)?(projects?|projetcs?|prolects?)\b/i },
   { key: "certifications", test: /^(certifications?|licenses?\s*(&|and)?\s*(certifications?)?|credentials|professional\s+development)\b/i },
   { key: "languages", test: /^languages?\b/i },
   { key: "volunteer", test: /^(volunteer|community|leadership)\b/i },
@@ -970,6 +970,12 @@ export function parseCvText(text: string): CvDraft {
   const emails = full.match(EMAIL_RE) ?? [];
   if (emails.length) draft.contact.email = emails[0];
   if (!draft.contact.email) {
+    const packedMail = full.replace(/\s+/g, "");
+    const glued = packedMail.match(/[A-Za-z0-9._%+-]{3,}@(?:gmail|yahoo|outlook|hotmail|icloud|proton)\.[A-Za-z]{2,}/i)
+      || packedMail.match(/[A-Za-z0-9._%+-]{3,}gmail\.com/i);
+    if (glued) draft.contact.email = glued[0].includes("@") ? glued[0].toLowerCase() : glued[0].replace(/gmail\.com$/i, "@gmail.com").toLowerCase();
+  }
+  if (!draft.contact.email) {
     const loose = full.match(/[\w.+-]+(?:\s*)@(?:\s*)[\w.-]+(?:\s*)\.(?:\s*)[A-Za-z]{2,}/);
     if (loose) draft.contact.email = loose[0].replace(/\s+/g, "").toLowerCase();
   }
@@ -1011,6 +1017,16 @@ export function parseCvText(text: string): CvDraft {
     phones.push(...capturePhones(full.replace(/\n/g, " ")));
   }
   if (phones.length) draft.contact.phone = phones.filter((p, i, a) => a.indexOf(p) === i).join(", ");
+  if (!draft.contact.phone) {
+    const packed = full.replace(/[Oo]/g, "0").replace(/[Il]/g, "1").replace(/[^\d+]/g, "");
+    const pk = packed.match(/(?:92)?0?3\d{9}/);
+    if (pk) {
+      let n = pk[0];
+      if (n.startsWith("92") && n.length >= 12) n = `0${n.slice(2)}`;
+      else if (n.startsWith("3") && n.length === 10) n = `0${n}`;
+      draft.contact.phone = n;
+    }
+  }
 
   // name + title + location from the top of the document
   const nameWords = new Set<string>();
@@ -3171,6 +3187,28 @@ export function resumeFromDraft(draft: CvDraft, theme?: Partial<ThemeConfig>): R
     theme: { ...base.theme, ...theme },
   };
   return hydrateResume(resume);
+}
+
+export function draftFromResume(resume: Resume): CvDraft {
+  return {
+    contact: { ...resume.contact },
+    summary: resume.summary || "",
+    objective: resume.objective || "",
+    experience: resume.experience ?? [],
+    education: resume.education ?? [],
+    skills: resume.skills ?? [],
+    projects: resume.projects ?? [],
+    certifications: resume.certifications ?? [],
+    languages: resume.languages ?? [],
+    volunteer: resume.volunteer ?? [],
+    awards: resume.awards ?? [],
+    publications: resume.publications ?? [],
+    teaching: resume.teaching ?? [],
+    extras: resume.extras ?? [],
+    sectionOrder: resume.sectionOrder ?? [],
+    useObjective: !!resume.useObjective,
+    warnings: [],
+  };
 }
 
 export function hasMeaningfulContent(draft: CvDraft): boolean {

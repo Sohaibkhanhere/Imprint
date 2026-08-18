@@ -43,6 +43,40 @@
   height: 100%;
 }
 
+.resume-folio-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.resume-sheet-measure {
+  position: absolute !important;
+  left: -200vw !important;
+  top: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+}
+
+.resume-sheet-measure .resume-sheet-fit,
+.resume-sheet-measure .resume-sheet-fit > *:only-child,
+.resume-page-window {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.resume-page-clip {
+  overflow: hidden;
+  min-height: 0 !important;
+}
+
+.resume-sheet-paged .resume-sheet-fit > .resume-page-clip {
+  min-height: 0 !important;
+}
+
 /* Full-bleed canvases fill whichever page the user picked (A4 or Letter). */
 .resume-sheet .ps-layout,
 .resume-sheet .cl-layout,
@@ -657,8 +691,8 @@
 .tpl-creative .cr-band {
   background: var(--accent);
   color: #fff;
-  margin: -48px -53px var(--s3, 16px);
-  padding: 20px 53px 16px;
+  margin: calc(-1 * var(--page-pad-top, 48px)) calc(-1 * var(--page-pad-right, 53px)) var(--s3, 16px) calc(-1 * var(--page-pad-left, 53px));
+  padding: 20px var(--page-pad-right, 53px) 16px var(--page-pad-left, 53px);
 }
 .tpl-creative .cr-band-inner {
   display: flex;
@@ -890,8 +924,8 @@
 .tpl-portfolio .pf-band {
   background: var(--accent);
   color: #fff;
-  margin: -48px -53px var(--s3, 16px);
-  padding: 22px 53px 16px;
+  margin: calc(-1 * var(--page-pad-top, 48px)) calc(-1 * var(--page-pad-right, 53px)) var(--s3, 16px) calc(-1 * var(--page-pad-left, 53px));
+  padding: 22px var(--page-pad-right, 53px) 16px var(--page-pad-left, 53px);
   border-radius: 0 0 14px 14px;
 }
 .tpl-portfolio .pf-name {

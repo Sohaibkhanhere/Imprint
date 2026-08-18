@@ -1,5 +1,6 @@
 import type { Resume, SectionKey } from "../lib/types";
-import { Sheet, contactParts, effectiveSections, safeContact } from "./shared";
+import { contactItems } from "../lib/href";
+import { Sheet, effectiveSections, safeContact } from "./shared";
 import { SectionBlock } from "./Sections";
 import { Portrait } from "./graphical";
 import { t } from "../lib/safe";
@@ -19,9 +20,15 @@ function zones(resume: Resume, side: SectionKey[]) {
 function Lines({ resume }: { resume: Resume }) {
   return (
     <>
-      {contactParts(resume).map((p) => (
-        <div key={p} className="g-line">
-          {p}
+      {contactItems(safeContact(resume)).map((p) => (
+        <div key={p.text} className="g-line">
+          {p.href ? (
+            <a href={p.href} target="_blank" rel="noopener noreferrer">
+              {p.text}
+            </a>
+          ) : (
+            p.text
+          )}
         </div>
       ))}
     </>
@@ -113,10 +120,10 @@ export function CircuitDarkTemplate({ resume }: { resume: Resume }) {
             {t(blurb) ? <p className="cd-blurb">{blurb}</p> : null}
           </div>
         </header>
-        {contactParts(resume).length ? (
+        {contactItems(safeContact(resume)).length ? (
           <div className="cd-bar">
-            {contactParts(resume).map((p) => (
-              <span key={p}>{p}</span>
+            {contactItems(safeContact(resume)).map((p) => (
+              <span key={p.text}>{p.href ? <a href={p.href} target="_blank" rel="noopener noreferrer">{p.text}</a> : p.text}</span>
             ))}
           </div>
         ) : null}

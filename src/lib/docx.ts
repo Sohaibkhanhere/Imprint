@@ -11,6 +11,7 @@ import { formatRange, exportStem, cleanUrl } from "./date";
 import { effectiveSections, headingFor, citePublication } from "../templates/shared";
 import { hydrateResume } from "./storage";
 import { t } from "./safe";
+import { marginsForTheme, mmToTwip } from "./pageLayout";
 
 export { Packer };
 
@@ -20,8 +21,6 @@ const PAGE_TWIPS: Record<Resume["theme"]["pageSize"], { width: number; height: n
   a4: { width: 11906, height: 16838 },
   letter: { width: 12240, height: 15840 },
 };
-
-const MARGIN = 1080;
 
 function hex(c: string): string {
   const m = c.replace(/^#/, "").toUpperCase();
@@ -271,7 +270,14 @@ export function buildResumeDocx(resume: Resume): Document {
   resume = hydrateResume(resume);
   const theme = resume.theme;
   const page = PAGE_TWIPS[theme?.pageSize] ?? PAGE_TWIPS.a4;
-  const right = page.width - MARGIN * 2;
+  const m = marginsForTheme(theme);
+  const margin = {
+    top: mmToTwip(m.top),
+    right: mmToTwip(m.right),
+    bottom: mmToTwip(m.bottom),
+    left: mmToTwip(m.left),
+  };
+  const right = page.width - margin.left - margin.right;
   const c = resume.contact;
   const accent = hex(theme?.accent || "#1d2130");
 
@@ -312,7 +318,7 @@ export function buildResumeDocx(resume: Resume): Document {
     sections: [
       {
         properties: {
-          page: { size: { width: page.width, height: page.height }, margin: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN } },
+          page: { size: { width: page.width, height: page.height }, margin },
         },
         children: body,
       },

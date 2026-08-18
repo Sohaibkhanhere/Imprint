@@ -1,9 +1,8 @@
 import type { Resume } from "../lib/types";
-import { Sheet, contactParts, safeContact } from "./shared";
+import { Sheet, ContactLine, safeContact } from "./shared";
 import { Sections } from "./Sections";
 
 export function PortfolioTemplate({ resume }: { resume: Resume }) {
-  const parts = contactParts(resume);
   const c = safeContact(resume);
   return (
     <Sheet resume={resume} className="tpl-portfolio">
@@ -12,7 +11,7 @@ export function PortfolioTemplate({ resume }: { resume: Resume }) {
           {c.fullName ? <h1 className="sheet-name pf-name">{c.fullName}</h1> : null}
           {c.title ? <p className="pf-title">{c.title}</p> : null}
         </div>
-        {parts.length ? <p className="pf-contact">{parts.join("   ·   ")}</p> : null}
+        <ContactLine resume={resume} className="pf-contact" sep="   ·   " />
       </header>
       <Sections resume={resume} chips />
     </Sheet>

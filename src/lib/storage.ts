@@ -1,4 +1,5 @@
 import type { Contact, FluencyLevel, Resume, ResumeTypeKey, SectionKey, TemplateKey, ThemeConfig, VisibilityKey } from "./types";
+import { sanitizeMargins } from "./pageLayout";
 import { createBlankResume, FONT_PAIRS } from "./sampleData";
 import { coerceResume } from "./coerceResume";
 import { uid } from "./date";
@@ -78,6 +79,7 @@ export function sanitizeThemeConfig(partial: Partial<ThemeConfig>, fallback: The
     atsSafe: Boolean(merged.atsSafe),
     pageSize: merged.pageSize === "letter" ? "letter" : "a4",
     maxPages: merged.maxPages === 2 ? 2 : 1,
+    margins: sanitizeMargins(merged.margins, merged.pageSize === "letter" ? "letter" : "a4"),
     citationFormat: merged.citationFormat === "mla" || merged.citationFormat === "chicago" ? merged.citationFormat : "apa",
   };
 }

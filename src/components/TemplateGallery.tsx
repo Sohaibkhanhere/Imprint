@@ -5,6 +5,7 @@ import {
   FINISH_FILTERS,
   ROLE_FILTERS,
   TEMPLATES,
+  atsTemplates,
   templateDefaultAccent,
   templateMatches,
   themePatchForTemplate,
@@ -55,19 +56,24 @@ function Chip({
   active,
   onClick,
   children,
+  disabled = false,
 }: {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={`rounded-sm border px-2.5 py-1 text-[11px] font-semibold tracking-wide transition ${
-        active
-          ? "border-amber-600 bg-amber-50 text-amber-800"
-          : "border-stone-300 bg-stone-50 text-stone-600 hover:border-stone-500 hover:text-stone-900"
+        disabled
+          ? "cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400"
+          : active
+            ? "border-amber-600 bg-amber-50 text-amber-800"
+            : "border-stone-300 bg-stone-50 text-stone-600 hover:border-stone-500 hover:text-stone-900"
       }`}
     >
       {children}
@@ -81,30 +87,26 @@ function LayoutCard({
   active,
   sample,
   onApply,
+  rank,
+  row = false,
 }: {
   tp: (typeof TEMPLATES)[number];
   resume: Resume;
   active: boolean;
   sample: boolean;
   onApply: () => void;
+  rank?: number;
+  row?: boolean;
 }) {
   const { ref, visible } = useInView("280px");
   const { box, width } = useBoxWidth();
   const Template = tp.component;
   const page = PAGE_DIMS[resume.theme?.pageSize] ?? PAGE_DIMS.a4;
   const scale = width ? width / page.width : 0;
-  return (
-    <div ref={ref} id={`layout-card-${tp.key}`}>
-      <button
-        type="button"
-        onClick={onApply}
-        className={`group flex w-full flex-col rounded-sm border bg-stone-50 p-3 text-left transition ${
-          active ? "border-amber-600 ring-2 ring-amber-500/30" : "border-stone-300 hover:border-stone-500 hover:shadow-md"
-        }`}
-      >
+  const thumb = (
         <div
           ref={box}
-          className="relative w-full overflow-hidden rounded-sm border border-stone-200 bg-stone-50"
+          className={`relative overflow-hidden rounded-sm border border-stone-200 bg-stone-50 ${row ? "w-[4.5rem] shrink-0 sm:w-[5.5rem]" : "w-full"}`}
           style={{ aspectRatio: `${page.width} / ${page.height}` }}
         >
           {visible && scale ? (
@@ -121,17 +123,60 @@ function LayoutCard({
           ) : (
             <span className="absolute inset-0 bg-stone-50" />
           )}
-          {sample ? (
+          {sample && !row ? (
             <span className="absolute left-1.5 top-1.5 z-10 rounded-sm bg-stone-50/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-500 shadow-sm">
               Sample
             </span>
           ) : null}
           {active ? (
-            <span className="absolute right-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-sm bg-amber-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-100 shadow-sm">
-              <Check size={10} /> Current
+            <span className="absolute right-1 top-1 z-10 inline-flex items-center gap-1 rounded-sm bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-stone-100 shadow-sm">
+              <Check size={10} />
+              {row ? null : " Current"}
             </span>
           ) : null}
         </div>
+  );
+
+  if (row) {
+    return (
+      <div ref={ref} id={`layout-card-${tp.key}`}>
+        <button
+          type="button"
+          onClick={onApply}
+          className={`group flex w-full items-center gap-3 rounded-sm border bg-stone-50 p-2.5 text-left transition ${
+            active ? "border-amber-600 ring-2 ring-amber-500/30" : "border-stone-300 hover:border-stone-500"
+          }`}
+        >
+          {typeof rank === "number" ? (
+            <span className="contents-number w-6 shrink-0 text-center">{String(rank).padStart(2, "0")}</span>
+          ) : null}
+          {thumb}
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-stone-900">{tp.label}</span>
+              {typeof rank === "number" && rank <= 3 ? (
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">Strong parse</span>
+              ) : (
+                <span className="text-[10px] font-medium uppercase tracking-wide text-stone-400">ATS safe</span>
+              )}
+            </span>
+            <span className="mt-0.5 block text-xs leading-snug text-stone-500">{tp.description}</span>
+          </span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} id={`layout-card-${tp.key}`}>
+      <button
+        type="button"
+        onClick={onApply}
+        className={`group flex w-full flex-col rounded-sm border bg-stone-50 p-3 text-left transition ${
+          active ? "border-amber-600 ring-2 ring-amber-500/30" : "border-stone-300 hover:border-stone-500 hover:shadow-md"
+        }`}
+      >
+        {thumb}
         <div className="mt-2.5 flex items-center justify-between gap-2">
           <span className="text-sm font-semibold text-stone-900">{tp.label}</span>
           <span className="text-[10px] font-medium uppercase tracking-wide text-stone-400">{tp.atsSafeVariant ? "ATS safe" : "Visual"}</span>
@@ -150,12 +195,13 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
   const [finish, setFinish] = useState<FinishFilter>("all");
   const [role, setRole] = useState<RoleFilter>("all");
 
-  const filtered = useMemo(
-    () => TEMPLATES.filter((tp) => templateMatches(tp, query, finish, role)),
-    [query, finish, role],
-  );
+  const atsOnly = Boolean(resume.theme.atsSafe);
+  const filtered = useMemo(() => {
+    const source = atsOnly ? atsTemplates() : TEMPLATES;
+    return source.filter((tp) => templateMatches(tp, query, atsOnly ? "ats" : finish, role));
+  }, [query, finish, role, atsOnly]);
 
-  const filtersActive = finish !== "all" || role !== "all" || query.trim().length > 0;
+  const filtersActive = (!atsOnly && finish !== "all") || role !== "all" || query.trim().length > 0;
 
   const applyLayout = (key: (typeof TEMPLATES)[number]["key"]) => {
     dispatch({ type: "SET_THEME", theme: themePatchForTemplate(key) });
@@ -179,9 +225,11 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
           <div className="min-w-0 flex-1">
             <p className="qd-wordmark text-[22px] leading-none">Layouts</p>
             <p className="folio text-stone-500">
-              {filtered.length === TEMPLATES.length
-                ? `${TEMPLATES.length} layouts`
-                : `${filtered.length} of ${TEMPLATES.length} layouts`}
+              {atsOnly
+                ? `${filtered.length} ATS layouts, strongest parsers first`
+                : filtered.length === TEMPLATES.length
+                  ? `${TEMPLATES.length} layouts`
+                  : `${filtered.length} of ${TEMPLATES.length} layouts`}
               {showingSample ? " · sample text so you can see the design" : ""}
             </p>
           </div>
@@ -213,7 +261,12 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
           </label>
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
             {FINISH_FILTERS.map((f) => (
-              <Chip key={f.id} active={finish === f.id} onClick={() => setFinish(f.id)}>
+              <Chip
+                key={f.id}
+                active={atsOnly ? f.id === "ats" : finish === f.id}
+                disabled={atsOnly && f.id !== "ats"}
+                onClick={() => setFinish(f.id)}
+              >
                 {f.label}
               </Chip>
             ))}
@@ -244,14 +297,16 @@ export function TemplateGallery({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         ) : (
-          <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((tp) => (
+          <div className={atsOnly ? "flex flex-1 flex-col gap-2 overflow-y-auto p-5" : "grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-5 sm:grid-cols-2 lg:grid-cols-3"}>
+            {filtered.map((tp, i) => (
               <LayoutCard
                 key={tp.key}
                 tp={tp}
                 resume={thumbResume}
                 active={resume.theme.template === tp.key}
                 sample={showingSample}
+                rank={atsOnly ? i + 1 : undefined}
+                row={atsOnly}
                 onApply={() => applyLayout(tp.key)}
               />
             ))}

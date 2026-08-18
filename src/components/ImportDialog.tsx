@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { UploadCloud, FileText, Check, Loader2, AlertTriangle, X } from "lucide-react";
 import { useResume } from "../store/resumeStore";
-import { extractCvText, parseCvText, resumeFromDraft, hasMeaningfulContent, summarizeDraft, type CvDraft } from "../lib/cvImport";
+import { extractCvText, parseCvText, resumeFromDraft, hasMeaningfulContent, summarizeDraft, draftFromResume, type CvDraft } from "../lib/cvImport";
 import { TEMPLATES } from "../templates/registry";
 import type { TemplateKey } from "../lib/types";
 
@@ -20,6 +20,33 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
     setError("");
     setDraft(null);
     try {
+      const isPdf = /\.pdf$/i.test(file.name || "") || file.type === "application/pdf";
+      if (isPdf) {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const { readResumePayload } = await import("../lib/resumePayload");
+        const embedded = readResumePayload(bytes);
+        if (embedded) {
+          setDraft(draftFromResume(embedded));
+          setFileName(file.name);
+          return;
+        }
+        const replay = new File([bytes], file.name, { type: file.type || "application/pdf" });
+        const text = await extractCvText(replay);
+        if (!text.trim()) throw new Error("This file has no readable text. Try a Word export, or type the details in Contents.");
+        const parsed = parseCvText(text);
+        if (!hasMeaningfulContent(parsed)) {
+          const blob = text.replace(/\s+/g, " ").trim();
+          if (blob.length >= 80) {
+            parsed.summary = parsed.summary || blob.slice(0, 1400);
+            parsed.warnings.push("This file did not split cleanly into sections. Check Contents and move items if needed.");
+          } else {
+            throw new Error("Couldn't find recognizable resume content (name, work, education). Try a PDF/DOCX exported from Word or Google Docs.");
+          }
+        }
+        setDraft(parsed);
+        setFileName(file.name);
+        return;
+      }
       const text = await extractCvText(file);
       if (!text.trim()) throw new Error("This file has no readable text. Try a Word export, or type the details in Contents.");
       const parsed = parseCvText(text);

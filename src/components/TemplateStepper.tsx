@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useResume } from "../store/resumeStore";
-import { TEMPLATES, adjacentTemplate, templateIndex, themePatchForTemplate } from "../templates/registry";
+import { TEMPLATES, adjacentTemplate, templatesForStepper, themePatchForTemplate } from "../templates/registry";
 
 export function useCycleTemplate(opts?: { keyboard?: boolean }) {
   const { resume, dispatch } = useResume();
-  const index = templateIndex(resume.theme.template);
-  const current = TEMPLATES[index] ?? TEMPLATES[0];
+  const atsOnly = Boolean(resume.theme.atsSafe);
+  const list = templatesForStepper(atsOnly);
+  const index = Math.max(0, list.findIndex((t) => t.key === resume.theme.template));
+  const current = list[index] ?? list[0] ?? TEMPLATES[0];
 
   const go = (dir: -1 | 1) => {
-    const next = adjacentTemplate(resume.theme.template, dir);
+    const next = adjacentTemplate(resume.theme.template, dir, atsOnly);
     dispatch({ type: "SET_THEME", theme: themePatchForTemplate(next.key) });
   };
 
@@ -21,14 +23,14 @@ export function useCycleTemplate(opts?: { keyboard?: boolean }) {
       if (el?.closest("input, textarea, select, [contenteditable='true']")) return;
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
       e.preventDefault();
-      const next = adjacentTemplate(resume.theme.template, e.key === "ArrowLeft" ? -1 : 1);
+      const next = adjacentTemplate(resume.theme.template, e.key === "ArrowLeft" ? -1 : 1, atsOnly);
       dispatch({ type: "SET_THEME", theme: themePatchForTemplate(next.key) });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [opts?.keyboard, resume.theme.template, dispatch]);
+  }, [opts?.keyboard, resume.theme.template, atsOnly, dispatch]);
 
-  return { current, index, total: TEMPLATES.length, go };
+  return { current, index, total: list.length, go };
 }
 
 export function TemplateStepper({

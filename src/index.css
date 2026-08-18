@@ -542,6 +542,409 @@ html.qd-app select:-webkit-autofill {
   outline-offset: -1px;
 }
 
+.preview-interact {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.preview-interact.is-dragging .preview-field {
+  pointer-events: none;
+}
+
+.preview-glow {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f4a850 42%, transparent);
+  background: color-mix(in srgb, #f4a850 7%, transparent);
+  transition:
+    background 110ms ease,
+    box-shadow 110ms ease;
+}
+
+.preview-glow.is-entry {
+  background: color-mix(in srgb, #f4a850 5%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f4a850 28%, transparent);
+}
+
+.preview-glow.is-drag {
+  transition: none;
+  background: color-mix(in srgb, #f4a850 4%, transparent);
+  box-shadow: inset 0 0 0 1px #f4a850;
+}
+
+.preview-grip {
+  position: absolute;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  color: #8a8476;
+  background: color-mix(in srgb, #151c24 6%, transparent);
+  opacity: 0;
+  transition:
+    opacity 110ms ease,
+    background 110ms ease,
+    color 110ms ease;
+}
+
+.preview-grip.is-entry {
+  z-index: 7;
+}
+
+.preview-grip.is-on,
+.preview-grip:focus-visible {
+  opacity: 1;
+}
+
+.preview-grip:hover,
+.preview-grip:focus-visible {
+  color: #151c24;
+  background: #f4a850;
+}
+
+.preview-grip:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+
+.preview-field {
+  position: absolute;
+  z-index: 5;
+  padding: 0;
+  border: 0;
+  border-radius: 1px;
+  pointer-events: auto;
+  cursor: text;
+  background: transparent;
+  box-shadow: inset 0 -1px 0 transparent;
+  transition: box-shadow 110ms ease, background 110ms ease;
+}
+
+.preview-field.is-on,
+.preview-field:hover,
+.preview-field:focus-visible {
+  background: color-mix(in srgb, #f4a850 9%, transparent);
+  box-shadow: inset 0 -2px 0 #f4a850;
+}
+
+.preview-drop {
+  position: absolute;
+  z-index: 8;
+  height: 0;
+  pointer-events: none;
+  border-top: 2px solid #f4a850;
+}
+
+.preview-drop span {
+  position: absolute;
+  top: -11px;
+  left: 0;
+  padding: 0 6px;
+  border-radius: 2px;
+  background: #151c24;
+  color: #f0eee8;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 20px;
+}
+
+.preview-edit-bar {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px 3px 8px;
+  border: 1px solid color-mix(in srgb, #f4a850 55%, #151c24);
+  border-radius: 2px;
+  background: #151c24;
+  color: #f0eee8;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.preview-edit-name {
+  padding: 0 6px 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f4a850;
+}
+
+.preview-edit-rule {
+  width: 1px;
+  height: 14px;
+  margin: 0 4px;
+  background: color-mix(in srgb, #f4a850 28%, transparent);
+}
+
+.preview-edit-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #f0eee8;
+  font-size: 11px;
+  font-weight: 600;
+  transition: background 110ms ease, transform 160ms var(--ease-out);
+}
+
+.preview-edit-bar button:hover {
+  background: color-mix(in srgb, #f4a850 18%, transparent);
+}
+
+.preview-edit-bar button:active {
+  transform: scale(0.97);
+}
+
+.preview-edit-go {
+  color: #f4a850 !important;
+}
+
+.preview-edit-pop {
+  position: fixed;
+  z-index: 81;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, #f4a850 45%, #151c24);
+  border-radius: 2px;
+  background: #151c24;
+  color: #f0eee8;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+  animation: preview-pop-in 180ms var(--ease-out);
+}
+
+.preview-edit-kicker {
+  margin: 0 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f4a850;
+}
+
+.preview-edit-pop input,
+.preview-edit-pop textarea {
+  width: 100%;
+  margin: 0;
+  padding: 8px 9px;
+  border: 1px solid color-mix(in srgb, #f0eee8 18%, transparent);
+  border-radius: 2px;
+  background: #1c242e;
+  color: #f0eee8;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  outline: none;
+  resize: vertical;
+}
+
+.preview-edit-pop input.is-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-edit-pop input:focus,
+.preview-edit-pop textarea:focus {
+  border-color: #f4a850;
+}
+
+.preview-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.preview-edit-done,
+.preview-edit-cancel {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 160ms var(--ease-out), background 110ms ease;
+}
+
+.preview-edit-done {
+  background: #f4a850;
+  color: #151c24;
+}
+
+.preview-edit-cancel {
+  background: transparent;
+  color: color-mix(in srgb, #f0eee8 72%, transparent);
+}
+
+.preview-edit-done:hover {
+  background: #ffb45c;
+}
+
+.preview-edit-cancel:hover {
+  color: #f0eee8;
+}
+
+.preview-edit-done:active,
+.preview-edit-cancel:active {
+  transform: scale(0.97);
+}
+
+.preview-is-dragging,
+.preview-is-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+@keyframes preview-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.page-layout-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px 12px;
+  border: 1px solid var(--color-stone-300, #d6d3d1);
+  border-radius: 2px;
+  background: #fff;
+}
+
+.page-layout-mid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-layout-sheet {
+  display: flex;
+  width: 72px;
+  height: 102px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border: 1px solid color-mix(in srgb, #f4a850 55%, #151c24);
+  border-radius: 1px;
+  background: #f0eee8;
+  box-shadow: inset 0 0 0 1px rgba(21, 28, 36, 0.06);
+}
+
+.page-layout-sheet.is-letter {
+  width: 78px;
+  height: 96px;
+}
+
+.page-layout-sheet span {
+  display: block;
+  height: 2px;
+  background: color-mix(in srgb, #151c24 16%, transparent);
+}
+
+.page-margin-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #8a8476;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-margin-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid #d6d3d1;
+  border-radius: 2px;
+  background: #f7f6f2;
+  transition: border-color 110ms ease;
+}
+
+.page-margin-input:focus-within {
+  border-color: #f4a850;
+}
+
+.page-margin-input input {
+  width: 3.2rem;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: #151c24;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+}
+
+.page-margin-input input::-webkit-outer-spin-button,
+.page-margin-input input::-webkit-inner-spin-button {
+  opacity: 1;
+}
+
+.page-margin-input abbr {
+  color: #8a8476;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+}
+
+.page-layout-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #5c5c5c;
+  font-size: 11px;
+  font-weight: 600;
+  transition: background 110ms ease, color 110ms ease, transform 160ms var(--ease-out);
+}
+
+.page-layout-link.is-on {
+  color: #151c24;
+}
+
+.page-layout-link:hover {
+  background: #f0eee8;
+}
+
+.page-layout-link:active {
+  transform: scale(0.97);
+}
+
 .preview-folio {
   margin-top: 14px;
   display: flex;
@@ -577,6 +980,18 @@ html.qd-app select:-webkit-autofill {
   position: absolute;
   right: 12px;
   top: 10px;
+}
+
+.preview-overflow-warn {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #151c24;
+  background: #f4e4c4;
+  border: 1px solid #d4b06a;
+  border-radius: 2px;
 }
 
 /* ===== Print ===== */

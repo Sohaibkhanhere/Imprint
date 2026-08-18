@@ -1,10 +1,22 @@
-import { useDeferredValue, useEffect, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useResume } from "../store/resumeStore";
 import { getTemplate } from "../templates/registry";
 import { PAGE_DIMS } from "../templates/shared";
+import { PAGE_STACK_GAP } from "../templates/paginate";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { TemplateStepper } from "./TemplateStepper";
+import { PreviewInteract } from "./PreviewInteract";
 import { applyPageStyle } from "../lib/pdf";
+
+function countPreviewPages(host: HTMLElement | null): number {
+  if (!host) return 1;
+  const stack = host.querySelector(".resume-folio-stack");
+  if (stack) {
+    const n = Number(stack.getAttribute("data-page-count"));
+    if (n > 0) return n;
+  }
+  return host.querySelectorAll(".resume-sheet:not(.resume-sheet-measure)").length || 1;
+}
 
 export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) {
   const { resume } = useResume();
@@ -19,8 +31,11 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
   const template = getTemplate(liveTheme.template);
   const Template = template.component;
   const page = PAGE_DIMS[liveTheme.pageSize] ?? PAGE_DIMS.a4;
+  const maxPages = liveTheme.maxPages ?? 1;
+  const innerH = pages * page.height + Math.max(0, pages - 1) * PAGE_STACK_GAP;
   const visualW = page.width * scale;
-  const visualH = page.height * scale;
+  const visualH = innerH * scale;
+  const overLimit = pages > maxPages;
 
   useEffect(() => {
     applyPageStyle(resume.theme.pageSize ?? "a4");
@@ -40,10 +55,19 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
     return () => ro.disconnect();
   }, [page.width]);
 
-  useEffect(() => {
-    setPages(1);
-    onPages?.(1);
-  }, [onPages, resume.theme.template, resume.theme.pageSize]);
+  useLayoutEffect(() => {
+    const host = sheetRef.current;
+    if (!host) return;
+    const update = () => {
+      const n = countPreviewPages(host);
+      setPages((prev) => (prev === n ? prev : n));
+      onPages?.(n);
+    };
+    update();
+    const mo = new MutationObserver(update);
+    mo.observe(host, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-page-count"] });
+    return () => mo.disconnect();
+  }, [onPages, liveTheme.template, liveTheme.pageSize, deferred]);
 
   return (
     <div className="relative h-full">
@@ -54,12 +78,17 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
       </div>
       <div ref={frameRef} id="preview-frame" className="preview-frame">
         <div className="preview-canvas" style={{ width: visualW }}>
+          {overLimit ? (
+            <div className="preview-overflow-warn no-print" role="status">
+              Your content doesn't fit in {maxPages} page(s). Trim content or increase the page limit.
+            </div>
+          ) : null}
           <div className="preview-canvas-clip" style={{ width: visualW, height: visualH }}>
             <div
               className="preview-canvas-inner"
               style={{
                 width: page.cssWidth,
-                height: page.cssHeight,
+                height: innerH,
                 transform: `scale(${scale})`,
                 transformOrigin: "top left",
               }}
@@ -76,6 +105,7 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
                 >
                   <Template resume={previewResume} />
                 </ErrorBoundary>
+                <PreviewInteract hostRef={sheetRef} />
               </div>
             </div>
           </div>
@@ -84,6 +114,7 @@ export function PreviewPane({ onPages }: { onPages?: (pages: number) => void }) 
             <span className="folio truncate text-stone-600">{(resume.contact?.fullName || "").trim() || "Untitled resume"}</span>
             <span className="folio">
               <span className="folio-tick">·</span> {template.label} <span className="folio-tick">·</span> {page.label}
+              <span className="folio-tick">·</span> {pages} page{pages === 1 ? "" : "s"}
             </span>
           </div>
         </div>

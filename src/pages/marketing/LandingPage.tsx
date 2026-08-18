@@ -18,6 +18,7 @@ import {
 } from "../../seo/brand";
 
 const LivePreview = lazy(() => import("./LivePreview").then((m) => ({ default: m.LivePreview })));
+const NetflixFeatured = lazy(() => import("./LivePreview").then((m) => ({ default: m.NetflixFeatured })));
 const LandingGallery = lazy(() => import("./LandingGallery").then((m) => ({ default: m.LandingGallery })));
 
 export function LandingPage() {
@@ -77,22 +78,31 @@ export function LandingPage() {
         </section>
 
         <section id="netflix" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <p className="folio text-amber-500">Featured layout</p>
-          <h2 className="mt-3 font-serif text-3xl font-semibold text-stone-900">We also make a Netflix template</h2>
-          <p className="mt-4 max-w-[62ch] text-stone-600">
-            Most resume builders only ship a white office page. Resume by QD also includes a Netflix layout: black page, red marks, and a poster-style photo, built like a streaming profile rather than a Word document.
-          </p>
-          <p className="mt-3 max-w-[62ch] text-stone-600">
-            Use it when the role is creative, tech, or portfolio-led and a recruiter will actually open the file. Name, title, and photo sit in a hero like a show card. Experience reads as a watch-list of roles. Education and skills sit in tiles. For job sites that parse resumes, keep the same content and turn on ATS Safe before you export.
-          </p>
-          <p className="mt-6">
-            <Link
-              to="/app?template=stream"
-              className="inline-flex min-h-11 items-center rounded-sm bg-amber-500 px-4 text-sm font-semibold text-stone-100 transition hover:bg-amber-400"
-            >
-              Open the Netflix template
-            </Link>
-          </p>
+          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
+            <div>
+              <p className="folio text-amber-500">Featured layout</p>
+              <h2 className="mt-3 font-serif text-3xl font-semibold text-stone-900">We also make a Netflix template</h2>
+              <p className="mt-4 max-w-[62ch] text-stone-600">
+                Most resume builders only ship a white office page. Resume by QD also includes a Netflix layout: black page, red marks, and a poster-style photo, built like a streaming profile rather than a Word document.
+              </p>
+              <p className="mt-3 max-w-[62ch] text-stone-600">
+                Use it when the role is creative, tech, or portfolio-led and a recruiter will actually open the file. Name, title, and photo sit in a hero like a show card. Experience reads as a watch-list of roles. Education and skills sit in tiles. For job sites that parse resumes, keep the same content and turn on ATS Safe before you export.
+              </p>
+              <p className="mt-6">
+                <Link
+                  to="/app?template=stream"
+                  className="inline-flex min-h-11 items-center rounded-sm bg-amber-500 px-4 text-sm font-semibold text-stone-100 transition hover:bg-amber-400"
+                >
+                  Open the Netflix template
+                </Link>
+              </p>
+            </div>
+            <Suspense fallback={<div className="min-h-[28rem] rounded-sm border border-stone-300 bg-stone-50" />}>
+              <Link to="/app?template=stream" className="block min-w-0">
+                <NetflixFeatured />
+              </Link>
+            </Suspense>
+          </div>
         </section>
 
         <section id="layouts" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">

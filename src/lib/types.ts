@@ -54,6 +54,13 @@ export type TemplateKey =
 export type Density = "compact" | "comfortable";
 export type PageSize = "a4" | "letter";
 export type CitationFormat = "apa" | "mla" | "chicago";
+
+export interface PageMargins {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
 export type FluencyLevel = "Native" | "Fluent" | "Professional" | "Conversational";
 
 export interface Contact {
@@ -234,6 +241,7 @@ export interface ThemeConfig {
   atsSafe: boolean;
   pageSize: PageSize;
   maxPages: 1 | 2;
+  margins: PageMargins;
   citationFormat: CitationFormat;
 }
 

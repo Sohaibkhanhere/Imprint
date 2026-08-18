@@ -1,5 +1,5 @@
 import type { Resume, SectionKey } from "../lib/types";
-import { Sheet, contactParts, safeContact, effectiveSections } from "./shared";
+import { Sheet, ContactLine, safeContact, effectiveSections } from "./shared";
 import { Portrait } from "./graphical";
 import { SectionBlock } from "./Sections";
 
@@ -7,7 +7,6 @@ const SIDEBAR_KEYS: SectionKey[] = ["skills", "certifications", "languages"];
 
 export function PhotoHeaderTemplate({ resume }: { resume: Resume }) {
   const c = safeContact(resume);
-  const parts = contactParts(resume);
   const all = effectiveSections(resume) as SectionKey[];
   const main = all.filter((k) => !SIDEBAR_KEYS.includes(k));
   return (
@@ -17,7 +16,7 @@ export function PhotoHeaderTemplate({ resume }: { resume: Resume }) {
         <div className="ph-headtext">
           <h1 className="ph-name">{c.fullName}</h1>
           {c.title ? <div className="ph-title">{c.title}</div> : null}
-          {parts.length ? <div className="ph-contact">{parts.join("   ·   ")}</div> : null}
+          <ContactLine resume={resume} className="ph-contact" sep="   ·   " as="div" />
         </div>
       </header>
       <div className="ph-layout">

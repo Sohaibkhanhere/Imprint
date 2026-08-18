@@ -26,16 +26,22 @@ export function LivePreview() {
           }}
         />
       </SheetCard>
-      <SheetCard className="sm:col-span-2" label="Netflix layout" note="Black page, red marks, poster photo. Same sample person.">
-        <StreamTemplate
-          resume={{
-            ...resume,
-            contact: { ...resume.contact, photoUrl: resume.contact.photoUrl || DEFAULT_PORTRAIT },
-            theme: { ...resume.theme, template: "stream", accent: templateDefaultAccent("stream"), atsSafe: false },
-          }}
-        />
-      </SheetCard>
     </div>
+  );
+}
+
+export function NetflixFeatured() {
+  const resume = useMemo(() => createDemoResume(), []);
+  return (
+    <SheetCard label="Netflix layout" note="Black page, red marks, poster photo. Same sample person.">
+      <StreamTemplate
+        resume={{
+          ...resume,
+          contact: { ...resume.contact, photoUrl: resume.contact.photoUrl || DEFAULT_PORTRAIT },
+          theme: { ...resume.theme, template: "stream", accent: templateDefaultAccent("stream"), atsSafe: false },
+        }}
+      />
+    </SheetCard>
   );
 }
 

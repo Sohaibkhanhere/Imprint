@@ -37,6 +37,12 @@ function ShellInner() {
   }, [dispatch]);
 
   useEffect(() => {
+    const onFocus = () => setMobileTab("copy");
+    window.addEventListener("rs:focus-section", onFocus);
+    return () => window.removeEventListener("rs:focus-section", onFocus);
+  }, []);
+
+  useEffect(() => {
     if (resume.theme.template !== "tech-dark") return;
     if ((resume.theme.accent || "").toLowerCase() !== "#262a43") return;
     dispatch({ type: "SET_THEME", theme: { accent: "#e50914" } });

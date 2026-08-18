@@ -4,7 +4,7 @@ import { t } from "./safe";
 import { cleanUrl } from "./date";
 import { tailorResume } from "./jdTailor";
 import { improveBullet } from "./improveBullet";
-import { getTemplate } from "../templates/registry";
+import { getTemplate, themePatchForAtsSafe } from "../templates/registry";
 
 export interface AtsCheck {
   id: string;
@@ -707,8 +707,10 @@ export function improveAts(resume: Resume): AtsImproveResult {
   }
 
   if (!next.theme.atsSafe) {
-    next.theme = { ...next.theme, atsSafe: true };
-    changes.push("Turned on ATS Safe: single-column parser layout, standard headings, and system fonts. Designed look returns when you turn it off.");
+    next.theme = { ...next.theme, ...themePatchForAtsSafe(next.theme.template, true) };
+    changes.push("Turned on ATS Safe: parser-friendly layouts only. Designed look returns when you turn it off.");
+  } else if (!getTemplate(next.theme.template).atsSafeVariant) {
+    next.theme = { ...next.theme, ...themePatchForAtsSafe(next.theme.template, true) };
   }
 
   const leftover: string[] = [];

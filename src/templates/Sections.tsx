@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Resume, SectionKey } from "../lib/types";
-import { Bullets, Dates, ExtraDetails, headingFor, shouldRender, citePublication, effectiveSections } from "./shared";
+import { Bullets, Dates, ExtraDetails, headingFor, shouldRender, citePublication, effectiveSections, SheetHref } from "./shared";
 import { cleanUrl } from "../lib/date";
 
 function SectionHead({ label }: { label: string }) {
@@ -34,15 +34,15 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
   const out: ReactNode[] = [];
   switch (key) {
     case "summary":
-      out.push(<p key="s" className="t-summary">{resume.summary}</p>);
+      out.push(<p key="s" className="t-summary" data-rs-field="summary">{resume.summary}</p>);
       break;
     case "objective":
-      out.push(<p key="s" className="t-summary">{resume.objective}</p>);
+      out.push(<p key="s" className="t-summary" data-rs-field="objective">{resume.objective}</p>);
       break;
     case "experience":
       (resume.experience ?? []).forEach((j) =>
         out.push(
-          <div key={j.id} className="t-entry">
+          <div key={j.id} className="t-entry" data-rs-entry={j.id}>
             <div className="t-entry-head">
               <span className="t-role">{j.role || j.company}</span>
               <span className="t-dates"><Dates start={j.startDate} end={j.endDate} present={j.present} /></span>
@@ -60,7 +60,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "education":
       (resume.education ?? []).forEach((e) =>
         out.push(
-          <div key={e.id} className="t-entry">
+          <div key={e.id} className="t-entry" data-rs-entry={e.id}>
             <div className="t-entry-head">
               <span className="t-role">{e.degree ? [e.degree, e.field].filter(Boolean).join(", ") : e.institution}</span>
               <span className="t-dates"><Dates start={e.startDate} end={e.endDate} present={false} /></span>
@@ -82,10 +82,14 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "projects":
       (resume.projects ?? []).forEach((p) =>
         out.push(
-          <div key={p.id} className="t-entry">
+          <div key={p.id} className="t-entry" data-rs-entry={p.id}>
             <div className="t-entry-head">
               <span className="t-role">{p.name}</span>
-              {p.link ? <span className="t-dates">{cleanUrl(p.link)}</span> : null}
+              {p.link ? (
+                <span className="t-dates">
+                  <SheetHref href={p.link}>{cleanUrl(p.link)}</SheetHref>
+                </span>
+              ) : null}
             </div>
             {p.tech ? <div className="t-meta">{p.tech}</div> : null}
             {p.description ? <p className="t-desc">{p.description}</p> : null}
@@ -96,7 +100,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "certifications":
       (resume.certifications ?? []).forEach((c) =>
         out.push(
-          <div key={c.id} className="t-cert">
+          <div key={c.id} className="t-cert" data-rs-entry={c.id}>
             <span className="t-role">{c.name}</span>
             <span className="t-meta">{[c.issuer, c.year].filter(Boolean).join(" · ")}</span>
           </div>,
@@ -118,7 +122,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "volunteer":
       (resume.volunteer ?? []).forEach((v) =>
         out.push(
-          <div key={v.id} className="t-entry">
+          <div key={v.id} className="t-entry" data-rs-entry={v.id}>
             <div className="t-entry-head">
               <span className="t-role">{v.title || v.org}</span>
               <span className="t-dates"><Dates start={v.startDate} end={v.endDate} present={v.present} /></span>
@@ -135,9 +139,13 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "publications":
       (resume.publications ?? []).forEach((p) =>
         out.push(
-          <div key={p.id} className="t-entry t-pub">
+          <div key={p.id} className="t-entry t-pub" data-rs-entry={p.id}>
             <p className="t-pub-cite">{citePublication(p, resume.theme?.citationFormat ?? "apa")}</p>
-            {p.url ? <p className="t-meta">{cleanUrl(p.url)}</p> : null}
+            {p.url ? (
+              <p className="t-meta">
+                <SheetHref href={p.url}>{cleanUrl(p.url)}</SheetHref>
+              </p>
+            ) : null}
           </div>,
         ),
       );
@@ -145,7 +153,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "awards":
       (resume.awards ?? []).forEach((a) =>
         out.push(
-          <div key={a.id} className="t-entry t-award">
+          <div key={a.id} className="t-entry t-award" data-rs-entry={a.id}>
             <span className="t-role">{a.title}</span>
             <span className="t-meta">{[a.org, a.year].filter(Boolean).join(" · ")}</span>
           </div>,
@@ -155,7 +163,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "teaching":
       (resume.teaching ?? []).forEach((t) =>
         out.push(
-          <div key={t.id} className="t-entry">
+          <div key={t.id} className="t-entry" data-rs-entry={t.id}>
             <div className="t-entry-head">
               <span className="t-role">{t.role || t.course}</span>
               <span className="t-dates"><Dates start={t.startDate} end={t.endDate} present={false} /></span>
@@ -172,7 +180,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "grants":
       (resume.grants ?? []).forEach((g) =>
         out.push(
-          <div key={g.id} className="t-entry">
+          <div key={g.id} className="t-entry" data-rs-entry={g.id}>
             <div className="t-entry-head">
               <span className="t-role">{g.name}</span>
               <span className="t-dates">{g.amount ? (g.amount.match(/^\d/) ? "$" + g.amount : g.amount) : ""}</span>
@@ -186,7 +194,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "presentations":
       (resume.presentations ?? []).forEach((p) =>
         out.push(
-          <div key={p.id} className="t-entry t-pres">
+          <div key={p.id} className="t-entry t-pres" data-rs-entry={p.id}>
             <span className="t-role">{p.title}</span>
             <span className="t-meta">{[p.event, p.year, p.location].filter(Boolean).join(" · ")}</span>
           </div>,
@@ -196,7 +204,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "affiliations":
       (resume.affiliations ?? []).forEach((a) =>
         out.push(
-          <div key={a.id} className="t-entry">
+          <div key={a.id} className="t-entry" data-rs-entry={a.id}>
             <span className="t-role">{a.name}</span>
             <span className="t-meta">{[a.role, a.years].filter(Boolean).join(" · ")}</span>
           </div>,
@@ -206,7 +214,7 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
     case "references":
       (resume.references ?? []).forEach((r) =>
         out.push(
-          <div key={r.id} className="t-entry t-ref">
+          <div key={r.id} className="t-entry t-ref" data-rs-entry={r.id}>
             <span className="t-role">{r.name}</span>
             <span className="t-meta">{[r.title, r.org, r.email, r.phone].filter(Boolean).join(" · ")}</span>
           </div>,
@@ -217,7 +225,9 @@ function renderEntry(key: SectionKey, resume: Resume, chips: boolean): ReactNode
       out.push(
         <div key="pf" className="t-entry">
           <span className="t-role">Portfolio</span>
-          <div className="t-meta">{cleanUrl(resume.contact?.portfolioUrl)}</div>
+          <div className="t-meta">
+            <SheetHref href={resume.contact?.portfolioUrl}>{cleanUrl(resume.contact?.portfolioUrl)}</SheetHref>
+          </div>
         </div>,
       );
       break;
@@ -236,7 +246,7 @@ export function SectionBlock({ resume, section, chips }: { resume: Resume; secti
   if (section === "summary" && resume.useObjective) return null;
   if (section === "objective" && !resume.useObjective) return null;
   return (
-    <section className="t-section">
+    <section className="t-section" data-rs-section={section}>
       <SectionHead label={label} />
       <div className="t-body">{renderEntry(section, resume, chips)}</div>
     </section>

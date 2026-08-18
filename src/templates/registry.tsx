@@ -324,8 +324,8 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   },
   {
     key: "tech-dark",
-    label: "Dark Tech",
-    description: "Dark page, contact bar, headline, carded sections.",
+    label: "Originals",
+    description: "Netflix-red cards on a dark page. Contact bar, headline, no photo.",
     suitFor: ["Tech", "Combination", "Chronological"],
     atsSafeVariant: false,
     photo: false,
@@ -570,9 +570,55 @@ export function templateIndex(key: TemplateKey): number {
   return i < 0 ? 0 : i;
 }
 
-export function adjacentTemplate(key: TemplateKey, dir: -1 | 1): TemplateDef {
-  const i = templateIndex(key);
-  return TEMPLATES[(i + dir + TEMPLATES.length) % TEMPLATES.length];
+/** Parser-friendly first. Best single-column sheets at the top; two-column last. */
+export const ATS_ORDER: TemplateKey[] = [
+  "classic",
+  "modern-minimal",
+  "classic-serif",
+  "compact",
+  "executive",
+  "entry-level",
+  "tech",
+  "skills-based",
+  "academic-cv",
+  "manifest",
+  "blueprint",
+  "two-column",
+];
+
+export function atsTemplates(): TemplateDef[] {
+  const byKey = new Map(TEMPLATES.filter((t) => t.atsSafeVariant).map((t) => [t.key, t]));
+  const ordered: TemplateDef[] = [];
+  for (const key of ATS_ORDER) {
+    const tp = byKey.get(key);
+    if (!tp) continue;
+    ordered.push(tp);
+    byKey.delete(key);
+  }
+  for (const tp of byKey.values()) ordered.push(tp);
+  return ordered;
+}
+
+export function templatesForStepper(atsOnly: boolean): TemplateDef[] {
+  return atsOnly ? atsTemplates() : TEMPLATES;
+}
+
+export function nearestAtsTemplate(key: TemplateKey): TemplateDef {
+  const current = getTemplate(key);
+  if (current.atsSafeVariant) return current;
+  return atsTemplates()[0] ?? TEMPLATES[0];
+}
+
+export function adjacentTemplate(key: TemplateKey, dir: -1 | 1, atsOnly = false): TemplateDef {
+  const list = templatesForStepper(atsOnly);
+  const i = list.findIndex((t) => t.key === key);
+  if (i < 0) {
+    const fallback = atsOnly ? nearestAtsTemplate(key) : getTemplate(key);
+    const fi = list.findIndex((t) => t.key === fallback.key);
+    const start = fi < 0 ? 0 : fi;
+    return list[(start + dir + list.length) % list.length] ?? list[0];
+  }
+  return list[(i + dir + list.length) % list.length];
 }
 
 const DEFAULT_ACCENTS: Record<TemplateKey, string> = {
@@ -627,6 +673,14 @@ export function themePatchForTemplate(key: TemplateKey): Partial<ThemeConfig> {
     template: key,
     accent: templateDefaultAccent(key),
   };
+}
+
+export function themePatchForAtsSafe(template: TemplateKey, on: boolean): Partial<ThemeConfig> {
+  if (!on) return { atsSafe: false };
+  const current = getTemplate(template);
+  if (current.atsSafeVariant) return { atsSafe: true };
+  const next = nearestAtsTemplate(template);
+  return { ...themePatchForTemplate(next.key), atsSafe: true };
 }
 
 export const DEFAULT_TEMPLATE: TemplateKey = "classic";

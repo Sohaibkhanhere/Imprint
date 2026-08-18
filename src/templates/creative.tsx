@@ -1,10 +1,9 @@
 import type { Resume } from "../lib/types";
-import { Sheet, contactParts, safeContact } from "./shared";
+import { Sheet, ContactLine, safeContact } from "./shared";
 import { Sections } from "./Sections";
 import { t } from "../lib/safe";
 
 export function CreativeTemplate({ resume }: { resume: Resume }) {
-  const parts = contactParts(resume);
   const c = safeContact(resume);
   const initial = t(c.fullName).charAt(0);
   return (
@@ -17,7 +16,7 @@ export function CreativeTemplate({ resume }: { resume: Resume }) {
             {c.title ? <p className="cr-title">{c.title}</p> : null}
           </div>
         </div>
-        {parts.length ? <p className="cr-contact">{parts.join("   ·   ")}</p> : null}
+        <ContactLine resume={resume} className="cr-contact" sep="   ·   " />
       </header>
       <Sections resume={resume} chips />
     </Sheet>

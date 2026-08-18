@@ -1,21 +1,14 @@
 import type { Resume } from "../lib/types";
-import { Sheet, SectionHead, Bullets, Dates, ExtraDetails, contactParts, safeContact, headingFor, effectiveSections, citePublication } from "./shared";
+import { Sheet, SectionHead, Bullets, Dates, ExtraDetails, ContactLine, SheetHref, safeContact, headingFor, effectiveSections, citePublication } from "./shared";
 import { cleanUrl } from "../lib/date";
 
 function Header({ resume }: { resume: Resume }) {
   const c = safeContact(resume);
-  const parts = contactParts(resume);
   return (
-    <header className="c-header">
-      <h1 className="sheet-name c-name">{c.fullName || "Your Name"}</h1>
-      {c.title ? <p className="c-title">{c.title}</p> : null}
-      {parts.length > 0 ? (
-        <p className="c-contact">
-          {parts.map((p, i) => (
-            <span key={i}>{p}</span>
-          ))}
-        </p>
-      ) : null}
+    <header className="c-header" data-rs-section="contact">
+      <h1 className="sheet-name c-name" data-rs-field="fullName">{c.fullName || "Your Name"}</h1>
+      {c.title ? <p className="c-title" data-rs-field="title">{c.title}</p> : null}
+      <ContactLine resume={resume} className="c-contact" spanParts />
       <hr className="sheet-rule c-rule" />
     </header>
   );
@@ -33,25 +26,25 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
         switch (s) {
           case "summary":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("summary", resume)} />
-                <p className="c-summary">{r.summary}</p>
+                <p className="c-summary" data-rs-field="summary">{r.summary}</p>
               </section>
             );
           case "objective":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Objective" />
-                <p className="c-summary">{r.objective}</p>
+                <p className="c-summary" data-rs-field="objective">{r.objective}</p>
               </section>
             );
           case "experience":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("experience", resume)} />
                 <div className="space-y" style={{ display: "grid", gap: "var(--s3, 16px)" }}>
                   {r.experience.map((e) => (
-                    <div key={e.id} className="sheet-entry">
+                    <div key={e.id} className="sheet-entry" data-rs-entry={e.id}>
                       <div className="c-entry-head">
                         <span className="c-role">{e.role || e.company || "Role"}</span>
                         <span className="c-dates">
@@ -71,11 +64,11 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "education":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("education", resume)} />
                 <div style={{ display: "grid", gap: "var(--s2, 11px)" }}>
                   {r.education.map((e) => (
-                    <div key={e.id} className="sheet-entry">
+                    <div key={e.id} className="sheet-entry" data-rs-entry={e.id}>
                       <div className="c-entry-head">
                         <span className="c-role">
                           {[e.degree, e.field].filter(Boolean).join(", ") || e.institution}
@@ -102,7 +95,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "skills":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("skills", resume)} />
                 <div style={{ display: "grid", gap: "var(--s1, 7px)" }}>
                   {r.skills
@@ -118,15 +111,17 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "projects":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Projects" />
                 <div style={{ display: "grid", gap: "var(--s2, 11px)" }}>
                   {r.projects.map((p) => (
-                    <div key={p.id} className="sheet-entry">
+                    <div key={p.id} className="sheet-entry" data-rs-entry={p.id}>
                       <div className="c-entry-head">
                         <span className="c-role">{p.name}</span>
                         {p.link ? (
-                          <span className="c-dates" style={{ color: "var(--accent)" }}>{cleanUrl(p.link)}</span>
+                          <span className="c-dates" style={{ color: "var(--accent)" }}>
+                            <SheetHref href={p.link}>{cleanUrl(p.link)}</SheetHref>
+                          </span>
                         ) : null}
                       </div>
                       {p.tech ? <div className="c-org"><strong>{p.tech}</strong></div> : null}
@@ -138,7 +133,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "certifications":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Certifications" />
                 {r.certifications.map((c) => (
                   <p key={c.id} className="c-cert">
@@ -151,7 +146,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "languages":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Languages" />
                 <div className="c-inline-list">
                   {r.languages.map((l) => (
@@ -165,11 +160,11 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "volunteer":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("volunteer", resume)} />
                 <div style={{ display: "grid", gap: "var(--s2, 11px)" }}>
                   {r.volunteer.map((v) => (
-                    <div key={v.id} className="sheet-entry">
+                    <div key={v.id} className="sheet-entry" data-rs-entry={v.id}>
                       <div className="c-entry-head">
                         <span className="c-role">{v.title || v.org}</span>
                         <span className="c-dates">
@@ -188,14 +183,17 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "publications":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Publications" />
                 <ul className="sheet-bullets">
                   {r.publications.map((p) => (
                     <li key={p.id} style={{ paddingLeft: 0 }}>
                       {citePublication(p, r.theme?.citationFormat ?? "apa")}
                       {p.url ? (
-                        <span style={{ color: "var(--accent)" }}> {cleanUrl(p.url)}</span>
+                        <span style={{ color: "var(--accent)" }}>
+                          {" "}
+                          <SheetHref href={p.url}>{cleanUrl(p.url)}</SheetHref>
+                        </span>
                       ) : null}
                     </li>
                   ))}
@@ -204,7 +202,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "awards":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Awards & Honors" />
                 {r.awards.map((a) => (
                   <p key={a.id} className="c-cert">
@@ -217,11 +215,11 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "teaching":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Teaching Experience" />
                 <div style={{ display: "grid", gap: "var(--s2, 11px)" }}>
                   {r.teaching.map((t) => (
-                    <div key={t.id} className="sheet-entry">
+                    <div key={t.id} className="sheet-entry" data-rs-entry={t.id}>
                       <div className="c-entry-head">
                         <span className="c-role">{t.role}</span>
                         <span className="c-dates">
@@ -241,10 +239,10 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "grants":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Grants & Fellowships" />
                 {r.grants.map((g) => (
-                  <div key={g.id} className="sheet-entry" style={{ marginBottom: "var(--s1, 7px)" }}>
+                  <div key={g.id} className="sheet-entry" data-rs-entry={g.id} style={{ marginBottom: "var(--s1, 7px)" }}>
                     <div className="c-entry-head">
                       <span className="c-role">{g.name}</span>
                       <span className="c-dates">{g.year}</span>
@@ -260,7 +258,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "presentations":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Conference Presentations" />
                 {r.presentations.map((p) => (
                   <p key={p.id} className="c-cert">
@@ -273,7 +271,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "affiliations":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Professional Affiliations" />
                 {r.affiliations.map((a) => (
                   <p key={a.id} className="c-cert">
@@ -286,7 +284,7 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "references":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="References" />
                 {r.references.map((ref) => (
                   <div key={ref.id} className="c-ref">
@@ -303,16 +301,18 @@ export function ClassicTemplate({ resume }: { resume: Resume }) {
             );
           case "portfolio":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label="Portfolio" />
                 <p className="c-summary">
-                  <span style={{ color: "var(--accent)", fontWeight: 600 }}>{cleanUrl(r.contact.portfolioUrl)}</span>
+                  <span style={{ color: "var(--accent)", fontWeight: 600 }}>
+                    <SheetHref href={r.contact.portfolioUrl}>{cleanUrl(r.contact.portfolioUrl)}</SheetHref>
+                  </span>
                 </p>
               </section>
             );
           case "extras":
             return (
-              <section key={s} className="sheet-section">
+              <section key={s} className="sheet-section" data-rs-section={s}>
                 <SectionHead label={headingFor("extras", resume)} />
                 <ExtraDetails resume={resume} />
               </section>

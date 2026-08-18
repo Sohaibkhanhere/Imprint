@@ -1,5 +1,5 @@
 import type { Resume, SectionKey } from "../lib/types";
-import { Sheet, contactParts, safeContact, effectiveSections } from "./shared";
+import { Sheet, ContactList, safeContact, effectiveSections } from "./shared";
 import { Portrait } from "./graphical";
 import { SectionBlock } from "./Sections";
 
@@ -7,7 +7,6 @@ const SIDEBAR_KEYS: SectionKey[] = ["education", "skills", "certifications", "la
 
 export function BoldDiagonalTemplate({ resume }: { resume: Resume }) {
   const c = safeContact(resume);
-  const parts = contactParts(resume);
   const all = effectiveSections(resume) as SectionKey[];
   const main = all.filter((k) => !SIDEBAR_KEYS.includes(k));
   return (
@@ -26,14 +25,8 @@ export function BoldDiagonalTemplate({ resume }: { resume: Resume }) {
             {all.filter((k) => SIDEBAR_KEYS.includes(k)).map((k) => (
               <SectionBlock key={k} resume={resume} section={k} chips={false} />
             ))}
-            {parts.length ? (
-              <>
-                <h3 className="bd-h">Contact</h3>
-                {parts.map((p, i) => (
-                  <div key={i} className="bd-item">{p}</div>
-                ))}
-              </>
-            ) : null}
+            <h3 className="bd-h">Contact</h3>
+            <ContactList resume={resume} itemClass="bd-item" />
           </div>
         </aside>
       </div>

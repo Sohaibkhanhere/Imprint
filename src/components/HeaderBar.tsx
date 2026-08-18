@@ -12,6 +12,9 @@ import { TemplateGallery } from "./TemplateGallery";
 import { TemplateStepper } from "./TemplateStepper";
 import { AtsScoreRing } from "./AtsScoreRing";
 import { computeAtsScore, improveAts } from "../lib/atsScore";
+import { themePatchForAtsSafe } from "../templates/registry";
+import { patchPageSize } from "../lib/pageLayout";
+import { PageLayoutPanel } from "./PageLayoutPanel";
 
 export function HeaderBar({
   onReset,
@@ -149,7 +152,7 @@ export function HeaderBar({
           </button>
           <select
             value={t.pageSize ?? "a4"}
-            onChange={(e) => dispatch({ type: "SET_THEME", theme: { pageSize: e.target.value as "a4" | "letter" } })}
+            onChange={(e) => dispatch({ type: "SET_THEME", theme: patchPageSize(t, e.target.value as "a4" | "letter") })}
             title="Page size"
             className="hidden rounded-sm border border-stone-300 bg-stone-50 px-2 py-1.5 text-xs font-medium text-stone-600 focus:outline-none focus:ring-1 focus:ring-amber-500 2xl:block"
           >
@@ -164,11 +167,11 @@ export function HeaderBar({
           </div>
           <button
             type="button"
-            title={t.atsSafe ? "ATS Safe on: this layout is flattened for parsers (single column, no graphics). Each template still keeps its own look. Click to restore the designed page." : "ATS Safe off. Click to flatten this layout for parsers."}
+            title={t.atsSafe ? "ATS Safe on: Next and Previous only cycle parser-friendly layouts. Click to restore the designed page." : "ATS Safe off. Click to use parser-friendly layouts only."}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } });
+              dispatch({ type: "SET_THEME", theme: themePatchForAtsSafe(t.template, !t.atsSafe) });
             }}
             className={`ats-safe-toggle${t.atsSafe ? " is-on" : ""}`}
             aria-pressed={t.atsSafe}
@@ -234,7 +237,7 @@ export function HeaderBar({
                     { label: "ATS Compatibility Score", run: () => onOpenNotes?.() },
                     { label: "Improve ATS", run: applyImprove },
                     { label: t.atsSafe ? "ATS Safe on" : "ATS Safe off", run: () => {
-                      dispatch({ type: "SET_THEME", theme: { atsSafe: !t.atsSafe } });
+                      dispatch({ type: "SET_THEME", theme: themePatchForAtsSafe(t.template, !t.atsSafe) });
                     } },
                     { label: "Start fresh", run: onReset },
                   ] as { label: string; run: () => void }[]
@@ -294,6 +297,7 @@ export function HeaderBar({
             </div>
             <p className="folio mt-2.5 text-stone-500">{getResumeType(resume.meta.type).structure.join(" · ")}</p>
           </div>
+          <PageLayoutPanel />
           <div className="mb-5 border border-stone-200">
             <button
               type="button"

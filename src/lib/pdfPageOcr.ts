@@ -34,11 +34,15 @@ function meanLuminance(data: Uint8Array | Uint8ClampedArray): number {
   return n ? sum / n : 255;
 }
 
-function grayscaleInvert(data: Uint8Array | Uint8ClampedArray, invert: boolean) {
+function binarizeResumePixels(data: Uint8Array | Uint8ClampedArray, darkPage: boolean) {
   for (let i = 0; i < data.length; i += 4) {
-    let g = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    if (invert) g = 255 - g;
-    const v = Math.max(0, Math.min(255, (g - 18) * 1.18));
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const sat = Math.max(r, g, b) - Math.min(r, g, b);
+    const ink = darkPage ? sat > 42 || lum > 68 : lum < 158 || sat > 55;
+    const v = ink ? 0 : 255;
     data[i] = v;
     data[i + 1] = v;
     data[i + 2] = v;
@@ -50,13 +54,13 @@ function prepareCanvas(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return;
   const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  grayscaleInvert(img.data, meanLuminance(img.data) < 118);
+  binarizeResumePixels(img.data, meanLuminance(img.data) < 118);
   ctx.putImageData(img, 0, 0);
 }
 
 function jpegToOcrBlob(bytes: Uint8Array): Blob | Buffer {
   const decoded = jpeg.decode(bytes, { useTArray: true, formatAsRGBA: true });
-  grayscaleInvert(decoded.data, meanLuminance(decoded.data) < 118);
+  binarizeResumePixels(decoded.data, meanLuminance(decoded.data) < 118);
   const encoded = jpeg.encode({ data: decoded.data, width: decoded.width, height: decoded.height }, 88);
   return typeof Buffer !== "undefined" ? Buffer.from(encoded.data) : new Blob([encoded.data], { type: "image/jpeg" });
 }
@@ -65,7 +69,7 @@ async function renderPdfPage(page: {
   getViewport: (opts: { scale: number }) => { width: number; height: number };
   render: (opts: { canvas: HTMLCanvasElement; canvasContext: CanvasRenderingContext2D; viewport: unknown }) => { promise: Promise<unknown> };
 }): Promise<HTMLCanvasElement> {
-  const viewport = page.getViewport({ scale: 1.85 });
+  const viewport = page.getViewport({ scale: 2.2 });
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(viewport.width));
   canvas.height = Math.max(1, Math.round(viewport.height));
@@ -130,27 +134,109 @@ function layoutOcrLines(items: OcrLine[], pageWidth: number): string {
   return ordered.map((l) => l.text).join("\n");
 }
 
+const OCR_HEADS: [string, string][] = [
+  ["profile", "Profile"],
+  ["summary", "Summary"],
+  ["objective", "Objective"],
+  ["education", "Education"],
+  ["experience", "Experience"],
+  ["skills", "Skills"],
+  ["skill", "Skills"],
+  ["projects", "Projects"],
+  ["project", "Projects"],
+  ["certifications", "Certifications"],
+  ["languages", "Languages"],
+  ["awards", "Awards"],
+  ["achievements", "Awards"],
+  ["volunteer", "Volunteer"],
+];
+
+function editDist(a: string, b: string): number {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  const row = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) row[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    let prev = i - 1;
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cur = row[j];
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + cost);
+      prev = cur;
+    }
+  }
+  return row[b.length];
+}
+
+function canonHeadingToken(tok: string): string | null {
+  const w = tok.toLowerCase().replace(/[^a-z]/g, "");
+  if (w.length < 4) return null;
+  for (const [canon, label] of OCR_HEADS) {
+    if (w === canon) return label;
+    const allow = canon.length >= 8 ? 2 : 1;
+    if (editDist(w, canon) <= allow) return label;
+  }
+  return null;
+}
+
 function explodeHeadings(text: string): string {
   return text
-    .replace(
-      /(?<=\s|^)(PROFILE|SUMMARY|OBJECTIVE|EDUCATION|EXPERIENCE|SKILLS?|PROJECTS?|CERTIFICATIONS?|LANGUAGES?|AWARDS?|ACHIEVEMENTS?|CONTACT|WORK EXPERIENCE)(?=\s|$)/g,
-      "\n$1\n",
-    )
-    .replace(
-      /\b(Education|Experience|Skills|Projects|Profile|Summary|Objective|Certifications|Languages|Awards)\s+(?=(Education|Experience|Skills|Projects|Profile|Summary)\b)/g,
-      "$1\n",
-    );
+    .split("\n")
+    .flatMap((line) => {
+      const parts = line.split(/\s+/).filter(Boolean);
+      if (!parts.length) return [];
+      const out: string[] = [];
+      let buf: string[] = [];
+      const flush = () => {
+        if (buf.length) out.push(buf.join(" "));
+        buf = [];
+      };
+      for (let i = 0; i < parts.length; i++) {
+        if (/^work$/i.test(parts[i]) && /^experienc/i.test(parts[i + 1] || "")) {
+          flush();
+          out.push("Experience");
+          i++;
+          continue;
+        }
+        const head = canonHeadingToken(parts[i]);
+        if (head) {
+          flush();
+          out.push(head);
+          continue;
+        }
+        buf.push(parts[i]);
+      }
+      flush();
+      return out;
+    })
+    .join("\n");
 }
 
 function repairOcrContact(text: string): string {
-  return text
+  let t = text
     .replace(/(\w)\s*[@＠]\s*(\w)/g, "$1@$2")
     .replace(/@\s*gmaill?\s*\.?\s*com\b/gi, "@gmail.com")
     .replace(/@\s*gsmail\s*\.?\s*com\b/gi, "@gmail.com")
     .replace(/@\s*([a-z0-9-]+)\s*\.\s*(com|org|net|io|pk|dev)\b/gi, "@$1.$2")
+    .replace(/\b([a-z0-9._%+-]{3,})\s+gmail\.com\b/gi, "$1@gmail.com")
     .replace(/\b([a-z0-9._%+-]{3,})gmail\.com\b/gi, "$1@gmail.com")
     .replace(/\bO(3\d{2}[-\s]?\d{7})\b/g, "0$1")
-    .replace(/\b(\+92|0)\s*3[\sO0]*(\d{2})\s*[-\s]?(\d{7})\b/g, "$13$2$3");
+    .replace(/\b(\+92|0)\s*3[\sOIl0]*(\d{2})\s*[-\s]?(\d{7})\b/g, "$13$2$3");
+  if (!/[\w.+-]+@[\w-]+\.[A-Za-z]{2,}/.test(t)) {
+    const packed = t.replace(/\s+/g, "");
+    const mail = packed.match(/[A-Za-z0-9._%+-]{3,}@(?:gmail|yahoo|outlook|hotmail|icloud)\.com/i);
+    if (mail) t = `${mail[0]}\n${t}`;
+  }
+  if (!/(?:\+92[-\s]?|0)3\d{2}[-\s]?\d{7}/.test(t)) {
+    const digits = t.replace(/[Oo]/g, "0").replace(/[Il]/g, "1").replace(/[^\d+]/g, "");
+    const pk = digits.match(/(?:92)?0?3\d{9}/);
+    if (pk) {
+      const n = pk[0].replace(/^92/, "0").replace(/^3/, "03");
+      t = `${n}\n${t}`;
+    }
+  }
+  return t;
 }
 
 function tidyOcrText(raw: string): string {
@@ -201,7 +287,9 @@ export async function ocrPdfPages(
             await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
             const top = tidyOcrText((await worker.recognize(strip)).data.text || "");
             await worker.setParameters({ tessedit_pageseg_mode: PSM.AUTO });
-            if (top && (/@/.test(top) || /(?:\+92|0)3\d{2}/.test(top.replace(/\s/g, ""))) && !/@/.test(text)) {
+            const needMail = /@/.test(top) && !/@/.test(text);
+            const needPhone = /(?:\+92|0)3\d{2}/.test(top.replace(/\s/g, "")) && !/(?:\+92|0)3\d{2}/.test(text.replace(/\s/g, ""));
+            if (top && (needMail || needPhone)) {
               text = `${top}\n${text}`;
             }
           }

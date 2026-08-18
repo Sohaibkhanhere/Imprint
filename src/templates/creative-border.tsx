@@ -1,12 +1,11 @@
 import type { Resume, SectionKey } from "../lib/types";
-import { Sheet, contactParts, safeContact, initialsOf, effectiveSections } from "./shared";
+import { Sheet, ContactLine, safeContact, initialsOf, effectiveSections } from "./shared";
 import { SectionBlock } from "./Sections";
 
 const SIDEBAR_KEYS: SectionKey[] = ["skills", "certifications", "languages"];
 
 export function CreativeBorderTemplate({ resume }: { resume: Resume }) {
   const c = safeContact(resume);
-  const parts = contactParts(resume);
   const initials = initialsOf(c.fullName);
   const all = effectiveSections(resume) as SectionKey[];
   const main = all.filter((k) => !SIDEBAR_KEYS.includes(k));
@@ -22,7 +21,7 @@ export function CreativeBorderTemplate({ resume }: { resume: Resume }) {
           <div className="cb-headtext">
             <h1 className="cb-name">{c.fullName}</h1>
             {c.title ? <div className="cb-title">{c.title}</div> : null}
-            {parts.length ? <div className="cb-contact">{parts.join("   ·   ")}</div> : null}
+            <ContactLine resume={resume} className="cb-contact" sep="   ·   " as="div" />
           </div>
         </div>
         <div className="cb-layout">

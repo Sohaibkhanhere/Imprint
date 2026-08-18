@@ -1,6 +1,7 @@
 import type { Resume } from "./types";
 import { defaultSectionOrder, defaultVisibility } from "./resumeTypes";
 import { todayISO, uid } from "./date";
+import { DEFAULT_MARGINS } from "./pageLayout";
 
 export const ACCENT_PALETTE = [
   { name: "Quantum Gold", value: "#f4a850" },
@@ -169,6 +170,7 @@ export function resumeForGalleryPreview(live: Resume): Resume {
       density: live.theme?.density ?? demo.theme.density,
       atsSafe: false,
       fontPair: live.theme?.fontPair ?? demo.theme.fontPair,
+      margins: live.theme?.margins ?? demo.theme.margins,
     },
   };
 }
@@ -207,6 +209,7 @@ export function createBlankResume(): Resume {
       atsSafe: false,
       pageSize: "a4",
       maxPages: 1,
+      margins: { ...DEFAULT_MARGINS.a4 },
       citationFormat: "apa",
     },
   };
