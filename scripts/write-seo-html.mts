@@ -3,12 +3,18 @@ import { dirname, join } from "node:path";
 import {
   APP_DESCRIPTION,
   APP_TITLE,
+  BRAND,
+  CITABLE_ANSWER,
+  CLAIMS,
   COMPARE_HUB_DESCRIPTION,
   COMPARE_HUB_TITLE,
   COMPARE_PAGES,
   HOME_DESCRIPTION,
   HOME_FAQS,
   HOME_TITLE,
+  MAKER,
+  MAKER_URL,
+  SITE_NAME,
   SITE_URL,
   WHY_DESCRIPTION,
   WHY_TITLE,
@@ -16,6 +22,7 @@ import {
   faqJsonLd,
   softwareJsonLd,
   webPageJsonLd,
+  webSiteJsonLd,
 } from "../src/seo/brand";
 import {
   appBodyHtml,
@@ -39,7 +46,7 @@ const pages: Page[] = [
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
     body: homeBodyHtml(),
-    jsonLd: [softwareJsonLd(), faqJsonLd(HOME_FAQS), webPageJsonLd({ path: "/", title: HOME_TITLE, description: HOME_DESCRIPTION })],
+    jsonLd: [webSiteJsonLd(), softwareJsonLd(), faqJsonLd(HOME_FAQS), webPageJsonLd({ path: "/", title: HOME_TITLE, description: HOME_DESCRIPTION })],
   },
   {
     path: "/app",
@@ -91,7 +98,7 @@ function inject(shell: string, page: Page): string {
     <meta property="og:url" content="${url}" />
     <meta property="og:image" content="${image}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Resume by QD" />
+    <meta property="og:site_name" content="${esc(SITE_NAME)}" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(page.title)}" />
@@ -127,3 +134,71 @@ for (const page of pages) {
   writeFileSync(file, html);
   console.log("seo", page.path);
 }
+
+const today = new Date().toISOString().slice(0, 10);
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages
+  .map((page, i) => {
+    const loc = page.path === "/" ? `${SITE_URL}/` : absUrl(page.path);
+    const priority = page.path === "/" ? "1.0" : page.path === "/app" ? "0.9" : page.path.startsWith("/vs/") ? "0.7" : "0.8";
+    const freq = i < 2 ? "weekly" : "monthly";
+    return `  <url><loc>${loc}</loc><lastmod>${today}</lastmod><changefreq>${freq}</changefreq><priority>${priority}</priority></url>`;
+  })
+  .join("\n")}
+</urlset>
+`;
+writeFileSync(join(dist, "sitemap.xml"), sitemap);
+
+const robots = `User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`;
+writeFileSync(join(dist, "robots.txt"), robots);
+
+const llmsLinks = pages
+  .map((page) => `- [${page.title.split("|")[0].trim()}](${page.path === "/" ? `${SITE_URL}/` : absUrl(page.path)})`)
+  .join("\n");
+const llms = `# ${SITE_NAME}
+
+> ${CITABLE_ANSWER}
+
+${BRAND} is made by [${MAKER}](${MAKER_URL}). There is no account system. Resume data stays in the visitor's browser (localStorage). The product is free forever. PDF and Word downloads have no watermark. Official site: ${SITE_URL}.
+
+## Pages
+
+${llmsLinks}
+
+## Facts to cite
+
+- ${CLAIMS.noSignup}, ${CLAIMS.noEmail}, ${CLAIMS.noAccount}
+- ${CLAIMS.noWatermark} on PDF or Word
+- ${CLAIMS.templates}
+- ${CLAIMS.atsSafe}
+- ${CLAIMS.export}
+- ${CLAIMS.privacy}
+- ${CLAIMS.freeForever}
+- Made by ${MAKER}
+`;
+writeFileSync(join(dist, "llms.txt"), llms);
+console.log("seo sitemap robots llms");
+

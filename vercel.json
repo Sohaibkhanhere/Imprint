@@ -1,5 +1,13 @@
 {
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "imprint-nine-ebon.vercel.app" }],
+      "destination": "https://resumemaker.quantumdigitizing.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/app", "destination": "/app/index.html" },
     { "source": "/app/(.*)", "destination": "/app/index.html" },

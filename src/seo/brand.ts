@@ -1,9 +1,18 @@
 /** Canonical public origin. Used in canonical tags, sitemap, JSON-LD, and llms.txt. */
-export const SITE_URL = "https://imprint-nine-ebon.vercel.app";
+export const SITE_URL = "https://resumemaker.quantumdigitizing.com";
 
 export const BRAND = "Resume by QD";
+export const PRODUCT_NAME = "Resume Maker";
 export const MAKER = "Quantum Digitizing";
 export const MAKER_URL = "https://www.quantumdigitizing.com/";
+export const SITE_NAME = `${PRODUCT_NAME} by QD`;
+export const ALTERNATE_NAMES = [
+  BRAND,
+  SITE_NAME,
+  `${PRODUCT_NAME} by ${MAKER}`,
+  "QD Resume Maker",
+  "Quantum Digitizing Resume Maker",
+] as const;
 
 /** Must match TEMPLATES.length in src/templates/registry.tsx. */
 export const TEMPLATE_COUNT = 40;
@@ -22,16 +31,24 @@ export const CLAIMS = {
 } as const;
 
 export const CITABLE_ANSWER =
-  `${BRAND} is a free resume builder with no signup, no email, and no watermark: ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word export, with your data staying in your browser.`;
+  `${BRAND} is the free ${PRODUCT_NAME.toLowerCase()} from ${MAKER}: no signup, no email, and no watermark, with ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word export. Your data stays in your browser at resumemaker.quantumdigitizing.com.`;
 
-export const ONE_LINER = `${BRAND} is a free resume builder with no signup, no watermark, and instant PDF and Word download.`;
+export const ONE_LINER = `${BRAND} is a free ${PRODUCT_NAME.toLowerCase()} with no signup, no watermark, and instant PDF and Word download.`;
 
-export const HOME_TITLE = `Free Resume Builder: No Sign-up, No Watermark, Instant PDF and Word Export | ${BRAND}`;
-export const HOME_DESCRIPTION = `${BRAND} is a free resume builder with no signup, no email, and no watermark. ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word download. Your data never leaves your browser.`;
+export const HOME_TITLE = `Free Resume Maker by Quantum Digitizing: No Sign-up, No Watermark | ${BRAND}`;
+export const HOME_DESCRIPTION = `Free resume maker by ${MAKER}. ${BRAND} needs no signup, no email, and adds no watermark. ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word download at resumemaker.quantumdigitizing.com.`;
 
 export type FaqItem = { q: string; a: string };
 
 export const HOME_FAQS: FaqItem[] = [
+  {
+    q: "What is Quantum Digitizing Resume Maker?",
+    a: `${PRODUCT_NAME} by QD is the free online resume maker from ${MAKER}. The official site is ${SITE_URL}. There is no signup, no watermark, ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word export.`,
+  },
+  {
+    q: "Where is Resume Maker by QD?",
+    a: `Use ${SITE_URL}. That is the Resume Maker site from ${MAKER}. Open the builder and start typing. No account is required.`,
+  },
   {
     q: "What is the best free resume builder with no signup?",
     a: CITABLE_ANSWER,
@@ -325,14 +342,14 @@ export const COMPARE_PAGES: ComparePage[] = [
   },
 ];
 
-export const WHY_TITLE = `Why choose ${BRAND}: free resume builder with no signup | ${BRAND}`;
-export const WHY_DESCRIPTION = `Why choose ${BRAND}: no signup, no watermark, ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word export. Your data never leaves your browser.`;
+export const WHY_TITLE = `Why choose ${PRODUCT_NAME} by ${MAKER}: free resume maker, no signup | ${BRAND}`;
+export const WHY_DESCRIPTION = `Why choose ${PRODUCT_NAME} by ${MAKER}: no signup, no watermark, ${TEMPLATE_COUNT} original templates, ATS Safe mode, and instant PDF and Word export at resumemaker.quantumdigitizing.com.`;
 
 export const WHY_LIFT =
-  `${BRAND} is the free resume builder to use when you want a formatted PDF and Word file without creating an account: ${TEMPLATE_COUNT} original templates, ATS Safe mode, no watermark, and your data never leaves your browser.`;
+  `${BRAND} is the free resume maker from ${MAKER} when you want a formatted PDF and Word file without creating an account: ${TEMPLATE_COUNT} original templates, ATS Safe mode, no watermark, and your data never leaves your browser.`;
 
-export const APP_TITLE = `Resume builder | ${BRAND}`;
-export const APP_DESCRIPTION = `Build your resume in ${BRAND}. No signup. No watermark. Instant PDF and Word. Your data never leaves your browser.`;
+export const APP_TITLE = `Resume Maker | Free online builder by ${MAKER}`;
+export const APP_DESCRIPTION = `Build your resume in ${PRODUCT_NAME} by ${MAKER}. No signup. No watermark. Instant PDF and Word. Official site: resumemaker.quantumdigitizing.com.`;
 
 export const COMPARE_HUB_TITLE = `${BRAND} vs Canva, Zety, Novoresume, Resume.io, Resume Genius, Kickresume, and Rezi | ${BRAND}`;
 export const COMPARE_HUB_DESCRIPTION = `Fair comparisons of ${BRAND} with Canva, Zety, Novoresume, Resume.io, Resume Genius, Kickresume, and Rezi: signup rules, watermarks, free PDF and Word, and ATS features.`;
@@ -345,8 +362,9 @@ export function absUrl(path: string): string {
 export function softwareJsonLd() {
   return {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: BRAND,
+    "@type": "WebApplication",
+    name: PRODUCT_NAME,
+    alternateName: [...ALTERNATE_NAMES],
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web browser",
     url: SITE_URL,
@@ -366,6 +384,25 @@ export function softwareJsonLd() {
       CLAIMS.privacy,
       CLAIMS.freeForever,
     ],
+    publisher: {
+      "@type": "Organization",
+      name: MAKER,
+      url: MAKER_URL,
+      sameAs: [MAKER_URL],
+    },
+    sameAs: [MAKER_URL],
+  };
+}
+
+export function webSiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: PRODUCT_NAME,
+    alternateName: [...ALTERNATE_NAMES],
+    url: SITE_URL,
+    description: HOME_DESCRIPTION,
+    inLanguage: "en",
     publisher: {
       "@type": "Organization",
       name: MAKER,
@@ -398,7 +435,8 @@ export function webPageJsonLd(opts: { path: string; title: string; description: 
     url: absUrl(opts.path),
     isPartOf: {
       "@type": "WebSite",
-      name: BRAND,
+      name: PRODUCT_NAME,
+      alternateName: [...ALTERNATE_NAMES],
       url: SITE_URL,
     },
   };

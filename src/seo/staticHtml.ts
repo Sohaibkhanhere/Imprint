@@ -42,7 +42,7 @@ function claimsList(): string {
 
 export function homeBodyHtml(): string {
   return `<article>
-    <h1>Free resume builder. No sign-up, no watermark.</h1>
+    <h1>Free resume maker. No sign-up, no watermark.</h1>
     <p>${esc(CITABLE_ANSWER)}</p>
     <p>${TEMPLATE_COUNT} original templates. ${esc(CLAIMS.freeForever)}. ${esc(CLAIMS.export)}.</p>
     ${claimsList()}

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { absUrl, SITE_URL } from "./brand";
+import { absUrl, SITE_NAME, SITE_URL } from "./brand";
 
 export function SeoHead({
   title,
@@ -41,7 +41,7 @@ export function SeoHead({
     set("property", "og:url", url);
     set("property", "og:image", image);
     set("property", "og:type", "website");
-    set("property", "og:site_name", "Resume by QD");
+    set("property", "og:site_name", SITE_NAME);
     set("property", "og:locale", "en_US");
     set("name", "twitter:card", "summary_large_image");
     set("name", "twitter:title", title);

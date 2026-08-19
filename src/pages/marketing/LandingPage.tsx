@@ -15,6 +15,7 @@ import {
   faqJsonLd,
   softwareJsonLd,
   webPageJsonLd,
+  webSiteJsonLd,
 } from "../../seo/brand";
 
 const LivePreview = lazy(() => import("./LivePreview").then((m) => ({ default: m.LivePreview })));
@@ -22,7 +23,7 @@ const NetflixFeatured = lazy(() => import("./LivePreview").then((m) => ({ defaul
 const LandingGallery = lazy(() => import("./LandingGallery").then((m) => ({ default: m.LandingGallery })));
 
 export function LandingPage() {
-  const jsonLd = useMemo(() => [softwareJsonLd(), faqJsonLd(HOME_FAQS), webPageJsonLd({ path: "/", title: HOME_TITLE, description: HOME_DESCRIPTION })], []);
+  const jsonLd = useMemo(() => [webSiteJsonLd(), softwareJsonLd(), faqJsonLd(HOME_FAQS), webPageJsonLd({ path: "/", title: HOME_TITLE, description: HOME_DESCRIPTION })], []);
 
   return (
     <MarketingChrome>
@@ -32,7 +33,7 @@ export function LandingPage() {
           <div>
             <p className="folio text-amber-500">{TEMPLATE_COUNT} templates · {CLAIMS.freeForever}</p>
             <h1 className="mt-3 max-w-[18ch] font-serif text-4xl font-semibold leading-[1.12] tracking-tight text-stone-900 md:text-5xl">
-              Free resume builder. No sign-up, no watermark.
+              Free resume maker. No sign-up, no watermark.
             </h1>
             <p className="mt-4 max-w-[46ch] text-lg leading-relaxed text-stone-700">
               {CITABLE_ANSWER}
